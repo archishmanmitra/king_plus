@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Mail, Lock, Users } from 'lucide-react';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -15,108 +13,88 @@ const LoginForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const success = await login(email, password);
     if (!success) {
       toast({
-        title: "Login Failed",
-        description: "Invalid email or password. Please try again.",
-        variant: "destructive",
+        title: 'Login Failed',
+        description: 'Invalid email or password. Please try again.',
+        variant: 'destructive',
       });
     }
   };
 
-  const demoAccounts = [
-    { email: 'admin@company.com', role: 'Global Admin', icon: Users },
-    { email: 'hr@company.com', role: 'HR Manager', icon: Users },
-    { email: 'manager@company.com', role: 'Manager', icon: Users },
-    { email: 'abir@company.com', role: 'Employee', icon: Users },
-  ];
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-light to-background p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <div className="flex justify-center">
-            <div className="p-3 rounded-xl bg-primary text-primary-foreground">
-              <Building2 size={32} />
+    <div className="min-h-screen w-full grid md:grid-cols-2 bg-white">
+      {/* Left panel: form */}
+      <div className="relative flex min-h-screen flex-col">
+        {/* Logo pinned to top-left */}
+        <div className="p-8 md:p-12 lg:p-16">
+          <div className="flex items-center gap-2 select-none">
+            <div className="h-20 w-20 rounded-md bg-utech flex items-center justify-center shadow-sm">
+              <span className="text-primary-foreground font-extrabold">
+                 <img src="/kinglogo.svg" height={80} width={80} className=' rounded-sm invert'/>
+              </span>
             </div>
+            <span className="text-xl font-semibold text-slate-800">KIN-G +</span>
           </div>
-          <h1 className="text-3xl font-bold text-foreground">HRMS Portal</h1>
-          <p className="text-muted-foreground">Sign in to your account</p>
         </div>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Welcome Back</CardTitle>
-            <CardDescription>
-              Enter your credentials to access the HRMS platform
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
+        {/* Centered content */}
+        <div className="flex-1 flex items-center p-8 md:p-12 lg:p-16 pt-0 mt-[-8px] md:-mt-6">
+         <div className="mx-auto w-full max-w-5xl md:max-w-xl">
+            <h1 className="text-[28px] leading-tight font-semibold text-slate-800">Welcome to KIN-G +</h1>
+            <p className="mt-1 text-[18px] text-slate-600">Sign into your account</p>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign In"}
+            <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="sr-only">Phone or Email address</Label>
+                <Input
+                  id="email"
+                  type="text"
+                  placeholder="Phone or Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-11 rounded-md border-slate-200 placeholder:text-slate-400 focus:ring-utech focus-visible:ring-utech focus:border-utech/60"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="sr-only">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-11 rounded-md border-slate-200 placeholder:text-slate-400 focus:ring-utech focus-visible:ring-utech focus:border-utech/60"
+                  required
+                />
+              </div>
+              <Button type="submit" className="h-10 w-36 rounded-xl bg-utech text-white hover:bg-utech/90 shadow-sm" disabled={isLoading}>
+                {isLoading ? 'Signing in...' : 'Log In'}
               </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-sm">Demo Accounts</CardTitle>
-            <CardDescription>
-              Use any email below with password: <strong>password</strong>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {demoAccounts.map((account) => (
-              <div
-                key={account.email}
-                className="flex items-center justify-between p-2 rounded-lg hover:bg-muted cursor-pointer transition-colors"
-                onClick={() => setEmail(account.email)}
-              >
-                <div className="flex items-center space-x-2">
-                  <account.icon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{account.email}</span>
-                </div>
-                <span className="text-xs text-muted-foreground">{account.role}</span>
+              <div className="mt-1 text-left">
+                <a href="#" className="text-utech hover:underline text-sm">Forgot password?</a>
               </div>
-            ))}
-          </CardContent>
-        </Card>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {/* Right panel: illustration */}
+      <div className="hidden md:block relative">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              'linear-gradient(135deg, hsl(var(--brand-start)) 0%, hsl(var(--brand-mid)) 45%, hsl(var(--brand-end)) 100%)',
+          }}
+        />
+        <img
+          src="https://cdn.builder.io/api/v1/image/assets%2F64059551b35e4be785fd72505a672da7%2Fde851a52d56545b0be8f99551b3358ce?format=webp&width=1600"
+          alt="Technology illustration"
+          className="absolute inset-0 h-full w-full object-cover object-right mix-blend-overlay"
+        />
       </div>
     </div>
   );
