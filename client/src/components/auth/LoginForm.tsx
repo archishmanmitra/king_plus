@@ -97,7 +97,7 @@ const LoginForm: React.FC = () => {
           }}
         />
         <img
-          src="https://cdn.builder.io/api/v1/image/assets%2F64059551b35e4be785fd72505a672da7%2Fde851a52d56545b0be8f99551b3358ce?format=webp&width=1600"
+          src="/right.png"
           alt="Technology illustration"
           className="absolute inset-0 h-full w-full object-cover object-right mix-blend-overlay"
         />
