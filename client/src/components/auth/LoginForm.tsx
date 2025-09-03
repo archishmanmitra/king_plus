@@ -35,7 +35,7 @@ const LoginForm: React.FC = () => {
                  <img src="/kinglogo.svg" height={80} width={80} className=' rounded-sm invert'/>
               </span>
             </div>
-            <span className="text-xl font-semibold text-slate-800">KIN-G +</span>
+            {/* <span className="text-xl font-semibold text-slate-800">KIN-G +</span> */}
           </div>
         </div>
 
