@@ -30,7 +30,7 @@ const LoginForm: React.FC = () => {
     { email: 'admin@company.com', role: 'Global Admin', icon: Users },
     { email: 'hr@company.com', role: 'HR Manager', icon: Users },
     { email: 'manager@company.com', role: 'Manager', icon: Users },
-    { email: 'john@company.com', role: 'Employee', icon: Users },
+    { email: 'abir@company.com', role: 'Employee', icon: Users },
   ];
 
   return (

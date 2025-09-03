@@ -37,7 +37,7 @@ export const ClockOutModal: React.FC<ClockOutModalProps> = ({
     notes: ''
   });
 
-  const managers = ['David Wilson', 'Emily Rodriguez', 'Sarah Johnson'];
+  const managers = ['David Wilson', 'Emily Rodriguez', 'Soumodip Dey'];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

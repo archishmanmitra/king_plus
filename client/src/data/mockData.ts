@@ -8,10 +8,10 @@ export const mockEmployees: Employee[] = [
   {
     id: '1',
     employeeId: 'EMP001',
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@company.com',
+    name: 'Soumodip Dey',
+    email: 'soumodip.dey@company.com',
     phone: '+1 (555) 123-4567',
-    position: 'System Administrator',
+    position: 'CEO (Chief Executive Officer) ',
     department: 'IT',
     manager: 'David Wilson',
     joinDate: '2022-01-15',
@@ -20,19 +20,19 @@ export const mockEmployees: Employee[] = [
     
     // Personal Information
     personalInfo: {
-      firstName: 'Sarah',
-      lastName: 'Johnson',
+      firstName: 'Soumodip',
+      lastName: 'Dey',
       gender: 'female',
       dateOfBirth: '1990-05-12',
       maritalStatus: 'single',
-      nationality: 'American',
+      nationality: 'Indian',
       primaryCitizenship: 'United States',
       phoneNumber: '+1 (555) 123-4567',
-      email: 'sarah.johnson@company.com',
+      email: 'Soumodip.Dey@company.com',
       
       addresses: {
         present: {
-          contactName: 'Sarah Johnson',
+          contactName: 'Soumodip Dey',
           address1: '123 Main Street',
           city: 'New York',
           state: 'NY',
@@ -46,7 +46,7 @@ export const mockEmployees: Employee[] = [
           longitude: -73.9851
         },
         primary: {
-          contactName: 'Sarah Johnson',
+          contactName: 'Soumodip Dey',
           address1: '123 Main Street',
           city: 'New York',
           state: 'NY',
@@ -60,11 +60,11 @@ export const mockEmployees: Employee[] = [
           longitude: -73.9851
         },
         emergency: {
-          contactName: 'John Johnson',
+          contactName: 'Abir Dey',
           relation: 'Father',
           phoneNumber: '+1 (555) 987-6543',
           address: {
-            contactName: 'John Johnson',
+            contactName: 'Abir Dey',
             address1: '456 Oak Avenue',
             city: 'Boston',
             state: 'MA',
@@ -96,16 +96,16 @@ export const mockEmployees: Employee[] = [
       dependents: [
         {
           relation: 'father',
-          name: 'John Johnson',
-          nationality: 'American',
+          name: 'abir Dey',
+          nationality: 'Indian',
           dateOfBirth: '1965-03-15',
           occupation: 'Engineer',
           address: '456 Oak Avenue, Boston, MA 02101'
         },
         {
           relation: 'mother',
-          name: 'Mary Johnson',
-          nationality: 'American',
+          name: 'Mary Dey',
+          nationality: 'Indian',
           dateOfBirth: '1967-07-22',
           occupation: 'Teacher',
           address: '456 Oak Avenue, Boston, MA 02101'
@@ -155,13 +155,13 @@ export const mockEmployees: Employee[] = [
     
     // Official Information
     officialInfo: {
-      firstName: 'Sarah',
-      lastName: 'Johnson',
-      knownAs: 'Sarah',
+      firstName: 'Soumodip',
+      lastName: 'Dey',
+      knownAs: 'Soumodip',
       dateOfJoining: '2022-01-15',
       jobConfirmation: true,
-      role: 'System Administrator',
-      designation: 'Senior System Administrator',
+      role: 'CEO (Chief Executive Officer) ',
+      designation: 'Senior CEO (Chief Executive Officer) ',
       stream: 'Information Technology',
       subStream: 'System Administration',
       baseLocation: 'New York Office',
@@ -250,7 +250,7 @@ export const mockEmployees: Employee[] = [
         id: '2',
         date: '2023-06-01',
         type: 'promotion',
-        title: 'Promoted to Senior System Administrator',
+        title: 'Promoted to Senior CEO (Chief Executive Officer) ',
         description: 'Recognition for outstanding performance and leadership'
       }
     ]
@@ -258,8 +258,8 @@ export const mockEmployees: Employee[] = [
   {
     id: '2',
     employeeId: 'EMP002',
-    name: 'Michael Chen',
-    email: 'michael.chen@company.com',
+    name: 'Indrajit Das',
+    email: 'indrajit.das@company.com',
     phone: '+1 (555) 234-5678',
     position: 'HR Manager',
     department: 'Human Resources',
@@ -270,19 +270,19 @@ export const mockEmployees: Employee[] = [
     
     // Personal Information
     personalInfo: {
-      firstName: 'Michael',
-      lastName: 'Chen',
+      firstName: 'indrajit ',
+      lastName: 'Das',
       gender: 'male',
       dateOfBirth: '1988-09-22',
       maritalStatus: 'married',
-      nationality: 'American',
+      nationality: 'Indian',
       primaryCitizenship: 'United States',
       phoneNumber: '+1 (555) 234-5678',
-      email: 'michael.chen@company.com',
+      email: 'indrajit .Das@company.com',
       
       addresses: {
         present: {
-          contactName: 'Michael Chen',
+          contactName: 'Indrajit Das',
           address1: '456 Oak Avenue',
           city: 'San Francisco',
           state: 'CA',
@@ -296,7 +296,7 @@ export const mockEmployees: Employee[] = [
           longitude: -122.4194
         },
         primary: {
-          contactName: 'Michael Chen',
+          contactName: 'Indrajit Das',
           address1: '456 Oak Avenue',
           city: 'San Francisco',
           state: 'CA',
@@ -310,11 +310,11 @@ export const mockEmployees: Employee[] = [
           longitude: -122.4194
         },
         emergency: {
-          contactName: 'Jennifer Chen',
+          contactName: 'Jennifer Das',
           relation: 'Wife',
           phoneNumber: '+1 (555) 876-5432',
           address: {
-            contactName: 'Jennifer Chen',
+            contactName: 'Jennifer Das',
             address1: '456 Oak Avenue',
             city: 'San Francisco',
             state: 'CA',
@@ -346,8 +346,8 @@ export const mockEmployees: Employee[] = [
       dependents: [
         {
           relation: 'wife',
-          name: 'Jennifer Chen',
-          nationality: 'American',
+          name: 'Jennifer Das',
+          nationality: 'Indian',
           dateOfBirth: '1990-04-15',
           occupation: 'Marketing Manager',
           address: '456 Oak Avenue, San Francisco, CA 94102'
@@ -397,8 +397,8 @@ export const mockEmployees: Employee[] = [
     
     // Official Information
     officialInfo: {
-      firstName: 'Michael',
-      lastName: 'Chen',
+      firstName: 'indrajit ',
+      lastName: 'Das',
       knownAs: 'Mike',
       dateOfJoining: '2021-03-10',
       jobConfirmation: true,
@@ -500,7 +500,7 @@ export const mockEmployees: Employee[] = [
       gender: 'female',
       dateOfBirth: '1992-11-08',
       maritalStatus: 'single',
-      nationality: 'American',
+      nationality: 'Indian',
       primaryCitizenship: 'United States',
       phoneNumber: '+1 (555) 345-6789',
       email: 'emily.rodriguez@company.com',
@@ -572,7 +572,7 @@ export const mockEmployees: Employee[] = [
         {
           relation: 'father',
           name: 'Carlos Rodriguez',
-          nationality: 'American',
+          nationality: 'Indian',
           dateOfBirth: '1968-12-03',
           occupation: 'Accountant',
           address: '321 Elm Street, Houston, TX 77001'
@@ -693,31 +693,31 @@ export const mockEmployees: Employee[] = [
   {
     id: '4',
     employeeId: 'EMP004',
-    name: 'John Smith',
-    email: 'john.smith@company.com',
+    name: 'Abir Lal Banerjee',
+    email: 'abir.banerjee@company.com',
     phone: '+1 (555) 456-7890',
     position: 'Software Engineer',
     department: 'Engineering',
     manager: 'Emily Rodriguez',
     joinDate: '2023-06-01',
     status: 'active',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    avatar: '/images/Abir3.png',
     
     // Personal Information
     personalInfo: {
-      firstName: 'John',
-      lastName: 'Smith',
+      firstName: 'abir',
+      lastName: 'Banerjee',
       gender: 'male',
       dateOfBirth: '1995-03-18',
       maritalStatus: 'single',
-      nationality: 'American',
+      nationality: 'Indian',
       primaryCitizenship: 'United States',
       phoneNumber: '+1 (555) 456-7890',
-      email: 'john.smith@company.com',
+      email: 'abir.Banerjee@company.com',
       
       addresses: {
         present: {
-          contactName: 'John Smith',
+          contactName: 'Abir Lal Banerjee',
           address1: '555 Tech Street',
           city: 'Seattle',
           state: 'WA',
@@ -731,7 +731,7 @@ export const mockEmployees: Employee[] = [
           longitude: -122.3321
         },
         primary: {
-          contactName: 'John Smith',
+          contactName: 'Abir Lal Banerjee',
           address1: '555 Tech Street',
           city: 'Seattle',
           state: 'WA',
@@ -745,11 +745,11 @@ export const mockEmployees: Employee[] = [
           longitude: -122.3321
         },
         emergency: {
-          contactName: 'Jane Smith',
+          contactName: 'Jane Banerjee',
           relation: 'Sister',
           phoneNumber: '+1 (555) 654-3210',
           address: {
-            contactName: 'Jane Smith',
+            contactName: 'Jane Banerjee',
             address1: '777 Family Lane',
             city: 'Portland',
             state: 'OR',
@@ -781,8 +781,8 @@ export const mockEmployees: Employee[] = [
       dependents: [
         {
           relation: 'other',
-          name: 'Jane Smith',
-          nationality: 'American',
+          name: 'Jane Banerjee',
+          nationality: 'Indian',
           dateOfBirth: '1998-08-25',
           occupation: 'Graphic Designer',
           address: '777 Family Lane, Portland, OR 97201'
@@ -832,9 +832,9 @@ export const mockEmployees: Employee[] = [
     
     // Official Information
     officialInfo: {
-      firstName: 'John',
-      lastName: 'Smith',
-      knownAs: 'Johnny',
+      firstName: 'abir',
+      lastName: 'Banerjee',
+      knownAs: 'abirny',
       dateOfJoining: '2023-06-01',
       jobConfirmation: false,
       role: 'Software Engineer',
@@ -854,7 +854,7 @@ export const mockEmployees: Employee[] = [
           type: 'Offer Letter',
           uploadDate: '2023-06-01',
           size: '267 KB',
-          url: '/documents/offer_letter_john.pdf',
+          url: '/documents/offer_letter_abir.pdf',
           uploadedBy: 'hr'
         },
         {
@@ -864,7 +864,7 @@ export const mockEmployees: Employee[] = [
           type: 'Background Check',
           uploadDate: '2023-05-25',
           size: '145 KB',
-          url: '/documents/background_check_john.pdf',
+          url: '/documents/background_check_abir.pdf',
           uploadedBy: 'hr'
         }
       ]
@@ -1946,7 +1946,7 @@ export const mockLeaveRequests: LeaveRequest[] = [
   {
     id: '1',
     employeeId: 'EMP001',
-    employeeName: 'Sarah Johnson',
+    employeeName: 'Soumodip Dey',
     type: 'vacation',
     startDate: '2024-02-15',
     endDate: '2024-02-19',
@@ -1959,7 +1959,7 @@ export const mockLeaveRequests: LeaveRequest[] = [
   {
     id: '2',
     employeeId: 'EMP002',
-    employeeName: 'Michael Chen',
+    employeeName: 'Indrajit Das',
     type: 'sick',
     startDate: '2024-01-18',
     endDate: '2024-01-18',
@@ -1997,7 +1997,7 @@ export const mockExpenses: ExpenseClaim[] = [
   {
     id: '1',
     employeeId: 'EMP001',
-    employeeName: 'Sarah Johnson',
+    employeeName: 'Soumodip Dey',
     category: 'Travel',
     amount: 450.00,
     description: 'Client visit - flight and accommodation',
@@ -2018,7 +2018,7 @@ export const mockExpenses: ExpenseClaim[] = [
   {
     id: '2',
     employeeId: 'EMP002',
-    employeeName: 'Michael Chen',
+    employeeName: 'Indrajit Das',
     category: 'Meals',
     amount: 85.50,
     description: 'Team lunch meeting',
@@ -2044,9 +2044,9 @@ export const mockExpenses: ExpenseClaim[] = [
     description: 'Office stationery and supplies',
     date: '2024-01-15',
     status: 'approved',
-    approver: 'Sarah Johnson',
+    approver: 'Soumodip Dey',
     receipts: ['receipt4.pdf'],
-    reportingManager: 'Sarah Johnson',
+    reportingManager: 'Soumodip Dey',
     fromDate: '2024-01-15',
     toDate: '2024-01-15',
     location: 'Seattle',
@@ -2059,7 +2059,7 @@ export const mockExpenses: ExpenseClaim[] = [
   {
     id: '4',
     employeeId: 'EMP001',
-    employeeName: 'Sarah Johnson',
+    employeeName: 'Soumodip Dey',
     category: 'Software',
     amount: 299.99,
     description: 'Development software license',
@@ -2082,7 +2082,7 @@ export const mockPerformanceReviews: PerformanceReview[] = [
   {
     id: '1',
     employeeId: 'EMP001',
-    employeeName: 'Sarah Johnson',
+    employeeName: 'Soumodip Dey',
     reviewPeriod: 'Q4 2023',
     reviewType: 'quarterly',
     overallRating: 4.5,
@@ -2127,7 +2127,7 @@ export const mockProjects: Project[] = [
     billableHours: 1200,
     nonBillableHours: 300,
     teamMembers: ['EMP001', 'EMP002', 'EMP003'],
-    manager: 'Sarah Johnson',
+    manager: 'Soumodip Dey',
     progress: 45
   },
   {
@@ -2142,7 +2142,7 @@ export const mockProjects: Project[] = [
     billableHours: 800,
     nonBillableHours: 150,
     teamMembers: ['EMP002', 'EMP003'],
-    manager: 'Michael Chen',
+    manager: 'Indrajit Das',
     progress: 10
   }
 ];
@@ -2153,7 +2153,7 @@ export const mockTasks: Task[] = [
     projectId: '1',
     name: 'Database Design',
     description: 'Design the database schema for HRMS',
-    assignee: 'Sarah Johnson',
+    assignee: 'Soumodip Dey',
     status: 'completed',
     priority: 'high',
     estimatedHours: 40,
@@ -2167,7 +2167,7 @@ export const mockTasks: Task[] = [
     projectId: '1',
     name: 'User Interface Development',
     description: 'Develop the main user interface components',
-    assignee: 'Michael Chen',
+    assignee: 'Indrajit Das',
     status: 'in-progress',
     priority: 'medium',
     estimatedHours: 60,

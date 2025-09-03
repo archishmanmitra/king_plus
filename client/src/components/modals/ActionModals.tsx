@@ -186,7 +186,7 @@ export const ExpenseClaimModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose
     onClose();
   };
 
-  const managers = ['David Wilson', 'Emily Rodriguez', 'Sarah Johnson'];
+  const managers = ['David Wilson', 'Emily Rodriguez', 'Soumodip Dey'];
   const currencies = ['USD', 'EUR', 'GBP', 'INR', 'CAD', 'AUD'];
 
   return (

@@ -8,17 +8,17 @@ const demoUsers: User[] = [
   {
     id: '1',
     email: 'admin@company.com',
-    name: 'Sarah Johnson',
+    name: 'Soumodip Dey',
     role: 'global_admin',
     department: 'IT',
-    position: 'System Administrator',
+    position: 'CEO (Chief Executive Officer) ',
     employeeId: 'EMP001',
     avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612c8d6?w=150&h=150&fit=crop&crop=face'
   },
   {
     id: '2',
     email: 'hr@company.com',
-    name: 'Michael Chen',
+    name: 'Indrajit Das',
     role: 'hr_manager',
     department: 'Human Resources',
     position: 'HR Manager',
@@ -37,13 +37,13 @@ const demoUsers: User[] = [
   },
   {
     id: '4',
-    email: 'john@company.com',
-    name: 'John Smith',
+    email: 'abir@company.com',
+    name: 'Abir Lal Banerjee',
     role: 'employee',
     department: 'Engineering',
     position: 'Software Engineer',
     employeeId: 'EMP004',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+    avatar: '/images/Abir3.png'
   }
 ];
 

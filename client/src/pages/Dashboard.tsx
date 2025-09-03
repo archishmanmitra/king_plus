@@ -75,14 +75,14 @@ const Dashboard: React.FC = () => {
     {
       id: 1,
       type: 'leave',
-      message: 'Sarah Johnson applied for vacation leave',
+      message: 'Soumodip Dey applied for vacation leave',
       time: '2 hours ago',
       status: 'pending'
     },
     {
       id: 2,
       type: 'attendance',
-      message: 'Michael Chen clocked in at 9:15 AM',
+      message: 'Indrajit Das clocked in at 9:15 AM',
       time: '3 hours ago',
       status: 'info'
     },
@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
-            Good morning, {user?.name}!
+            Welcome back, {user?.name}!
           </h1>
           <p className="text-muted-foreground">
             Here's what's happening in your organization today.

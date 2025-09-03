@@ -30,7 +30,7 @@ const Expenses: React.FC = () => {
 
   const expenseCategories = ['Travel', 'Meals', 'Office Supplies', 'Software', 'Training', 'Marketing', 'Other'];
   const currencies = ['USD', 'EUR', 'GBP', 'INR', 'CAD', 'AUD'];
-  const managers = ['David Wilson', 'Emily Rodriguez', 'Sarah Johnson'];
+  const managers = ['David Wilson', 'Emily Rodriguez', 'Soumodip Dey'];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +49,7 @@ const Expenses: React.FC = () => {
     const newExpense = {
       id: Date.now().toString(),
       employeeId: 'EMP001', // This would come from auth context
-      employeeName: 'Sarah Johnson', // This would come from auth context
+      employeeName: 'Soumodip Dey', // This would come from auth context
       category: category.toLowerCase(),
       amount: parseFloat(amount),
       description,
