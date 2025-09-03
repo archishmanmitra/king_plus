@@ -42,7 +42,13 @@ const LoginForm: React.FC = () => {
         {/* Centered content */}
         <div className="flex-1 flex items-center p-8 md:p-12 lg:p-16 pt-0 mt-[-8px] md:-mt-6">
          <div className="mx-auto w-full max-w-5xl md:max-w-xl">
-            <h1 className="text-[28px] leading-tight font-semibold text-slate-800">Welcome to KIN-G +</h1>
+            <h1 className="text-[28px] leading-tight font-semibold text-slate-800">
+  Welcome to{" "}
+  <span className="bg-gradient-to-r from-blue-900 via-blue-600 to-blue-400 bg-clip-text text-transparent">
+    KIN-G +
+  </span>{" "}
+</h1>
+
             <p className="mt-1 text-[18px] text-slate-600">Sign into your account</p>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-4">
