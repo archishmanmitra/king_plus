@@ -118,25 +118,25 @@ const Settings: React.FC = () => {
           <p className="text-muted-foreground">Configure your HRMS platform settings</p>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={exportSettings}>
+          {/* <Button variant="outline" onClick={exportSettings}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
           <Button variant="outline" onClick={resetToDefaults}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Reset
-          </Button>
+          </Button> */}
         </div>
       </div>
 
       <Tabs defaultValue="company" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="company">Company</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="attendance">Attendance</TabsTrigger>
-          <TabsTrigger value="payroll">Payroll</TabsTrigger>
-          <TabsTrigger value="leave">Leave</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
+          {/* <TabsTrigger value="notifications">Notifications</TabsTrigger> */}
+          {/* <TabsTrigger value="attendance">Attendance</TabsTrigger> */}
+          {/* <TabsTrigger value="payroll">Payroll</TabsTrigger> */}
+          {/* <TabsTrigger value="leave">Leave</TabsTrigger> */}
+          {/* <TabsTrigger value="security">Security</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="company">
