@@ -12,6 +12,11 @@ export interface Project {
   teamMembers: string[];
   manager: string;
   progress: number;
+  // New fields for project form
+  projectCode: string;
+  phaseStatus: 'Production' | 'PreProd' | 'PostProd';
+  allocationPercentage: number;
+  reportingManager: string;
 }
 
 export interface Task {

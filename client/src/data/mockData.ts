@@ -2128,7 +2128,11 @@ export const mockProjects: Project[] = [
     nonBillableHours: 300,
     teamMembers: ['EMP001', 'EMP002', 'EMP003'],
     manager: 'Soumodip Dey',
-    progress: 45
+    progress: 45,
+    projectCode: 'HRMS-2024-001',
+    phaseStatus: 'Production',
+    allocationPercentage: 80,
+    reportingManager: 'EMP001'
   },
   {
     id: '2',
@@ -2143,7 +2147,11 @@ export const mockProjects: Project[] = [
     nonBillableHours: 150,
     teamMembers: ['EMP002', 'EMP003'],
     manager: 'Indrajit Das',
-    progress: 10
+    progress: 10,
+    projectCode: 'CUST-2024-002',
+    phaseStatus: 'PreProd',
+    allocationPercentage: 60,
+    reportingManager: 'EMP002'
   }
 ];
 

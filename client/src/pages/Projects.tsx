@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { mockProjects, mockTasks } from '@/data/mockData';
 import { FolderOpen, Plus, Users, Clock } from 'lucide-react';
+import NewProjectModal from '@/components/modals/NewProjectModal';
 
 const Projects: React.FC = () => {
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+
+  const handleNewProject = (projectData: any) => {
+    // Here you would typically send the data to your backend
+    console.log('New project data:', projectData);
+    // For now, we'll just close the modal
+    setIsNewProjectModalOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -14,7 +24,7 @@ const Projects: React.FC = () => {
           <h1 className="text-3xl font-bold text-foreground">Project Management</h1>
           <p className="text-muted-foreground">Manage projects and track progress</p>
         </div>
-        <Button>
+        <Button onClick={() => setIsNewProjectModalOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           New Project
         </Button>
@@ -62,6 +72,12 @@ const Projects: React.FC = () => {
           </Card>
         ))}
       </div>
+
+      <NewProjectModal
+        isOpen={isNewProjectModalOpen}
+        onClose={() => setIsNewProjectModalOpen(false)}
+        onSave={handleNewProject}
+      />
     </div>
   );
 };
