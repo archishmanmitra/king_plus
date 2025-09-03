@@ -24,15 +24,15 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full grid md:grid-cols-2 bg-white">
+    <div className="min-h-screen w-full grid md:grid-cols-2">
       {/* Left panel: form */}
       <div className="relative flex min-h-screen flex-col">
         {/* Logo pinned to top-left */}
         <div className="p-8 md:p-12 lg:p-16">
           <div className="flex items-center gap-2 select-none">
-            <div className="h-20 w-20 rounded-md bg-utech flex items-center justify-center shadow-sm">
+            <div className="h-20 w-20 rounded-full bg-utech flex items-center justify-center shadow-sm">
               <span className="text-primary-foreground font-extrabold">
-                 <img src="/kinglogo.svg" height={80} width={80} className=' rounded-sm invert'/>
+                 <img src="/kinglogo.svg" height={80} width={80} className=' rounded-full invert'/>
               </span>
             </div>
             {/* <span className="text-xl font-semibold text-slate-800">KIN-G +</span> */}

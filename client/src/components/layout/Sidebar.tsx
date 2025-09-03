@@ -156,22 +156,19 @@ export function AppSidebar() {
         <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className=" rounded-lg pt-0.5 bg-white text-primary-foreground ">
-                <img
-                  src="/kinglogo.svg"
-                  height={40}
-                  width={40}
-                  className=" rounded-lg"
-                />
-              </div>
+              <div className="h-10 w-10 rounded-full bg-utech flex items-center justify-center shadow-sm">
+              <span className="text-primary-foreground font-extrabold">
+                 <img src="/kinglogo.svg" height={40} width={40} className=' rounded-full invert '/>
+              </span>
+            </div>
               {!isCollapsed && (
                 <div>
-                  <h2 className="text-lg font-bold text-sidebar-foreground">
+                  <h1 className="bg-gradient-to-r from-blue-900 via-blue-600 to-blue-400 bg-clip-text text-transparent text-bold">
                     KIN-G +
-                  </h2>
-                  <p className="text-xs text-sidebar-foreground/70">
+                  </h1>
+                  {/* <p className="text-xs text-sidebar-foreground/70">
                     Office Portal
-                  </p>
+                  </p> */}
                 </div>
               )}
             </div>
