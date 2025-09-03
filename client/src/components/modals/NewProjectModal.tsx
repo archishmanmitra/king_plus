@@ -320,31 +320,36 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onSa
                 <Users className="h-4 w-4 inline mr-2" />
                 Team Members (Select multiple)
               </Label>
-              <div className="border rounded-md p-3 max-h-40 overflow-y-auto">
-                {mockEmployees.map((employee) => (
-                  <div
-                    key={employee.id}
-                    className="flex items-center space-x-2 py-1 cursor-pointer hover:bg-gray-50 rounded"
-                    onClick={() => handleMemberToggle(employee.id)}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.members.includes(employee.id)}
-                      onChange={() => handleMemberToggle(employee.id)}
-                      className="h-4 w-4"
-                    />
-                    <span className="text-sm">
-                      {employee.name} - {employee.position} ({employee.department})
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <Select 
+                value={formData.members.length > 0 ? formData.members[0] : ''} 
+                onValueChange={(value) => {
+                  if (value && !formData.members.includes(value)) {
+                    setFormData(prev => ({
+                      ...prev,
+                      members: [...prev.members, value]
+                    }));
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select team members" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockEmployees
+                    .filter(employee => !formData.members.includes(employee.id))
+                    .map((employee) => (
+                      <SelectItem key={employee.id} value={employee.id}>
+                        {employee.name} - {employee.position} ({employee.department})
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
               {formData.members.length > 0 && (
                 <div className="mt-2">
-                  <p className="text-sm text-muted-foreground">
-                    Selected members: {getSelectedMemberNames()}
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Selected members ({formData.members.length}):
                   </p>
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <div className="flex flex-wrap gap-1">
                     {formData.members.map(memberId => {
                       const member = mockEmployees.find(emp => emp.id === memberId);
                       return member ? (
@@ -352,10 +357,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onSa
                           {member.name}
                           <X 
                             className="h-3 w-3 ml-1 cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMemberToggle(memberId);
-                            }}
+                            onClick={() => handleMemberToggle(memberId)}
                           />
                         </Badge>
                       ) : null;

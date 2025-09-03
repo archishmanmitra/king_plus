@@ -15,9 +15,10 @@ import Payroll from "@/pages/Payroll";
 import Expenses from "@/pages/Expenses";
 import Performance from "@/pages/Performance";
 import Projects from "@/pages/Projects";
+import ProjectDetail from "@/pages/ProjectDetail";
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
-import NotFound from "./pages/NotFound";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const AppRoutes = () => {
         <Route path="/expenses" element={<Expenses />} />
         <Route path="/performance" element={<Performance />} />
         <Route path="/projects" element={<Projects />} />
+        <Route path="/project/:projectId" element={<ProjectDetail />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<NotFound />} />
