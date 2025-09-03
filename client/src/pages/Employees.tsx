@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Table,
   TableBody,
@@ -22,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { mockEmployees } from '@/data/mockData';
 import { useNavigate } from 'react-router-dom';
+import AddEmployeeModal from '@/components/modals/AddEmployeeModal';
 import { 
   Users, 
   Plus, 
@@ -40,12 +42,15 @@ const Employees: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
+  const [employees, setEmployees] = useState(mockEmployees);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const departments = ['all', 'IT', 'Human Resources', 'Finance', 'Engineering', 'Marketing'];
   const statuses = ['all', 'active', 'inactive', 'terminated'];
 
-  const filteredEmployees = mockEmployees.filter(employee => {
+  const filteredEmployees = employees.filter(employee => {
     const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          employee.employeeId.toLowerCase().includes(searchTerm.toLowerCase());
@@ -73,6 +78,15 @@ const Employees: React.FC = () => {
     navigate(`/profile/${employeeId}`);
   };
 
+  const handleAddEmployee = (newEmployee: any) => {
+    setEmployees(prev => [...prev, newEmployee]);
+    setIsAddEmployeeModalOpen(false);
+    toast({
+      title: "Success",
+      description: `Employee ${newEmployee.name} has been added successfully!`,
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -88,7 +102,7 @@ const Employees: React.FC = () => {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button>
+          <Button onClick={() => setIsAddEmployeeModalOpen(true)}>
             <UserPlus className="h-4 w-4 mr-2" />
             Add Employee
           </Button>
@@ -315,6 +329,13 @@ const Employees: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add Employee Modal */}
+      <AddEmployeeModal
+        isOpen={isAddEmployeeModalOpen}
+        onClose={() => setIsAddEmployeeModalOpen(false)}
+        onSave={handleAddEmployee}
+      />
     </div>
   );
 };

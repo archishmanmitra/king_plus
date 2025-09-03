@@ -10,24 +10,42 @@ import { Edit, CreditCard, PiggyBank, DollarSign, Calculator, TrendingUp, Calend
 
 interface FinancialInformationProps {
   data: any;
-  canEditBank: boolean;
-  canEditRetiral: boolean;
+  canEditBank?: boolean;
+  canEditRetiral?: boolean;
   isEditMode?: boolean;
+  showBankAccount?: boolean;
+  showRetiralOnly?: boolean;
+  canEdit?: boolean;
 }
 
-const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEditBank, canEditRetiral, isEditMode = false }) => {
-  const [activeTab, setActiveTab] = useState('bank');
+const FinancialInformation: React.FC<FinancialInformationProps> = ({ 
+  data, 
+  canEditBank = false, 
+  canEditRetiral = false, 
+  isEditMode = false,
+  showBankAccount = true,
+  showRetiralOnly = false,
+  canEdit = false
+}) => {
+  const [activeTab, setActiveTab] = useState(showRetiralOnly ? 'retiral' : 'bank');
+
+  // Determine effective permissions
+  const effectiveCanEditBank = canEdit || canEditBank;
+  const effectiveCanEditRetiral = canEdit || canEditRetiral;
 
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="bank">Bank Account</TabsTrigger>
-          <TabsTrigger value="retiral">Retiral</TabsTrigger>
-        </TabsList>
+        {!showRetiralOnly && (
+          <TabsList className={`grid w-full ${showBankAccount ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {showBankAccount && <TabsTrigger value="bank">Bank Account</TabsTrigger>}
+            <TabsTrigger value="retiral">Retiral</TabsTrigger>
+          </TabsList>
+        )}
 
         {/* Bank Account Tab */}
-        <TabsContent value="bank" className="space-y-6">
+        {showBankAccount && !showRetiralOnly && (
+          <TabsContent value="bank" className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
@@ -48,7 +66,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                       <Input 
                         id="bankName" 
                         defaultValue={data.bankAccount.bankName} 
-                        disabled={!canEditBank}
+                        disabled={!effectiveCanEditBank}
                       />
                     </div>
                     <div className="space-y-2">
@@ -56,7 +74,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                       <Input 
                         id="accountNumber" 
                         defaultValue={data.bankAccount.accountNumber} 
-                        disabled={!canEditBank}
+                        disabled={!effectiveCanEditBank}
                       />
                     </div>
                     <div className="space-y-2">
@@ -64,7 +82,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                       <Input 
                         id="ifscCode" 
                         defaultValue={data.bankAccount.ifscCode} 
-                        disabled={!canEditBank}
+                        disabled={!effectiveCanEditBank}
                       />
                     </div>
                     <div className="space-y-2">
@@ -72,7 +90,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                       <Input 
                         id="country" 
                         defaultValue={data.bankAccount.country} 
-                        disabled={!canEditBank}
+                        disabled={!effectiveCanEditBank}
                       />
                     </div>
                     <div className="space-y-2">
@@ -81,7 +99,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                         id="modifiedDate" 
                         type="date" 
                         defaultValue={data.bankAccount.modifiedDate} 
-                        disabled={!canEditBank}
+                        disabled={!effectiveCanEditBank}
                       />
                     </div>
                   </>
@@ -116,6 +134,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
             </CardContent>
           </Card>
         </TabsContent>
+        )}
 
         {/* Retiral Tab */}
         <TabsContent value="retiral" className="space-y-6">
@@ -146,7 +165,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="basicSalary" 
                           type="number" 
                           defaultValue={data.retiral.basicSalary || 0} 
-                                                  disabled={!canEditRetiral}
+                                                  disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                       <div className="space-y-2">
@@ -155,7 +174,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="houseRentAllowance" 
                           type="number" 
                           defaultValue={data.retiral.houseRentAllowance || 0} 
-                                                  disabled={!canEditRetiral}
+                                                  disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                       <div className="space-y-2">
@@ -164,7 +183,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="specialAllowance" 
                           type="number" 
                           defaultValue={data.retiral.specialAllowance || 0} 
-                                                  disabled={!canEditRetiral}
+                                                  disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                       <div className="space-y-2">
@@ -173,7 +192,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="monthlyGross" 
                           type="number" 
                           value={((data.retiral.basicSalary || 0) + (data.retiral.houseRentAllowance || 0) + (data.retiral.specialAllowance || 0))} 
-                          disabled={!canEditRetiral}
+                          disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                     </>
@@ -219,7 +238,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="employerPF" 
                           type="number" 
                           defaultValue={data.retiral.employerPF || 0} 
-                          disabled={!canEditRetiral}
+                          disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                       <div className="space-y-2">
@@ -228,7 +247,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="employerESI" 
                           type="number" 
                           defaultValue={data.retiral.employerESI || 0} 
-                          disabled={!canEditRetiral}
+                          disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                       <div className="space-y-2 md:col-span-2">
@@ -280,7 +299,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="employeePF" 
                           type="number" 
                           defaultValue={data.retiral.employeePF || 0} 
-                          disabled={!canEditRetiral}
+                          disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                       <div className="space-y-2">
@@ -289,7 +308,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="employeeESI" 
                           type="number" 
                           defaultValue={data.retiral.employeeESI || 0} 
-                          disabled={!canEditRetiral}
+                          disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                       <div className="space-y-2">
@@ -298,7 +317,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="professionalTax" 
                           type="number" 
                           defaultValue={data.retiral.professionalTax || 0} 
-                          disabled={!canEditRetiral}
+                          disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                       <div className="space-y-2">
@@ -307,7 +326,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="incomeTax" 
                           type="number" 
                           defaultValue={data.retiral.incomeTax || 0} 
-                          disabled={!canEditRetiral}
+                          disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                       <div className="space-y-2">
@@ -326,7 +345,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="netTakeHome" 
                           type="number" 
                           defaultValue={data.retiral.netTakeHome || 0} 
-                          disabled={!canEditRetiral}
+                          disabled={!effectiveCanEditRetiral}
                           className="font-bold text-green-600"
                         />
                       </div>
@@ -336,7 +355,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="costToCompany" 
                           type="number" 
                           defaultValue={data.retiral.costToCompany || 0} 
-                          disabled={!canEditRetiral}
+                          disabled={!effectiveCanEditRetiral}
                           className="font-bold text-blue-600"
                         />
                       </div>
@@ -346,7 +365,7 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({ data, canEd
                           id="pfTotal" 
                           type="number" 
                           defaultValue={data.retiral.pfTotal || 0} 
-                          disabled={!canEditRetiral}
+                          disabled={!effectiveCanEditRetiral}
                           className="font-bold"
                         />
                       </div>

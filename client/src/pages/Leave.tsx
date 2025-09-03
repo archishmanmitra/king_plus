@@ -2,31 +2,28 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockLeaveRequests } from '@/data/mockData';
-import { Calendar as CalendarIcon, Plus, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { mockLeaveRequests, indianHolidays2025 } from '@/data/mockData';
+import { Calendar as CalendarIcon, Plus, Clock, CheckCircle, XCircle, FileText, Gift } from 'lucide-react';
+import LeaveApplicationModal from '@/components/modals/LeaveApplicationModal';
+import { HolidayCalendar } from '@/components/leave/HolidayCalendar';
 
 const Leave: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [leaveType, setLeaveType] = useState('');
-  const [reason, setReason] = useState('');
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+  const [selectedHolidayDate, setSelectedHolidayDate] = useState<Date>();
 
   const leaveBalance = {
     sick: 12,
     vacation: 18,
     personal: 8,
+    maternity: 90,
+    paternity: 15,
     total: 38
   };
 
-  const submitLeaveRequest = () => {
-    console.log('Leave request submitted');
+  const handleLeaveApplication = (leaveData: any) => {
+    console.log('Leave application submitted:', leaveData);
+    setIsLeaveModalOpen(false);
   };
 
   return (
@@ -34,17 +31,17 @@ const Leave: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Leave Management</h1>
-          <p className="text-muted-foreground">Manage your leave requests and balance</p>
+          <p className="text-muted-foreground">Comprehensive leave management with holiday calendar</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button onClick={() => setIsLeaveModalOpen(true)} size="lg">
+          <FileText className="h-5 w-5 mr-2" />
           Apply for Leave
         </Button>
       </div>
 
-      {/* Leave Balance Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
+      {/* Enhanced Leave Balance Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="relative overflow-hidden">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Balance</CardTitle>
           </CardHeader>
@@ -52,110 +49,57 @@ const Leave: React.FC = () => {
             <div className="text-3xl font-bold text-primary">{leaveBalance.total}</div>
             <p className="text-sm text-muted-foreground">days available</p>
           </CardContent>
+          <div className="absolute top-2 right-2">
+            <Clock className="h-6 w-6 text-primary/30" />
+          </div>
         </Card>
         
-        <Card>
+        <Card className="relative overflow-hidden">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Vacation</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">{leaveBalance.vacation}</div>
+            <div className="text-2xl font-bold text-green-600">{leaveBalance.vacation}</div>
             <p className="text-sm text-muted-foreground">days left</p>
           </CardContent>
+          <div className="absolute top-2 right-2">
+            <Gift className="h-6 w-6 text-green-600/30" />
+          </div>
         </Card>
         
-        <Card>
+        <Card className="relative overflow-hidden">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Sick Leave</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-warning">{leaveBalance.sick}</div>
+            <div className="text-2xl font-bold text-yellow-600">{leaveBalance.sick}</div>
             <p className="text-sm text-muted-foreground">days left</p>
           </CardContent>
+          <div className="absolute top-2 right-2">
+            <Plus className="h-6 w-6 text-yellow-600/30" />
+          </div>
         </Card>
         
-        <Card>
+        <Card className="relative overflow-hidden">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Personal</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{leaveBalance.personal}</div>
+            <div className="text-2xl font-bold text-blue-600">{leaveBalance.personal}</div>
             <p className="text-sm text-muted-foreground">days left</p>
           </CardContent>
+          <div className="absolute top-2 right-2">
+            <CalendarIcon className="h-6 w-6 text-blue-600/30" />
+          </div>
         </Card>
       </div>
 
-      <Tabs defaultValue="apply" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="apply">Apply for Leave</TabsTrigger>
+      <Tabs defaultValue="requests" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="requests">My Requests</TabsTrigger>
           <TabsTrigger value="team">Team Requests</TabsTrigger>
+          <TabsTrigger value="holidays">Holiday Calendar</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="apply">
-          <Card>
-            <CardHeader>
-              <CardTitle>Apply for Leave</CardTitle>
-              <CardDescription>
-                Submit a new leave request for approval
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="leave-type">Leave Type</Label>
-                  <Select value={leaveType} onValueChange={setLeaveType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select leave type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="vacation">Vacation Leave</SelectItem>
-                      <SelectItem value="sick">Sick Leave</SelectItem>
-                      <SelectItem value="personal">Personal Leave</SelectItem>
-                      <SelectItem value="emergency">Emergency Leave</SelectItem>
-                      <SelectItem value="maternity">Maternity Leave</SelectItem>
-                      <SelectItem value="paternity">Paternity Leave</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Start Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={setSelectedDate}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="reason">Reason</Label>
-                <Textarea
-                  id="reason"
-                  placeholder="Please provide a reason for your leave request..."
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                />
-              </div>
-
-              <Button onClick={submitLeaveRequest} className="w-full md:w-auto">
-                Submit Leave Request
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="requests">
           <Card>
@@ -230,7 +174,7 @@ const Leave: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm" className="bg-success hover:bg-success/90">
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700">
                         <CheckCircle className="h-4 w-4 mr-1" />
                         Approve
                       </Button>
@@ -245,7 +189,23 @@ const Leave: React.FC = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="holidays">
+          <HolidayCalendar 
+            holidays={indianHolidays2025}
+            selectedDate={selectedHolidayDate}
+            onDateSelect={setSelectedHolidayDate}
+          />
+        </TabsContent>
       </Tabs>
+
+      {/* Leave Application Modal */}
+      <LeaveApplicationModal
+        isOpen={isLeaveModalOpen}
+        onClose={() => setIsLeaveModalOpen(false)}
+        onSave={handleLeaveApplication}
+        leaveBalance={leaveBalance}
+      />
     </div>
   );
 };

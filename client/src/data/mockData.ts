@@ -1970,6 +1970,77 @@ export const mockLeaveRequests: LeaveRequest[] = [
   }
 ];
 
+// Indian Company Holidays 2025
+export const indianHolidays2025 = [
+  // January 2025
+  { date: '2025-01-01', name: 'New Year\'s Day', type: 'national', description: 'Beginning of the Gregorian calendar year' },
+  { date: '2025-01-14', name: 'Makar Sankranti', type: 'religious', description: 'Hindu festival marking the transition of the sun into Capricorn', isOptional: true },
+  { date: '2025-01-15', name: 'Pongal', type: 'regional', description: 'Tamil harvest festival (Southern India)', isOptional: true },
+  { date: '2025-01-26', name: 'Republic Day', type: 'national', description: 'Commemorates the adoption of the Constitution of India' },
+  
+  // February 2025
+  { date: '2025-02-12', name: 'Vasant Panchami', type: 'religious', description: 'Hindu festival dedicated to Goddess Saraswati', isOptional: true },
+  { date: '2025-02-19', name: 'Shivaji Jayanti', type: 'regional', description: 'Birth anniversary of Maratha emperor Chhatrapati Shivaji (Maharashtra)', isOptional: true },
+  { date: '2025-02-26', name: 'Maha Shivratri', type: 'religious', description: 'Hindu festival dedicated to Lord Shiva' },
+  
+  // March 2025
+  { date: '2025-03-13', name: 'Holi (Holika Dahan)', type: 'religious', description: 'Hindu festival of colors - first day' },
+  { date: '2025-03-14', name: 'Holi', type: 'religious', description: 'Hindu festival of colors - main celebration' },
+  { date: '2025-03-31', name: 'Eid ul-Fitr (Tentative)', type: 'religious', description: 'Islamic festival marking the end of Ramadan' },
+  
+  // April 2025
+  { date: '2025-04-10', name: 'Ram Navami', type: 'religious', description: 'Birth anniversary of Lord Rama' },
+  { date: '2025-04-13', name: 'Baisakhi', type: 'religious', description: 'Sikh New Year and harvest festival (Punjab)', isOptional: true },
+  { date: '2025-04-14', name: 'Ambedkar Jayanti', type: 'national', description: 'Birth anniversary of Dr. B.R. Ambedkar' },
+  { date: '2025-04-18', name: 'Good Friday', type: 'religious', description: 'Christian observance commemorating the crucifixion of Jesus Christ' },
+  
+  // May 2025
+  { date: '2025-05-01', name: 'Labour Day', type: 'national', description: 'International Workers\' Day' },
+  { date: '2025-05-12', name: 'Buddha Purnima', type: 'religious', description: 'Birth anniversary of Gautama Buddha' },
+  
+  // June 2025
+  { date: '2025-06-06', name: 'Eid ul-Adha (Tentative)', type: 'religious', description: 'Islamic festival of sacrifice' },
+  { date: '2025-06-15', name: 'Rath Yatra', type: 'religious', description: 'Hindu chariot festival (Odisha)', isOptional: true },
+  
+  // July 2025
+  { date: '2025-07-06', name: 'Muharram', type: 'religious', description: 'Islamic New Year', isOptional: true },
+  
+  // August 2025
+  { date: '2025-08-15', name: 'Independence Day', type: 'national', description: 'India\'s independence from British rule' },
+  { date: '2025-08-16', name: 'Janmashtami (Gokulashtami)', type: 'religious', description: 'Birth anniversary of Lord Krishna' },
+  { date: '2025-08-29', name: 'Ganesh Chaturthi', type: 'religious', description: 'Hindu festival celebrating Lord Ganesha' },
+  
+  // September 2025
+  { date: '2025-09-05', name: 'Milad un-Nabi', type: 'religious', description: 'Birth anniversary of Prophet Muhammad', isOptional: true },
+  { date: '2025-09-15', name: 'Anant Chaturdashi', type: 'religious', description: 'End of Ganesh Chaturthi festivities', isOptional: true },
+  
+  // October 2025
+  { date: '2025-10-02', name: 'Gandhi Jayanti', type: 'national', description: 'Birth anniversary of Mahatma Gandhi' },
+  { date: '2025-10-20', name: 'Karva Chauth', type: 'religious', description: 'Hindu festival observed by married women', isOptional: true },
+  { date: '2025-10-21', name: 'Dussehra (Vijayadashami)', type: 'religious', description: 'Hindu festival celebrating the victory of good over evil' },
+  { date: '2025-10-31', name: 'Sardar Vallabhbhai Patel Jayanti', type: 'national', description: 'Birth anniversary of Sardar Patel (Rashtriya Ekta Diwas)' },
+  
+  // November 2025
+  { date: '2025-11-01', name: 'Diwali (Dhanteras)', type: 'religious', description: 'Hindu festival of lights - first day', isOptional: true },
+  { date: '2025-11-02', name: 'Choti Diwali', type: 'religious', description: 'Hindu festival of lights - second day', isOptional: true },
+  { date: '2025-11-03', name: 'Diwali (Lakshmi Puja)', type: 'religious', description: 'Hindu festival of lights - main day' },
+  { date: '2025-11-04', name: 'Govardhan Puja', type: 'religious', description: 'Hindu festival following Diwali', isOptional: true },
+  { date: '2025-11-05', name: 'Bhai Dooj', type: 'religious', description: 'Hindu festival celebrating brother-sister bond', isOptional: true },
+  { date: '2025-11-15', name: 'Guru Nanak Jayanti', type: 'religious', description: 'Birth anniversary of Guru Nanak (Sikh festival)' },
+  
+  // December 2025
+  { date: '2025-12-25', name: 'Christmas Day', type: 'religious', description: 'Christian festival celebrating the birth of Jesus Christ' },
+  { date: '2025-12-31', name: 'New Year\'s Eve', type: 'company', description: 'Company holiday for year-end celebrations' },
+  
+  // Additional Company Holidays
+  { date: '2025-01-02', name: 'New Year Holiday', type: 'company', description: 'Extended New Year celebration' },
+  { date: '2025-04-15', name: 'Good Friday Extended', type: 'company', description: 'Extended Easter weekend', isOptional: true },
+  { date: '2025-08-14', name: 'Independence Day Eve', type: 'company', description: 'Pre-Independence Day celebration', isOptional: true },
+  { date: '2025-10-03', name: 'Gandhi Jayanti Extended', type: 'company', description: 'Extended Gandhi Jayanti weekend', isOptional: true },
+  { date: '2025-12-24', name: 'Christmas Eve', type: 'company', description: 'Pre-Christmas celebration', isOptional: true },
+  { date: '2025-12-26', name: 'Christmas Extended', type: 'company', description: 'Extended Christmas celebration', isOptional: true }
+];
+
 export const mockPayrollRuns: PayrollRun[] = [
   {
     id: '1',
