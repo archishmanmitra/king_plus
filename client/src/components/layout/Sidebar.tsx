@@ -150,25 +150,25 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className={isCollapsed ? "w-14" : "w-64"} collapsible="icon">
-      <SidebarContent>
+    <Sidebar className={`${isCollapsed ? "w-14" : "w-64"} border-r border-sidebar-border/50 bg-sidebar-background/95 backdrop-blur-xl`} collapsible="icon">
+      <SidebarContent className="scrollbar-premium">
         {/* Logo/Brand with Mobile Close Button */}
-        <div className="p-4 border-b border-sidebar-border">
+        <div className="p-4 border-b border-sidebar-border/50">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="h-10 w-10 rounded-full bg-utech flex items-center justify-center shadow-sm">
-              <span className="text-primary-foreground font-extrabold">
-                 <img src="/kinglogo.svg" height={40} width={40} className=' rounded-full invert '/>
-              </span>
-            </div>
+            <div className="flex items-center space-x-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-md ring-2 ring-primary/10">
+                <span className="text-primary-foreground font-extrabold">
+                  <img src="/kinglogo.svg" height={32} width={32} className='rounded-lg invert'/>
+                </span>
+              </div>
               {!isCollapsed && (
                 <div>
-                  <h1 className="bg-gradient-to-r from-blue-900 via-blue-600 to-blue-400 bg-clip-text text-transparent text-bold">
+                  <h1 className="bg-gradient-to-r from-primary via-primary to-primary-dark bg-clip-text text-transparent font-bold text-lg tracking-tight">
                     KIN-G +
                   </h1>
-                  {/* <p className="text-xs text-sidebar-foreground/70">
+                  <p className="text-xs text-sidebar-foreground/70 font-medium">
                     Office Portal
-                  </p> */}
+                  </p>
                 </div>
               )}
             </div>
@@ -189,9 +189,11 @@ export function AppSidebar() {
 
         {/* Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/70 font-semibold text-xs uppercase tracking-wider">
+            Navigation
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {filteredItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
@@ -199,15 +201,21 @@ export function AppSidebar() {
                       to={item.url}
                       onClick={handleCloseMobile}
                       className={({ isActive }) =>
-                        `flex items-center space-x-2 p-2 rounded-lg transition-colors ${
+                        `flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 group ${
                           isActive
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                            : "hover:bg-sidebar-accent/50 text-sidebar-foreground"
+                            ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold shadow-sm border border-primary/20"
+                            : "hover:bg-sidebar-accent/60 text-sidebar-foreground hover:text-sidebar-foreground"
                         }`
                       }
                     >
-                      <item.icon className="h-4 w-4 flex-shrink-0" />
-                      {!isCollapsed && <span>{item.title}</span>}
+                      <item.icon className={`h-4 w-4 flex-shrink-0 transition-colors ${
+                        isActive ? "text-primary" : "text-sidebar-foreground/70 group-hover:text-sidebar-foreground"
+                      }`} />
+                      {!isCollapsed && (
+                        <span className="font-medium transition-colors">
+                          {item.title}
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -218,19 +226,19 @@ export function AppSidebar() {
 
         {/* User Info */}
         {!isCollapsed && user && (
-          <div className="mt-auto p-4 border-t border-sidebar-border">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+          <div className="mt-auto p-4 border-t border-sidebar-border/50">
+            <div className="flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-muted/30 to-muted/10 border border-border/30">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-primary-foreground flex items-center justify-center text-sm font-semibold shadow-sm ring-2 ring-primary/10">
                 {user.name
                   .split(" ")
                   .map((n) => n[0])
                   .join("")}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-sidebar-foreground truncate">
+                <p className="text-sm font-semibold text-sidebar-foreground truncate">
                   {user.name}
                 </p>
-                <p className="text-xs text-sidebar-foreground/70 truncate">
+                <p className="text-xs text-sidebar-foreground/70 truncate font-medium">
                   {user.position}
                 </p>
               </div>

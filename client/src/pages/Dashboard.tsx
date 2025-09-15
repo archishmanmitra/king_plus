@@ -134,24 +134,24 @@ const Dashboard: React.FC = () => {
   );
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
       {/* Welcome Section */}
-      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+      <div className="flex flex-col space-y-6 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div className="flex-1">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-            Welcome back, {user?.name}!
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+            Welcome back, <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">{user?.name}</span>!
           </h1>
-          <p className="text-sm md:text-base text-muted-foreground mt-1">
+          <p className="text-base md:text-lg text-muted-foreground mt-2 font-medium">
             Here's what's happening in your organization today.
           </p>
         </div>
-        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-          <Button className="w-full sm:w-auto text-sm">
+        <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
+          <Button className="btn-premium w-full sm:w-auto text-sm font-semibold">
             <FileText className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">Generate Report</span>
             <span className="sm:hidden">Report</span>
           </Button>
-          <Button variant="outline" className="w-full sm:w-auto text-sm">
+          <Button variant="outline" className="w-full sm:w-auto text-sm font-semibold hover:bg-muted/50 transition-colors">
             <TrendingUp className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">View Analytics</span>
             <span className="sm:hidden">Analytics</span>
@@ -160,26 +160,27 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
         {filteredStats.map((stat, index) => (
           <Card
             key={index}
-            className="shadow-md hover:shadow-lg transition-shadow"
+            className="card-premium group animate-slide-up"
+            style={{ animationDelay: `${index * 100}ms` }}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-muted-foreground tracking-wide">
                 {stat.title}
               </CardTitle>
-              <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10">
-                <stat.icon className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-200">
+                <stat.icon className="h-4 w-4 text-primary" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-xl sm:text-2xl font-bold text-foreground">
+            <CardContent className="space-y-2">
+              <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
                 {stat.value}
               </div>
               <p
-                className={`text-xs ${
+                className={`text-sm font-medium ${
                   stat.changeType === "positive"
                     ? "text-success"
                     : stat.changeType === "negative"
@@ -194,40 +195,42 @@ const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
         {/* Recent Activities */}
-        <Card className="shadow-md">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center text-base md:text-lg">
-              <AlertCircle className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+        <Card className="card-premium animate-slide-up" style={{ animationDelay: '400ms' }}>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center text-lg font-semibold">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 mr-3">
+                <AlertCircle className="h-5 w-5 text-primary" />
+              </div>
               Recent Activities
             </CardTitle>
-            <CardDescription className="text-xs md:text-sm">
+            <CardDescription className="text-sm font-medium text-muted-foreground">
               Latest updates from across the organization
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             {recentActivities.map((activity) => (
               <div
                 key={activity.id}
-                className="flex items-start space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-start space-x-3 p-3 rounded-xl hover:bg-muted/30 transition-all duration-200 group"
               >
                 <div
-                  className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full mt-1.5 md:mt-2 flex-shrink-0 ${
+                  className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 shadow-sm ${
                     activity.status === "success"
-                      ? "bg-success"
+                      ? "bg-success shadow-success/30"
                       : activity.status === "warning"
-                      ? "bg-warning"
+                      ? "bg-warning shadow-warning/30"
                       : activity.status === "pending"
-                      ? "bg-primary"
+                      ? "bg-primary shadow-primary/30"
                       : "bg-muted-foreground"
                   }`}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs md:text-sm font-medium text-foreground leading-tight">
+                  <p className="text-sm font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">
                     {activity.message}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-1 font-medium">
                     {activity.time}
                   </p>
                 </div>
@@ -241,7 +244,7 @@ const Dashboard: React.FC = () => {
                       ? "outline"
                       : "secondary"
                   }
-                  className="text-xs flex-shrink-0"
+                  className="text-xs flex-shrink-0 font-medium"
                 >
                   {activity.status}
                 </Badge>
@@ -251,27 +254,29 @@ const Dashboard: React.FC = () => {
         </Card>
 
         {/* Upcoming Tasks */}
-        <Card className="shadow-md">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center text-base md:text-lg">
-              <Target className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+        <Card className="card-premium animate-slide-up" style={{ animationDelay: '500ms' }}>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center text-lg font-semibold">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 mr-3">
+                <Target className="h-5 w-5 text-primary" />
+              </div>
               Upcoming Tasks
             </CardTitle>
-            <CardDescription className="text-xs md:text-sm">
+            <CardDescription className="text-sm font-medium text-muted-foreground">
               Your pending actions and deadlines
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             {upcomingTasks.map((task) => (
               <div
                 key={task.id}
-                className="flex items-center justify-between p-2 md:p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/30 transition-all duration-200 group"
               >
-                <div className="flex-1 min-w-0 pr-2">
-                  <p className="text-xs md:text-sm font-medium text-foreground leading-tight">
+                <div className="flex-1 min-w-0 pr-3">
+                  <p className="text-sm font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">
                     {task.title}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-1 font-medium">
                     {task.dueDate}
                   </p>
                 </div>
@@ -283,7 +288,7 @@ const Dashboard: React.FC = () => {
                       ? "default"
                       : "secondary"
                   }
-                  className="text-xs flex-shrink-0"
+                  className="text-xs flex-shrink-0 font-medium"
                 >
                   {task.priority}
                 </Badge>
@@ -295,53 +300,63 @@ const Dashboard: React.FC = () => {
 
       {/* Quick Actions for Employees and Managers */}
       {(user?.role === "employee" || user?.role === "manager") && (
-        <Card className="shadow-md">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center text-base md:text-lg">
-              <User className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+        <Card className="card-premium animate-slide-up" style={{ animationDelay: '600ms' }}>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center text-lg font-semibold">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 mr-3">
+                <User className="h-5 w-5 text-primary" />
+              </div>
               Quick Actions
             </CardTitle>
-            <CardDescription className="text-xs md:text-sm">
+            <CardDescription className="text-sm font-medium text-muted-foreground">
               {user?.role === "manager"
                 ? "Common tasks for you and your team"
                 : "Common tasks you can perform"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               <Button
                 variant="outline"
-                className="h-16 md:h-20 flex flex-col space-y-1 md:space-y-2 p-2"
+                className="h-20 md:h-24 flex flex-col space-y-2 p-4 hover:bg-muted/50 transition-all duration-200 group border-border/50"
               >
-                <Calendar className="h-4 w-4 md:h-6 md:w-6" />
-                <span className="text-xs md:text-sm text-center leading-tight">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-200">
+                  <Calendar className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                </div>
+                <span className="text-xs md:text-sm text-center leading-tight font-semibold">
                   Apply Leave
                 </span>
               </Button>
               <Button
                 variant="outline"
-                className="h-16 md:h-20 flex flex-col space-y-1 md:space-y-2 p-2"
+                className="h-20 md:h-24 flex flex-col space-y-2 p-4 hover:bg-muted/50 transition-all duration-200 group border-border/50"
               >
-                <Clock className="h-4 w-4 md:h-6 md:w-6" />
-                <span className="text-xs md:text-sm text-center leading-tight">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-200">
+                  <Clock className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                </div>
+                <span className="text-xs md:text-sm text-center leading-tight font-semibold">
                   Clock In/Out
                 </span>
               </Button>
               <Button
                 variant="outline"
-                className="h-16 md:h-20 flex flex-col space-y-1 md:space-y-2 p-2"
+                className="h-20 md:h-24 flex flex-col space-y-2 p-4 hover:bg-muted/50 transition-all duration-200 group border-border/50"
               >
-                <FileText className="h-4 w-4 md:h-6 md:w-6" />
-                <span className="text-xs md:text-sm text-center leading-tight">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-200">
+                  <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                </div>
+                <span className="text-xs md:text-sm text-center leading-tight font-semibold">
                   Submit Expense
                 </span>
               </Button>
               <Button
                 variant="outline"
-                className="h-16 md:h-20 flex flex-col space-y-1 md:space-y-2 p-2"
+                className="h-20 md:h-24 flex flex-col space-y-2 p-4 hover:bg-muted/50 transition-all duration-200 group border-border/50"
               >
-                <Target className="h-4 w-4 md:h-6 md:w-6" />
-                <span className="text-xs md:text-sm text-center leading-tight">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-200">
+                  <Target className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                </div>
+                <span className="text-xs md:text-sm text-center leading-tight font-semibold">
                   Update Goals
                 </span>
               </Button>

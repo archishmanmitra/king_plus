@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { Eye, EyeOff, Lock, Mail, Shield, Building2 } from 'lucide-react';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading } = useAuth();
   const { toast } = useToast();
 
@@ -24,83 +27,169 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full grid md:grid-cols-2">
-      {/* Left panel: form */}
-      <div className="relative flex min-h-screen flex-col">
-        {/* Logo pinned to top-left */}
-        <div className="p-8 md:p-12 lg:p-16">
-          <div className="flex items-center gap-2 select-none">
-            <div className="h-20 w-20 rounded-full bg-utech flex items-center justify-center shadow-sm">
-              <span className="text-primary-foreground font-extrabold">
-                 <img src="/kinglogo.svg" height={80} width={80} className=' rounded-full invert'/>
-              </span>
+    <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
+        {/* Left panel: Login Form */}
+        <div className="flex flex-col items-center justify-center space-y-8 animate-fade-in">
+          {/* Logo and Brand */}
+          <div className="flex flex-col items-center space-y-4">
+            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg ring-4 ring-primary/10">
+              <img src="/kinglogo.svg" height={40} width={40} className="rounded-lg invert" alt="KIN-G + Logo" />
             </div>
-            {/* <span className="text-xl font-semibold text-slate-800">KIN-G +</span> */}
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-foreground tracking-tight">
+                Welcome to{" "}
+                <span className="bg-gradient-to-r from-primary via-primary to-primary-dark bg-clip-text text-transparent">
+                  KIN-G +
+                </span>
+              </h1>
+              <p className="text-lg text-muted-foreground font-medium mt-2">
+                Your Premium Office Portal
+              </p>
+            </div>
+          </div>
+
+          {/* Login Card */}
+          <Card className="w-full max-w-md card-premium animate-slide-up" style={{ animationDelay: '200ms' }}>
+            <CardHeader className="text-center space-y-2">
+              <CardTitle className="text-2xl font-bold text-foreground">
+                Sign In
+              </CardTitle>
+              <CardDescription className="text-muted-foreground font-medium">
+                Enter your credentials to access your account
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Email Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-semibold text-foreground">
+                    Email Address
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10 h-12 text-base"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Password Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-semibold text-foreground">
+                    Password
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 pr-10 h-12 text-base"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Remember Me & Forgot Password */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="remember"
+                      className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                    />
+                    <Label htmlFor="remember" className="text-sm font-medium text-muted-foreground">
+                      Remember me
+                    </Label>
+                  </div>
+                  <a href="#" className="text-sm font-semibold text-primary hover:text-primary-hover transition-colors">
+                    Forgot password?
+                  </a>
+                </div>
+
+                {/* Login Button */}
+                <Button 
+                  type="submit" 
+                  className="w-full h-12 text-base font-semibold btn-premium" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                      <span>Signing in...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <Shield className="h-4 w-4" />
+                      <span>Sign In</span>
+                    </div>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Security Notice */}
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <Shield className="h-4 w-4" />
+            <span>Your data is protected with enterprise-grade security</span>
           </div>
         </div>
 
-        {/* Centered content */}
-        <div className="flex-1 flex items-center p-8 md:p-12 lg:p-16 pt-0 mt-[-8px] md:-mt-6">
-         <div className="mx-auto w-full max-w-5xl md:max-w-xl">
-            <h1 className="text-[28px] leading-tight font-semibold text-slate-800">
-  Welcome to{" "}
-  <span className="bg-gradient-to-r from-blue-900 via-blue-600 to-blue-400 bg-clip-text text-transparent">
-    KIN-G +
-  </span>{" "}
-</h1>
-
-            <p className="mt-1 text-[18px] text-slate-600">Sign into your account</p>
-
-            <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="sr-only">Phone or Email address</Label>
-                <Input
-                  id="email"
-                  type="text"
-                  placeholder="Phone or Email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-11 rounded-md border-slate-200 placeholder:text-slate-400 focus:ring-utech focus-visible:ring-utech focus:border-utech/60"
-                  required
-                />
+        {/* Right panel: Premium Illustration */}
+        <div className="hidden lg:flex items-center justify-center animate-slide-up" style={{ animationDelay: '400ms' }}>
+          <div className="relative w-full h-[600px]">
+            {/* Background Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-3xl" />
+            
+            {/* Main Illustration Container */}
+            <div className="relative z-10 flex flex-col items-center justify-center h-full space-y-8 p-8">
+              {/* Office Building Icon */}
+              <div className="h-32 w-32 rounded-3xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-2xl ring-8 ring-primary/10">
+                <Building2 className="h-16 w-16 text-primary-foreground" />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" className="sr-only">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-11 rounded-md border-slate-200 placeholder:text-slate-400 focus:ring-utech focus-visible:ring-utech focus:border-utech/60"
-                  required
-                />
+              
+              {/* Feature Cards */}
+              <div className="grid grid-cols-2 gap-4 w-full max-w-md">
+                <div className="bg-background/80 backdrop-blur-sm rounded-xl p-4 border border-border/50 shadow-lg">
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-success to-success/80 flex items-center justify-center mb-2">
+                    <Shield className="h-4 w-4 text-success-foreground" />
+                  </div>
+                  <h3 className="font-semibold text-foreground text-sm">Secure Access</h3>
+                  <p className="text-xs text-muted-foreground">Enterprise-grade security</p>
+                </div>
+                
+                <div className="bg-background/80 backdrop-blur-sm rounded-xl p-4 border border-border/50 shadow-lg">
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center mb-2">
+                    <Lock className="h-4 w-4 text-primary-foreground" />
+                  </div>
+                  <h3 className="font-semibold text-foreground text-sm">Privacy First</h3>
+                  <p className="text-xs text-muted-foreground">Your data is protected</p>
+                </div>
               </div>
-              <Button type="submit" className="h-10 w-36 rounded-xl bg-utech text-white hover:bg-utech/90 shadow-sm" disabled={isLoading}>
-                {isLoading ? 'Signing in...' : 'Log In'}
-              </Button>
-              <div className="mt-1 text-left">
-                <a href="#" className="text-utech hover:underline text-sm">Forgot password?</a>
-              </div>
-            </form>
+              
+              {/* Decorative Elements */}
+              <div className="absolute top-8 right-8 h-16 w-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 blur-xl" />
+              <div className="absolute bottom-8 left-8 h-20 w-20 rounded-full bg-gradient-to-br from-primary/15 to-primary/5 blur-2xl" />
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Right panel: illustration */}
-      <div className="hidden md:block relative">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              'linear-gradient(135deg, hsl(var(--brand-start)) 0%, hsl(var(--brand-mid)) 45%, hsl(var(--brand-end)) 100%)',
-          }}
-        />
-        <img
-          src="/right.png"
-          alt="Technology illustration"
-          className="absolute inset-0 h-full w-full object-cover object-right mix-blend-overlay"
-        />
       </div>
     </div>
   );

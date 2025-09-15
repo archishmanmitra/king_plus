@@ -39,25 +39,25 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-16 items-center justify-between px-4">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-sm">
+      <div className="flex h-16 items-center justify-between px-4 lg:px-6">
         <div className="flex items-center space-x-4">
-          <SidebarTrigger className="h-9 w-9" />
+          <SidebarTrigger className="h-9 w-9 hover:bg-muted/50 transition-colors rounded-lg" />
           <div className="hidden md:block">
-            <h1 className="text-lg font-semibold text-foreground">
+            <h1 className="text-lg font-semibold text-foreground tracking-tight">
               {user?.department} Dashboard
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground font-medium">
               Welcome back, {user?.name}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
+          <Button variant="ghost" size="icon" className="relative hover:bg-muted/50 transition-colors">
             <Bell className="h-4 w-4" />
-            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-destructive text-[10px] font-semibold text-destructive-foreground flex items-center justify-center shadow-sm">
               3
             </span>
           </Button>
@@ -65,46 +65,46 @@ const Header: React.FC = () => {
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-10 space-x-2 px-2">
-                <Avatar className="h-8 w-8">
+              <Button variant="ghost" className="h-10 space-x-3 px-3 hover:bg-muted/50 transition-colors rounded-lg">
+                <Avatar className="h-8 w-8 ring-2 ring-primary/10">
                   <AvatarImage src={user?.avatar} alt={user?.name} />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary-dark text-primary-foreground font-semibold">
                     {user?.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden lg:flex flex-col items-start">
-                  <span className="text-sm font-medium">{user?.name}</span>
-                  <Badge variant={getRoleBadgeVariant(user?.role || '')} className="text-xs">
+                  <span className="text-sm font-semibold text-foreground">{user?.name}</span>
+                  <Badge variant={getRoleBadgeVariant(user?.role || '')} className="text-xs font-medium">
                     {formatRole(user?.role || '')}
                   </Badge>
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuContent className="w-56 shadow-lg border-border/50 bg-background/95 backdrop-blur-xl" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user?.name}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
+                <div className="flex flex-col space-y-2">
+                  <p className="text-sm font-semibold leading-none text-foreground">{user?.name}</p>
+                  <p className="text-xs leading-none text-muted-foreground font-medium">
                     {user?.email}
                   </p>
-                  <Badge variant={getRoleBadgeVariant(user?.role || '')} className="text-xs w-fit">
+                  <Badge variant={getRoleBadgeVariant(user?.role || '')} className="text-xs w-fit font-medium">
                     {formatRole(user?.role || '')}
                   </Badge>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate('/profile')}>
+              <DropdownMenuSeparator className="bg-border/50" />
+              <DropdownMenuItem onClick={() => navigate('/profile')} className="hover:bg-muted/50 transition-colors">
                 <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
+                <span className="font-medium">Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="hover:bg-muted/50 transition-colors">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+                <span className="font-medium">Settings</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout}>
+              <DropdownMenuSeparator className="bg-border/50" />
+              <DropdownMenuItem onClick={logout} className="hover:bg-destructive/10 text-destructive transition-colors">
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span className="font-medium">Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
