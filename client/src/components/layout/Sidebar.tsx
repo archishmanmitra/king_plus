@@ -150,13 +150,13 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className={`${isCollapsed ? "w-14" : "w-64"} border-r border-sidebar-border/50 bg-sidebar-background/95 backdrop-blur-xl`} collapsible="icon">
+    <Sidebar className={`${isCollapsed ? "w-14" : "w-64"} bg-sidebar-background/95 backdrop-blur-xl`} collapsible="icon">
       <SidebarContent className="scrollbar-premium">
         {/* Logo/Brand with Mobile Close Button */}
-        <div className="p-4 border-b border-sidebar-border/50">
+        <div className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-md ring-2 ring-primary/10">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
                 <span className="text-primary-foreground font-extrabold">
                   <img src="/kinglogo.svg" height={32} width={32} className='rounded-lg invert'/>
                 </span>
@@ -203,7 +203,7 @@ export function AppSidebar() {
                       className={({ isActive }) =>
                         `flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 group ${
                           isActive
-                            ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold shadow-sm border border-primary/20"
+                            ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold"
                             : "hover:bg-sidebar-accent/60 text-sidebar-foreground hover:text-sidebar-foreground"
                         }`
                       }
@@ -226,9 +226,9 @@ export function AppSidebar() {
 
         {/* User Info */}
         {!isCollapsed && user && (
-          <div className="mt-auto p-4 border-t border-sidebar-border/50">
-            <div className="flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-muted/30 to-muted/10 border border-border/30">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-primary-foreground flex items-center justify-center text-sm font-semibold shadow-sm ring-2 ring-primary/10">
+          <div className="mt-auto p-4">
+            <div className="flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-muted/30 to-muted/10">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-primary-foreground flex items-center justify-center text-sm font-semibold">
                 {user.name
                   .split(" ")
                   .map((n) => n[0])
