@@ -14,7 +14,7 @@ const badgeVariants = cva(
           "border-transparent bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground hover:from-secondary/80 hover:to-secondary/70 shadow-secondary/20",
         destructive:
           "border-transparent bg-gradient-to-r from-destructive to-destructive/90 text-destructive-foreground hover:from-destructive/90 hover:to-destructive/80 shadow-destructive/20",
-        outline: "text-foreground border-border/50 bg-background/50 hover:bg-muted/50",
+        outline: "text-foreground border-border/50 bg-background/50 hover:bg-muted/50 hover:text-foreground",
         success:
           "border-transparent bg-gradient-to-r from-success to-success/90 text-success-foreground hover:from-success/90 hover:to-success/80 shadow-success/20",
         warning:

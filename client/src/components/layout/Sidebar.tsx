@@ -176,9 +176,9 @@ export function AppSidebar() {
                 variant="ghost"
                 size="icon"
                 onClick={handleCloseMobile}
-                className="h-8 w-8 text-black hover:bg-sidebar-accent/50"
+                className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent/50"
               >
-                <X className="h-4 w-4 text-black" />
+                <X className="h-4 w-4 text-sidebar-foreground" />
                 <span className="sr-only">Close sidebar</span>
               </Button>
             )}
@@ -198,19 +198,19 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       onClick={handleCloseMobile}
-                      className={({ isActive }) =>
+                        className={({ isActive }) =>
                         `flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 group ${
                           isActive
-                            ? "bg-gradient-to-r from-primary/10 to-primary/5 text-black font-semibold"
-                            : "hover:bg-sidebar-accent/50 text-black hover:text-black"
+                            ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold"
+                            : "hover:bg-sidebar-accent/50 text-sidebar-foreground hover:text-sidebar-foreground"
                         }`
                       }
                     >
                       <item.icon className={`h-4 w-4 flex-shrink-0 transition-colors ${
-                        isActive ? "text-black" : "text-black group-hover:text-black"
+                        isActive ? "text-primary" : "text-sidebar-foreground group-hover:text-sidebar-foreground"
                       }`} />
                       {!isCollapsed && (
-                        <span className="font-medium transition-colors text-black">
+                        <span className="font-medium transition-colors">
                           {item.title}
                         </span>
                       )}

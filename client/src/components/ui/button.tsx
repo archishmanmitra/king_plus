@@ -9,14 +9,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-r from-blue-400 to-blue-500 text-white hover:from-blue-300 hover:to-blue-400 transition-all duration-300 ease-in-out shadow-md hover:shadow-xl hover:scale-[1.02]",
+        default: "bg-gradient-to-r from-primary to-primary-dark text-primary-foreground hover:from-primary-hover hover:to-primary transition-all duration-300 ease-in-out shadow-md hover:shadow-xl hover:scale-[1.02]",
         destructive:
           "bg-gradient-to-r from-destructive to-destructive/90 text-destructive-foreground hover:from-destructive/90 hover:to-destructive/80 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md",
         outline:
-          "border border-border/50 bg-background/50 hover:bg-muted/50 hover:text-accent-foreground hover:border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0",
+          "border border-border/50 bg-background/50 hover:bg-muted/50 hover:text-foreground hover:border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0",
         secondary:
           "bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground hover:from-secondary/80 hover:to-secondary/70 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0",
-        ghost: "hover:bg-muted/50 hover:text-accent-foreground transition-colors",
+        ghost: "hover:bg-muted/50 hover:text-foreground transition-colors",
         link: "text-primary underline-offset-4 hover:underline font-medium",
         premium: "bg-gradient-to-r from-primary-foreground to-primary-dark text-primary-foreground hover:from-primary-foreground hover:to-primary shadow-lg hover:shadow-xl hover:-translate-y-1 active:translate-y-0 active:shadow-lg border border-primary/20",
       },
