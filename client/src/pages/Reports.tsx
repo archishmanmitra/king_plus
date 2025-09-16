@@ -141,12 +141,11 @@ const Reports: React.FC = () => {
       </div>
 
       <Tabs defaultValue="attendance" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="attendance">Attendance</TabsTrigger>
           <TabsTrigger value="leave">Leave</TabsTrigger>
           <TabsTrigger value="payroll">Payroll</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="custom">Custom</TabsTrigger>
         </TabsList>
 
         <TabsContent value="attendance">
@@ -412,59 +411,6 @@ const Reports: React.FC = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="custom">
-          <Card>
-            <CardHeader>
-              <CardTitle>Custom Report Builder</CardTitle>
-              <CardDescription>Create custom reports with specific parameters</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Module" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="attendance">Attendance</SelectItem>
-                      <SelectItem value="leave">Leave</SelectItem>
-                      <SelectItem value="payroll">Payroll</SelectItem>
-                      <SelectItem value="performance">Performance</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Date Range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="last-7-days">Last 7 Days</SelectItem>
-                      <SelectItem value="last-30-days">Last 30 Days</SelectItem>
-                      <SelectItem value="last-quarter">Last Quarter</SelectItem>
-                      <SelectItem value="last-year">Last Year</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Export Format" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pdf">PDF</SelectItem>
-                      <SelectItem value="excel">Excel</SelectItem>
-                      <SelectItem value="csv">CSV</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <Button className="w-full">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Generate Custom Report
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );

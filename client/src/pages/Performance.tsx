@@ -81,7 +81,6 @@ const Performance: React.FC = () => {
         <TabsList>
           <TabsTrigger value="goals">Goals & OKRs</TabsTrigger>
           <TabsTrigger value="reviews">Performance Reviews</TabsTrigger>
-          <TabsTrigger value="feedback">360° Feedback</TabsTrigger>
         </TabsList>
 
         <TabsContent value="goals">
@@ -186,19 +185,6 @@ const Performance: React.FC = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="feedback">
-          <Card>
-            <CardHeader>
-              <CardTitle>360° Feedback</CardTitle>
-              <CardDescription>Multi-source feedback and evaluations</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                360° feedback system will be displayed here
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );
