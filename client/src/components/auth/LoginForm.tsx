@@ -39,7 +39,7 @@ const LoginForm: React.FC = () => {
             <div className="text-center">
               <h1 className="text-4xl font-bold text-foreground tracking-tight">
                 Welcome to{" "}
-                <span className="bg-gradient-to-r from-primary via-primary to-primary-dark bg-clip-text text-transparent">
+                <span className="bg-blue-600 bg-clip-text text-transparent">
                   KIN-G +
                 </span>
               </h1>
@@ -165,22 +165,52 @@ const LoginForm: React.FC = () => {
                 <Building2 className="h-16 w-16 text-primary-foreground" />
               </div>
               
-              {/* Feature Cards */}
-              <div className="grid grid-cols-2 gap-4 w-full max-w-md">
-                <div className="bg-background/80 backdrop-blur-sm rounded-xl p-4 border border-border/50 shadow-lg">
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-success to-success/80 flex items-center justify-center mb-2">
-                    <Shield className="h-4 w-4 text-success-foreground" />
+              {/* Enhanced Service Features */}
+              <div className="grid grid-cols-2 gap-4 w-full max-w-lg mb-6">
+                <div className="bg-background/80 backdrop-blur-sm rounded-xl p-4 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-success to-success/80 flex items-center justify-center mb-3">
+                    <Shield className="h-5 w-5 text-success-foreground" />
                   </div>
-                  <h3 className="font-semibold text-foreground text-sm">Secure Access</h3>
-                  <p className="text-xs text-muted-foreground">Enterprise-grade security</p>
+                  <h3 className="font-semibold text-foreground text-sm mb-2">Advanced Security</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Multi-factor authentication, encrypted data transmission, and real-time threat monitoring</p>
                 </div>
-                
-                <div className="bg-background/80 backdrop-blur-sm rounded-xl p-4 border border-border/50 shadow-lg">
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center mb-2">
-                    <Lock className="h-4 w-4 text-primary-foreground" />
+
+                <div className="bg-background/80 backdrop-blur-sm rounded-xl p-4 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center mb-3">
+                    <Lock className="h-5 w-5 text-primary-foreground" />
                   </div>
-                  <h3 className="font-semibold text-foreground text-sm">Privacy First</h3>
-                  <p className="text-xs text-muted-foreground">Your data is protected</p>
+                  <h3 className="font-semibold text-foreground text-sm mb-2">Privacy Protection</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">GDPR compliant, zero-knowledge architecture, and complete data control</p>
+                </div>
+
+                <div className="bg-background/80 backdrop-blur-sm rounded-xl p-4 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-3">
+                    <Building2 className="h-5 w-5 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-foreground text-sm mb-2">Smart Analytics</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">AI-powered insights, predictive reporting, and customizable dashboards</p>
+                </div>
+
+                <div className="bg-background/80 backdrop-blur-sm rounded-xl p-4 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-3">
+                    <Lock className="h-5 w-5 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-foreground text-sm mb-2">24/7 Support</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Dedicated support team, instant help desk, and comprehensive documentation</p>
+                </div>
+              </div>
+
+              {/* Enrollment Section */}
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-6 border border-primary/20 shadow-lg">
+                <div className="text-center">
+                  <h3 className="font-bold text-foreground text-lg mb-2">Ready to Get Started?</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Join thousands of businesses already using KIN-G +</p>
+                  <Button
+                    className="bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-primary-foreground font-semibold px-8 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                    onClick={() => window.location.href = '/contact'}
+                  >
+                    Enroll Now
+                  </Button>
                 </div>
               </div>
               

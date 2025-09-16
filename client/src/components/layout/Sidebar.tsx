@@ -150,23 +150,21 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className={`${isCollapsed ? "w-14" : "w-64"} bg-sidebar-background/95 backdrop-blur-xl`} collapsible="icon">
+    <Sidebar className={`${isCollapsed ? "w-14" : "w-64"} bg-transparent border-none shadow-none`} collapsible="icon">
       <SidebarContent className="scrollbar-premium">
         {/* Logo/Brand with Mobile Close Button */}
         <div className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
-                <span className="text-primary-foreground font-extrabold">
-                  <img src="/kinglogo.svg" height={32} width={32} className='rounded-lg invert'/>
+                <span className=" font-extrabold">
+                  <img src="/kinglogo.svg" height={50} width={50} className='rounded-lg'/>
                 </span>
-              </div>
               {!isCollapsed && (
                 <div>
-                  <h1 className="bg-gradient-to-r from-primary via-primary to-primary-dark bg-clip-text text-transparent font-bold text-lg tracking-tight">
+                  <h1 className="text-black font-bold text-lg tracking-tight">
                     KIN-G +
                   </h1>
-                  <p className="text-xs text-sidebar-foreground/70 font-medium">
+                  <p className="text-xs text-black font-medium">
                     Office Portal
                   </p>
                 </div>
@@ -178,9 +176,9 @@ export function AppSidebar() {
                 variant="ghost"
                 size="icon"
                 onClick={handleCloseMobile}
-                className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
+                className="h-8 w-8 text-black hover:bg-sidebar-accent/50"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4 text-black" />
                 <span className="sr-only">Close sidebar</span>
               </Button>
             )}
@@ -189,7 +187,7 @@ export function AppSidebar() {
 
         {/* Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/70 font-semibold text-xs uppercase tracking-wider">
+          <SidebarGroupLabel className="text-black font-semibold text-xs uppercase tracking-wider">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -203,16 +201,16 @@ export function AppSidebar() {
                       className={({ isActive }) =>
                         `flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 group ${
                           isActive
-                            ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold"
-                            : "hover:bg-sidebar-accent/60 text-sidebar-foreground hover:text-sidebar-foreground"
+                            ? "bg-gradient-to-r from-primary/10 to-primary/5 text-black font-semibold"
+                            : "hover:bg-sidebar-accent/50 text-black hover:text-black"
                         }`
                       }
                     >
                       <item.icon className={`h-4 w-4 flex-shrink-0 transition-colors ${
-                        isActive ? "text-primary" : "text-sidebar-foreground/70 group-hover:text-sidebar-foreground"
+                        isActive ? "text-black" : "text-black group-hover:text-black"
                       }`} />
                       {!isCollapsed && (
-                        <span className="font-medium transition-colors">
+                        <span className="font-medium transition-colors text-black">
                           {item.title}
                         </span>
                       )}
@@ -235,10 +233,10 @@ export function AppSidebar() {
                   .join("")}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-sidebar-foreground truncate">
+                <p className="text-sm font-semibold text-black truncate">
                   {user.name}
                 </p>
-                <p className="text-xs text-sidebar-foreground/70 truncate font-medium">
+                <p className="text-xs text-black truncate font-medium">
                   {user.position}
                 </p>
               </div>

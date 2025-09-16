@@ -18,6 +18,7 @@ import Projects from "@/pages/Projects";
 import ProjectDetail from "@/pages/ProjectDetail";
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
+import Contact from "@/pages/Contact";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,7 +27,12 @@ const AppRoutes = () => {
   const { user } = useAuth();
 
   if (!user) {
-    return <LoginForm />;
+    return (
+      <Routes>
+        <Route path="/contact" element={<Contact />} />
+        <Route path="*" element={<LoginForm />} />
+      </Routes>
+    );
   }
 
   return (
@@ -34,6 +40,7 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/employees" element={<Employees />} />
         <Route path="/profile" element={<MyProfile />} />
         <Route path="/profile/:employeeId" element={<MyProfile />} />

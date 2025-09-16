@@ -126,7 +126,7 @@ const Employees: React.FC = () => {
           </Button>
           <Button
             onClick={() => setIsAddEmployeeModalOpen(true)}
-            className="w-full sm:w-auto text-sm"
+            className="w-full sm:w-auto text-sm text-white"
           >
             <UserPlus className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">Add Employee</span>

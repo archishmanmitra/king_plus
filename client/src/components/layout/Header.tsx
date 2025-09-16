@@ -39,8 +39,9 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-sm">
-      <div className="flex h-16 items-center justify-between px-4 lg:px-6">
+    <header className="sticky top-0 z-50 w-full relative overflow-hidden border-b border-border/50 bg-background/70 supports-[backdrop-filter]:bg-background/50 backdrop-blur-[14px] backdrop-saturate-150 shadow-[0_4px_20px_hsl(var(--ring)/0.25)]">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-foreground/5 to-transparent" />
+      <div className="relative flex h-16 items-center justify-between px-4 lg:px-6">
         <div className="flex items-center space-x-4">
           <SidebarTrigger className="h-9 w-9 hover:bg-muted/50 transition-colors rounded-lg" />
           <div className="hidden md:block">
