@@ -126,18 +126,18 @@ const LoginForm: React.FC = () => {
                 {/* Login Button */}
                 <Button 
                   type="submit" 
-                  className="w-full h-12 text-base font-semibold btn-premium" 
+                  className="w-full h-12 text-base font-semibold " 
                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <div className="flex items-center space-x-2">
                       <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                      <span>Signing in...</span>
+                      <span className='text-white'>Signing in...</span>
                     </div>
                   ) : (
                     <div className="flex items-center space-x-2">
                       <Shield className="h-4 w-4" />
-                      <span>Sign In</span>
+                      <span className='text-white'>Sign In</span>
                     </div>
                   )}
                 </Button>
@@ -201,7 +201,7 @@ const LoginForm: React.FC = () => {
               </div>
 
               {/* Enrollment Section */}
-              <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-6 border border-primary/20 shadow-lg">
+              {/* <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-6 border border-primary/20 shadow-lg">
                 <div className="text-center">
                   <h3 className="font-bold text-foreground text-lg mb-2">Ready to Get Started?</h3>
                   <p className="text-sm text-muted-foreground mb-4">Join thousands of businesses already using KIN-G +</p>
@@ -212,7 +212,7 @@ const LoginForm: React.FC = () => {
                     Enroll Now
                   </Button>
                 </div>
-              </div>
+              </div> */}
               
               {/* Decorative Elements */}
               <div className="absolute top-8 right-8 h-16 w-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 blur-xl" />
