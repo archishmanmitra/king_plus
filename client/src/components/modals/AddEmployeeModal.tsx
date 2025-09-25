@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Save, UserPlus } from 'lucide-react';
 import PersonalInformation from '@/components/profile/PersonalInformation';
 import OfficialInformation from '@/components/profile/OfficialInformation';
 import FinancialInformation from '@/components/profile/FinancialInformation';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AddEmployeeModalProps {
   isOpen: boolean;
@@ -16,10 +20,18 @@ interface AddEmployeeModalProps {
 
 const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, onSave }) => {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('official');
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('user');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [showInvite, setShowInvite] = useState(false);
 
   // Empty employee data structure for new employee
   const emptyEmployeeData = {
+    userDetails: {
+      email: '',
+      role: 'employee'
+    },
     personalInfo: {
       firstName: '',
       lastName: '',
@@ -143,76 +155,61 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
 
   const [employeeData, setEmployeeData] = useState(emptyEmployeeData);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Basic validation for required fields
-    if (!employeeData.officialInfo.firstName || !employeeData.officialInfo.lastName || 
+    if (!employeeData.userDetails.email || !employeeData.userDetails.role ||
+        !employeeData.officialInfo.firstName || !employeeData.officialInfo.lastName || 
         !employeeData.officialInfo.designation || !employeeData.officialInfo.dateOfJoining) {
       toast({
         title: "Validation Error",
-        description: "Please fill in all required official information fields.",
+        description: "Please fill email, role and all required official information fields.",
         variant: "destructive"
       });
       return;
     }
 
-    // Generate employee ID (in real app, this would be done by backend)
-    const newEmployeeId = `EMP${String(Date.now()).slice(-3)}`;
-    
-    const newEmployee = {
-      id: String(Date.now()),
-      employeeId: newEmployeeId,
-      name: `${employeeData.officialInfo.firstName} ${employeeData.officialInfo.lastName}`,
-      email: employeeData.personalInfo.email || `${employeeData.officialInfo.firstName.toLowerCase()}.${employeeData.officialInfo.lastName.toLowerCase()}@company.com`,
-      phone: employeeData.personalInfo.phoneNumber || '',
-      position: employeeData.officialInfo.designation,
-      department: employeeData.officialInfo.stream || 'Not Assigned',
-      manager: employeeData.officialInfo.unitHead || 'Not Assigned',
-      joinDate: employeeData.officialInfo.dateOfJoining,
-      status: 'active',
-      avatar: '',
-      personalInfo: employeeData.personalInfo,
-      officialInfo: employeeData.officialInfo,
-      financialInfo: employeeData.financialInfo,
-      // Legacy fields for compatibility
-      personalInfoLegacy: {
-        dateOfBirth: employeeData.personalInfo.dateOfBirth,
-        address: employeeData.personalInfo.addresses.present.address1,
-        emergencyContact: employeeData.personalInfo.addresses.emergency.phoneNumber,
-        bloodGroup: 'Not Specified'
-      },
-      workInfo: {
-        workLocation: employeeData.officialInfo.currentLocation,
-        employmentType: 'full-time',
-        salary: employeeData.financialInfo.retiral.basicSalary,
-        benefits: []
-      },
-      timeline: [
-        {
-          id: '1',
-          date: employeeData.officialInfo.dateOfJoining,
-          type: 'joined',
-          title: 'Joined Company',
-          description: `Started as ${employeeData.officialInfo.designation}`
-        }
-      ]
-    };
+    if (!user?.id) {
+      toast({ title: 'Not authenticated', description: 'Please login first', variant: 'destructive' });
+      return;
+    }
 
-    onSave(newEmployee);
-    
-    toast({
-      title: "Success",
-      description: "Employee added successfully!",
-    });
-    
-    // Reset form
-    setEmployeeData(emptyEmployeeData);
-    setActiveTab('official');
-    onClose();
+    try {
+      setIsSubmitting(true);
+      const response = await fetch('/api/employees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userDetails: employeeData.userDetails,
+          officialInfo: employeeData.officialInfo,
+          financialInfo: { retiral: employeeData.financialInfo.retiral },
+          createdByUserId: user.id
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.error || 'Failed to create employee');
+      }
+
+      const { employee, invitation } = await response.json();
+
+      onSave({ ...employee, invitation });
+      const url = `${window.location.origin}/invite?token=${invitation.token}`;
+      setInviteUrl(url);
+      setShowInvite(true);
+      toast({ title: 'Success', description: 'Employee added and invitation created.' });
+    } catch (e: any) {
+      toast({ title: 'Error', description: e?.message || 'Something went wrong', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
     setEmployeeData(emptyEmployeeData);
-    setActiveTab('official');
+    setActiveTab('user');
+    setInviteUrl(null);
+    setShowInvite(false);
     onClose();
   };
 
@@ -228,7 +225,10 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
         
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="user">
+                User Details
+              </TabsTrigger>
               <TabsTrigger value="personal" disabled>
                 Personal (Read-only)
               </TabsTrigger>
@@ -239,6 +239,45 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
                 Financial
               </TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="user" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="user-email">Email</Label>
+                  <Input
+                    id="user-email"
+                    type="email"
+                    value={employeeData.userDetails.email}
+                    onChange={(e) => setEmployeeData(prev => ({
+                      ...prev,
+                      userDetails: { ...prev.userDetails, email: e.target.value }
+                    }))}
+                    placeholder="employee@company.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="user-role">Role</Label>
+                  <Select
+                    value={employeeData.userDetails.role}
+                    onValueChange={(val) => setEmployeeData(prev => ({
+                      ...prev,
+                      userDetails: { ...prev.userDetails, role: val }
+                    }))}
+                  >
+                    <SelectTrigger id="user-role">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="employee">Employee</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="hr_manager">HR Manager</SelectItem>
+                      <SelectItem value="global_admin">Global Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">The invitation link will be sent to this email and will expire in 24 hours.</p>
+            </TabsContent>
             
             <TabsContent value="personal" className="space-y-4">
               <div className="p-6 border-2 border-dashed border-muted rounded-lg text-center">
@@ -276,15 +315,39 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
             </TabsContent>
           </Tabs>
 
+          {showInvite && inviteUrl && (
+            <div className="space-y-2 p-4 border rounded-md bg-muted/30">
+              <Label>Invitation URL (expires in 24 hours)</Label>
+              <div className="flex items-center space-x-2">
+                <Input readOnly value={inviteUrl} className="flex-1" />
+                <Button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(inviteUrl)
+                      toast({ title: 'Copied', description: 'Invitation URL copied to clipboard.' })
+                    } catch (e) {
+                      toast({ title: 'Copy failed', description: 'Please copy the link manually.', variant: 'destructive' })
+                    }
+                  }}
+                >
+                  Copy
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={handleCancel}>
-              Cancel
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+              {showInvite ? 'Close' : 'Cancel'}
             </Button>
-            <Button onClick={handleSave}>
-              <Save className="h-4 w-4 mr-2" />
-              Add Employee
-            </Button>
+            {!showInvite && (
+              <Button onClick={handleSave} disabled={isSubmitting}>
+                <Save className="h-4 w-4 mr-2" />
+                {isSubmitting ? 'Adding...' : 'Add Employee'}
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>

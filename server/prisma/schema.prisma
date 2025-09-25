@@ -15,12 +15,6 @@ enum UserRole {
   global_admin
   hr_manager
   manager
-  hr_executive
-  project_admin
-  asset_manager
-  help_desk_manager
-  requisition_manager
-  performance_admin
   employee
 }
 
@@ -45,12 +39,10 @@ enum AttendanceMethod {
 }
 
 enum LeaveType {
-  sick
-  vacation
-  personal
+  earned
   maternity
   paternity
-  emergency
+  compoff
 }
 
 enum LeaveStatus {
@@ -141,46 +133,39 @@ enum TimesheetStatus {
 }
 
 model User {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  password   String
-  name       String
+  id         String    @id @default(cuid())
+  email      String    @unique
+  password   String?
   role       UserRole
-  department String?
-  position   String?
   avatar     String?
-  employeeId String?  @unique
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  employeeId String?   @unique
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-  employee Employee? @relation(fields: [employeeId], references: [employeeId])
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+  invitations UserInvitation[]
 
   @@map("users")
 }
 
 model Employee {
-  id                String          @id @default(cuid())
-  employeeId         String          @unique
-  name              String
-  email             String          @unique
-  phone             String?
-  position          String?
-  department        String?
-  manager           String?
-  joinDate          DateTime
-  status            EmployeeStatus  @default(active)
-  avatar            String?
+  id         String         @id @default(cuid())
+  employeeId String         @unique
+  joinDate   DateTime
+  status     EmployeeStatus @default(active)
+  avatar     String?
 
-  // JSON fields for complex nested data
-  personalInfo       Json?
-  officialInfo       Json?
-  financialInfo      Json?
-  personalInfoLegacy Json?
-  workInfo           Json?
+  // Core relations
+  user        User?
+  official    EmployeeOfficial?
+  personal    EmployeePersonal?
+  bankAccount BankAccount?
+  retiral     EmployeeRetiral?
+  addresses   Address[]
+  passport    Passport?
+  identity    IdentityNumbers?
 
-  user User?
-
-  // Relations
+  // Existing relations
   attendances        Attendance[]
   leaveRequests      LeaveRequest[]
   leaveBalance       LeaveBalance?
@@ -195,11 +180,173 @@ model Employee {
   dependents         Dependent[]
   educations         Education[]
   experiences        Experience[]
+  invitations        UserInvitation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("employees")
+}
+
+// Employee Official Information - captured at creation
+model EmployeeOfficial {
+  id               String   @id @default(cuid())
+  employeeId       String   @unique
+  firstName        String
+  lastName         String
+  knownAs          String?
+  designation      String?
+  stream           String?
+  subStream        String?
+  baseLocation     String?
+  currentLocation  String?
+  unit             String?
+  unitHead         String?
+  jobConfirmation  Boolean  @default(false)
+  confirmationDate DateTime?
+  approval         String?
+  rating           Float?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_officials")
+}
+
+// Employee Personal Information - completed via invitation
+model EmployeePersonal {
+  id                  String   @id @default(cuid())
+  employeeId          String   @unique
+  firstName           String?
+  lastName            String?
+  gender              String?
+  dateOfBirth         DateTime?
+  maritalStatus       String?
+  nationality         String?
+  primaryCitizenship  String?
+  phoneNumber         String?
+  personalEmail       String?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_personals")
+}
+
+enum AddressType {
+  present
+  primary
+  emergency
+}
+
+model Address {
+  id                 String      @id @default(cuid())
+  employeeId         String
+  type               AddressType
+  contactName        String?
+  address1           String?
+  city               String?
+  state              String?
+  country            String?
+  pinCode            String?
+  mobileNumber       String?
+  alternativeMobile  String?
+  area               String?
+  landmark           String?
+  latitude           Float?
+  longitude          Float?
+  // Emergency-specific fields (used when type = emergency)
+  relation           String?
+  emergencyPhone     String?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model Passport {
+  id            String   @id @default(cuid())
+  employeeId    String   @unique
+  passportNumber String?
+  expiryDate     DateTime?
+  issuingOffice  String?
+  issuingCountry String?
+  contactNumber  String?
+  address        String?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("passports")
+}
+
+model IdentityNumbers {
+  id         String  @id @default(cuid())
+  employeeId String  @unique
+  aadhar     String?
+  pan        String?
+  nsrItpin   String?
+  nsrTin     String?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("identity_numbers")
+}
+
+model BankAccount {
+  id            String  @id @default(cuid())
+  employeeId    String  @unique
+  bankName      String?
+  accountNumber String?
+  ifscCode      String?
+  country       String?
+  modifiedDate  DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("bank_accounts")
+}
+
+model EmployeeRetiral {
+  id                  String  @id @default(cuid())
+  employeeId          String  @unique
+  pfTotal             Float?  @default(0)
+  employeePF          Float?  @default(0)
+  employerPF          Float?  @default(0)
+  employeeESI         Float?  @default(0)
+  employerESI         Float?  @default(0)
+  professionalTax     Float?  @default(0)
+  incomeTax           Float?  @default(0)
+  netTakeHome         Float?  @default(0)
+  costToCompany       Float?  @default(0)
+  basicSalary         Float?  @default(0)
+  houseRentAllowance  Float?  @default(0)
+  specialAllowance    Float?  @default(0)
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_retiral")
+}
+
+enum InvitationStatus {
+  pending
+  used
+  expired
+}
+
+model UserInvitation {
+  id            String           @id @default(cuid())
+  token         String           @unique
+  email         String
+  role          UserRole
+  employeeId    String?
+  createdById   String
+  status        InvitationStatus @default(pending)
+  expiresAt     DateTime
+  usedAt        DateTime?
+  createdAt     DateTime         @default(now())
+
+  employee Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  createdBy User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@map("user_invitations")
 }
 
 model Attendance {

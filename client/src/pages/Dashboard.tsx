@@ -33,7 +33,7 @@ const Dashboard: React.FC = () => {
       change: "+12",
       changeType: "positive",
       icon: Users,
-      roles: ["global_admin", "hr_manager", "hr_executive"],
+      roles: ["global_admin", "hr_manager"],
     },
     {
       title: "Present Today",
@@ -41,7 +41,7 @@ const Dashboard: React.FC = () => {
       change: "93.5%",
       changeType: "positive",
       icon: CheckCircle,
-      roles: ["global_admin", "hr_manager", "hr_executive"],
+      roles: ["global_admin", "hr_manager"],
     },
     {
       title: "Pending Leaves",
@@ -49,7 +49,7 @@ const Dashboard: React.FC = () => {
       change: "-2",
       changeType: "positive",
       icon: Calendar,
-      roles: ["global_admin", "hr_manager", "hr_executive"],
+      roles: ["global_admin", "hr_manager"],
     },
     {
       title: "This Month Payroll",

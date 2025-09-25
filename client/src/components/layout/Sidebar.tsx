@@ -39,7 +39,6 @@ const navigationItems = [
       "global_admin",
       "hr_manager",
       "manager",
-      "hr_executive",
       "employee",
     ],
   },
@@ -47,7 +46,7 @@ const navigationItems = [
     title: "Employees",
     url: "/employees",
     icon: Users,
-    roles: ["global_admin", "hr_manager", "hr_executive"],
+    roles: ["global_admin", "hr_manager"],
   },
   {
     title: "My Profile",
@@ -56,7 +55,6 @@ const navigationItems = [
     roles: [
       "global_admin",
       "hr_manager",
-      "hr_executive",
       "manager",
       "employee",
     ],
@@ -68,7 +66,6 @@ const navigationItems = [
     roles: [
       "global_admin",
       "hr_manager",
-      "hr_executive",
       "employee",
       "manager",
     ],
@@ -80,7 +77,6 @@ const navigationItems = [
     roles: [
       "global_admin",
       "hr_manager",
-      "hr_executive",
       "employee",
       "manager",
     ],
@@ -104,7 +100,6 @@ const navigationItems = [
     roles: [
       "global_admin",
       "hr_manager",
-      "performance_admin",
       "employee",
       "manager",
     ],
@@ -113,7 +108,7 @@ const navigationItems = [
     title: "Projects",
     url: "/projects",
     icon: FolderOpen,
-    roles: ["global_admin", "project_admin", "manager", "employee"],
+    roles: ["global_admin", "manager", "employee"],
   },
   {
     title: "Reports",
