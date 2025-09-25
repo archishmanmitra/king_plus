@@ -15,7 +15,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <AppSidebar />
 
         {/* Main content */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-lightblue">
           <Header />
 
           <main className="flex-1 p-4 md:p-8 overflow-auto">
@@ -24,14 +24,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 mx-auto max-w-[1400px] 
                 relative overflow-hidden 
                 rounded-3xl p-4 md:p-8 
-                border border-white/20 
-                bg-white/10 
-                shadow-[0_8px_30px_rgba(0,0,0,0.3)] 
-                backdrop-blur-[14px] backdrop-saturate-150
+                border border-border/60
+                bg-lightblue 
+                shadow-lg 
+                supports-[backdrop-filter]:backdrop-blur-md supports-[backdrop-filter]:backdrop-saturate-150
               "
             >
               {/* glossy overlay */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-foreground/5 to-transparent" />
               
               {children}
             </div>

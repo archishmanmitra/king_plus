@@ -19,6 +19,7 @@ import ProjectDetail from "@/pages/ProjectDetail";
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
 import Contact from "@/pages/Contact";
+import Invite from "@/pages/Invite";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const AppRoutes = () => {
   if (!user) {
     return (
       <Routes>
+        <Route path="/invite" element={<Invite />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<LoginForm />} />
       </Routes>
@@ -40,6 +42,7 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/invite" element={<Invite />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/employees" element={<Employees />} />
         <Route path="/profile" element={<MyProfile />} />

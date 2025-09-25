@@ -45,13 +45,13 @@
 
     /* Neutrals */
     --muted: 213 100% 97%; /* #f0f7ff */
-    --muted-foreground: 215 20% 65%; /* #64748b */
+    --muted-foreground: 215 20% 40%; /* improved contrast for secondary text */
 
     --accent: 213 100% 96%;
     --accent-foreground: 240 10% 4%;
 
     /* UI */
-    --border: 214 32% 91%; /* #e2e8f0 */
+    --border: 214 32% 85%; /* slightly stronger borders for clarity */
     --input: 0 0% 100%;
     --ring: 200 97% 86%; /* #b8e6fe */
     --radius: 1rem;
@@ -192,7 +192,7 @@
 
   /* Premium Buttons */
   .btn-premium {
-    background-image: var(--gradient-foreground);
+    background-image: var(--gradient-primary);
     color: hsl(var(--primary-foreground));
     box-shadow: var(--shadow-md);
     border: 1px solid hsl(var(--primary) / 0.2);

@@ -70,40 +70,47 @@ export const ClockOutModal: React.FC<ClockOutModalProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}
+    >
+      <DialogContent className="max-w-xl bg-lightblue border border-border/60 rounded-2xl shadow-xl supports-[backdrop-filter]:backdrop-blur-md">
         <DialogHeader>
-          <DialogTitle>Clock Out Submission</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-lg md:text-xl font-semibold text-foreground">Clock Out Submission</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground color-black">
             Submit your clock out details for approval
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Total Time Display */}
-          <div className="text-center p-4 bg-primary/10 rounded-lg">
-            <div className="text-sm text-muted-foreground mb-1">Total Time Worked</div>
-            <div className="text-2xl font-bold text-primary">{totalTime}</div>
+          <div className="p-4 md:p-5 rounded-xl bg-muted/30 border border-border/60">
+            <div className="text-center">
+              <div className="text-xs md:text-sm text-muted-foreground mb-1">Total Time Worked</div>
+              <div className="font-mono text-2xl md:text-3xl font-bold text-primary">{totalTime}</div>
+            </div>
           </div>
 
           {/* Work Type */}
           <div className="space-y-3">
-            <Label>Work Type *</Label>
+            <Label className="text-sm">Work Type <span className="text-destructive">*</span></Label>
             <RadioGroup 
               value={formData.workType} 
               onValueChange={(value: 'personal' | 'official') => 
                 setFormData({ ...formData, workType: value })
               }
-              className="flex flex-col space-y-2"
+              className="grid grid-cols-2 gap-3"
             >
-              <div className="flex items-center space-x-2">
+              <label htmlFor="official" className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-muted/40">
                 <RadioGroupItem value="official" id="official" />
-                <Label htmlFor="official">Official</Label>
-              </div>
-              <div className="flex items-center space-x-2">
+                <span className="text-sm">Official</span>
+              </label>
+              <label htmlFor="personal" className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-muted/40">
                 <RadioGroupItem value="personal" id="personal" />
-                <Label htmlFor="personal">Personal</Label>
-              </div>
+                <span className="text-sm">Personal</span>
+              </label>
             </RadioGroup>
           </div>
 
@@ -116,18 +123,18 @@ export const ClockOutModal: React.FC<ClockOutModalProps> = ({
                 setFormData({ ...formData, ableToWork: checked as boolean })
               }
             />
-            <Label htmlFor="ableToWork">I am able to work</Label>
+            <Label htmlFor="ableToWork" className="text-sm">I am able to work</Label>
           </div>
 
           {/* Approval By */}
           <div className="space-y-2">
-            <Label htmlFor="approvalBy">To be approved by *</Label>
+            <Label htmlFor="approvalBy" className="text-sm">To be approved by <span className="text-destructive">*</span></Label>
             <Select 
               value={formData.approvalBy} 
               onValueChange={(value) => setFormData({ ...formData, approvalBy: value })}
               required
             >
-              <SelectTrigger>
+              <SelectTrigger id="approvalBy" className="focus-premium">
                 <SelectValue placeholder="Select approver" />
               </SelectTrigger>
               <SelectContent>
@@ -140,17 +147,18 @@ export const ClockOutModal: React.FC<ClockOutModalProps> = ({
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notes">Additional Notes</Label>
+            <Label htmlFor="notes" className="text-sm">Additional Notes</Label>
             <Textarea
               id="notes"
               placeholder="Any additional notes or comments..."
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={3}
+              rows={4}
+              className="focus-premium"
             />
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border/60">
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancel
             </Button>

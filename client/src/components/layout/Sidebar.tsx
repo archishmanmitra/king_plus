@@ -145,7 +145,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className={`${isCollapsed ? "w-14" : "w-64"} bg-transparent border-none shadow-none`} collapsible="icon">
+    <Sidebar className={`${isCollapsed ? "w-14" : "w-64"} bg-transparent border-none shadow-none text-sidebar-foreground`} collapsible="icon">
       <SidebarContent className="scrollbar-premium">
         {/* Logo/Brand with Mobile Close Button */}
         <div className="p-4">
@@ -156,10 +156,10 @@ export function AppSidebar() {
                 </span>
               {!isCollapsed && (
                 <div>
-                  <h1 className="text-black font-bold text-lg tracking-tight">
+                  <h1 className="text-foreground font-bold text-lg tracking-tight">
                     KIN-G +
                   </h1>
-                  <p className="text-xs text-black font-medium">
+                  <p className="text-xs text-muted-foreground font-medium">
                     Office Portal
                   </p>
                 </div>
@@ -182,7 +182,7 @@ export function AppSidebar() {
 
         {/* Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-black font-semibold text-xs uppercase tracking-wider">
+          <SidebarGroupLabel className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -196,13 +196,13 @@ export function AppSidebar() {
                         className={({ isActive }) =>
                         `flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 group ${
                           isActive
-                            ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold"
-                            : "hover:bg-sidebar-accent/50 text-sidebar-foreground hover:text-sidebar-foreground"
+                            ? "bg-gradient-to-r from-primary/15 to-primary/5 text-primary font-semibold shadow-sm"
+                            : "hover:bg-sidebar-accent/60 text-sidebar-foreground hover:text-foreground"
                         }`
                       }
                     >
                       <item.icon className={`h-4 w-4 flex-shrink-0 transition-colors ${
-                        isActive ? "text-primary" : "text-sidebar-foreground group-hover:text-sidebar-foreground"
+                        isActive ? "text-primary" : "text-sidebar-foreground group-hover:text-foreground"
                       }`} />
                       {!isCollapsed && (
                         <span className="font-medium transition-colors">
@@ -220,7 +220,7 @@ export function AppSidebar() {
         {/* User Info */}
         {!isCollapsed && user && (
           <div className="mt-auto p-4">
-            <div className="flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-muted/30 to-muted/10">
+            <div className="flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-muted/40 to-muted/20 border border-border/60">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-primary-foreground flex items-center justify-center text-sm font-semibold">
                 {user.name
                   .split(" ")
@@ -228,10 +228,10 @@ export function AppSidebar() {
                   .join("")}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-black truncate">
+                <p className="text-sm font-semibold text-foreground truncate">
                   {user.name}
                 </p>
-                <p className="text-xs text-black truncate font-medium">
+                <p className="text-xs text-muted-foreground truncate font-medium">
                   {user.position}
                 </p>
               </div>

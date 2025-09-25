@@ -5,11 +5,11 @@ import { randomUUID } from 'crypto'
 const prisma = new PrismaClient()
 const router = Router()
 
-// Create employee with official + retiral info and create a 24h invitation
+// Create employee (pending) with minimal official info and create a 24h invitation
 // Expected payload:
 // {
 //   userDetails: { email: string, role: 'employee'|'manager'|'hr_manager'|'global_admin' },
-//   officialInfo: { firstName, lastName, dateOfJoining, designation, ... },
+//   officialInfo: { firstName, lastName },
 //   financialInfo: { retiral: { ... } },
 //   createdByUserId: string
 // }
@@ -20,18 +20,30 @@ router.post('/', async (req: Request, res: Response) => {
     if (!userDetails?.email || !userDetails?.role) {
       return res.status(400).json({ error: 'email and role are required in userDetails' })
     }
-    if (!officialInfo?.firstName || !officialInfo?.lastName || !officialInfo?.dateOfJoining) {
-      return res.status(400).json({ error: 'firstName, lastName and dateOfJoining are required in officialInfo' })
+    if (!officialInfo?.firstName || !officialInfo?.lastName) {
+      return res.status(400).json({ error: 'firstName and lastName are required in officialInfo' })
     }
     if (!createdByUserId) {
       return res.status(400).json({ error: 'createdByUserId is required' })
     }
 
+    // Ensure createdBy user exists to satisfy foreign key on invitation
+    const existingCreator = await prisma.user.findUnique({ where: { id: createdByUserId } })
+    if (!existingCreator) {
+      await prisma.user.create({
+        data: {
+          id: createdByUserId,
+          email: `${createdByUserId}@example.local`,
+          role: 'global_admin',
+        },
+      })
+    }
+
     const employee = await prisma.employee.create({
       data: {
         employeeId: `EMP${Date.now()}`,
-        joinDate: new Date(officialInfo.dateOfJoining),
-        status: 'active',
+        joinDate: new Date(),
+        status: 'pending',
       },
     })
 
@@ -41,21 +53,17 @@ router.post('/', async (req: Request, res: Response) => {
         firstName: officialInfo.firstName,
         lastName: officialInfo.lastName,
         knownAs: officialInfo.knownAs ?? null,
-        designation: officialInfo.designation ?? null,
-        stream: officialInfo.stream ?? null,
-        subStream: officialInfo.subStream ?? null,
-        baseLocation: officialInfo.baseLocation ?? null,
-        currentLocation: officialInfo.currentLocation ?? null,
-        unit: officialInfo.unit ?? null,
-        unitHead: officialInfo.unitHead ?? null,
-        jobConfirmation: !!officialInfo.jobConfirmation,
-        confirmationDate: officialInfo.confirmationDetails?.confirmationDate
-          ? new Date(officialInfo.confirmationDetails.confirmationDate)
-          : null,
-        approval: officialInfo.confirmationDetails?.approval ?? null,
-        rating: typeof officialInfo.confirmationDetails?.rating === 'number'
-          ? officialInfo.confirmationDetails.rating
-          : null,
+        designation: null,
+        stream: null,
+        subStream: null,
+        baseLocation: null,
+        currentLocation: null,
+        unit: null,
+        unitHead: null,
+        jobConfirmation: false,
+        confirmationDate: null,
+        approval: null,
+        rating: null,
       },
     })
 

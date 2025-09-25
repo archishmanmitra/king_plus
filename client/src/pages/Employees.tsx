@@ -109,7 +109,7 @@ const Employees: React.FC = () => {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 bg-lightblue">
         <div className="flex-1">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Employee Management
