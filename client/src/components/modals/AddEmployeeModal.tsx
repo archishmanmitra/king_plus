@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import PersonalInformation from '@/components/profile/PersonalInformation';
 import OfficialInformation from '@/components/profile/OfficialInformation';
 import FinancialInformation from '@/components/profile/FinancialInformation';
 import { useAuth } from '@/contexts/AuthContext';
+const API_URL= import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 interface AddEmployeeModalProps {
   isOpen: boolean;
@@ -175,7 +176,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
 
     try {
       setIsSubmitting(true);
-      const response = await fetch('/api/employees', {
+      const response = await fetch(`${API_URL}/employees`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -221,6 +222,9 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
             <UserPlus className="h-5 w-5 mr-2" />
             Add New Employee
           </DialogTitle>
+          <DialogDescription>
+            Create a new employee account and send an invitation to complete their profile setup.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">

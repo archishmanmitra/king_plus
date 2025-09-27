@@ -102,6 +102,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     return res.status(201).json({ employee, invitation })
   } catch (err: any) {
+    console.error('Employee creation error:', err)
     return res.status(500).json({ error: 'Failed to create employee', details: err?.message })
   }
 })

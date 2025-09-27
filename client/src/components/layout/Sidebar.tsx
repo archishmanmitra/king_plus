@@ -222,7 +222,7 @@ export function AppSidebar() {
           <div className="mt-auto p-4">
             <div className="flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-muted/40 to-muted/20 border border-border/60">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                {user.name
+                {user?.name
                   .split(" ")
                   .map((n) => n[0])
                   .join("")}

@@ -19,6 +19,7 @@ enum UserRole {
 }
 
 enum EmployeeStatus {
+  pending
   active
   inactive
   terminated
@@ -134,6 +135,7 @@ enum TimesheetStatus {
 
 model User {
   id         String    @id @default(cuid())
+  name       String
   email      String    @unique
   password   String?
   role       UserRole

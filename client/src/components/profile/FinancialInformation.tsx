@@ -191,8 +191,9 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="monthlyGross" 
                           type="number" 
-                          value={((data.retiral.basicSalary || 0) + (data.retiral.houseRentAllowance || 0) + (data.retiral.specialAllowance || 0))} 
-                          disabled={!effectiveCanEditRetiral}
+                          defaultValue={((data.retiral.basicSalary || 0) + (data.retiral.houseRentAllowance || 0) + (data.retiral.specialAllowance || 0))} 
+                          disabled={true}
+                          readOnly
                         />
                       </div>
                     </>
@@ -255,8 +256,9 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="totalStatutoryLiabilities" 
                           type="number" 
-                          value={((data.retiral.employerPF || 0) + (data.retiral.employerESI || 0))} 
+                          defaultValue={((data.retiral.employerPF || 0) + (data.retiral.employerESI || 0))} 
                           disabled={true}
+                          readOnly
                           className="font-bold"
                         />
                       </div>
@@ -334,8 +336,9 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="totalDeductions" 
                           type="number" 
-                          value={((data.retiral.employeePF || 0) + (data.retiral.employeeESI || 0) + (data.retiral.professionalTax || 0) + (data.retiral.incomeTax || 0))} 
+                          defaultValue={((data.retiral.employeePF || 0) + (data.retiral.employeeESI || 0) + (data.retiral.professionalTax || 0) + (data.retiral.incomeTax || 0))} 
                           disabled={true}
+                          readOnly
                           className="font-bold"
                         />
                       </div>

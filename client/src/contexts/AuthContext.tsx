@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthContextType } from '@/types/auth';
+const API_URL= import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -52,35 +53,77 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored auth data
-    const storedUser = localStorage.getItem('hrms_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    const initializeAuth = async () => {
+      const token = localStorage.getItem('hrms_token');
+      const storedUser = localStorage.getItem('hrms_user');
+      
+      if (token && storedUser) {
+        try {
+          // Verify token with server
+          const response = await fetch(`${API_URL}/auth/verify`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          
+          if (response.ok) {
+            const { user } = await response.json();
+            setUser(user);
+          } else {
+            // Token invalid, clear storage
+            localStorage.removeItem('hrms_token');
+            localStorage.removeItem('hrms_user');
+          }
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          localStorage.removeItem('hrms_token');
+          localStorage.removeItem('hrms_user');
+        }
+      }
+      
+      setIsLoading(false);
+    };
+    
+    initializeAuth();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const foundUser = demoUsers.find(u => u.email === email);
-    if (foundUser && password === 'password') {
-      setUser(foundUser);
-      localStorage.setItem('hrms_user', JSON.stringify(foundUser));
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Login failed');
+      }
+
+      const { token, user } = await response.json();
+      
+      // Store token and user data
+      localStorage.setItem('hrms_token', token);
+      localStorage.setItem('hrms_user', JSON.stringify(user));
+      
+      setUser(user);
       setIsLoading(false);
       return true;
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setIsLoading(false);
+      return false;
     }
-    
-    setIsLoading(false);
-    return false;
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('hrms_user');
+    localStorage.removeItem('hrms_token');
   };
 
   return (

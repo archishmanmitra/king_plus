@@ -1,25 +1,26 @@
-import * as express from 'express'
-import * as dotenv from 'dotenv'
-import * as cors from 'cors'
-import * as helmet from 'helmet'
+import express from 'express'
+import dotenv from 'dotenv'
+import cors from 'cors'
+import helmet from 'helmet'
 import logger from './logger/logger'
 import employeesRouter from './routers/employees'
 import invitationsRouter from './routers/invitations'
+import authRouter from './routers/auth'
 
 dotenv.config()
 
 const app = express()
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 5001
 
 // Security & CORS
-const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:8080,http://localhost:5173')
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:8080,http://localhost:5173')
   .split(',')
   .map(o => o.trim())
   .filter(Boolean)
 
 app.use(helmet())
 app.use(cors({
-  origin: (origin, callback) => {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     // Allow server-to-server or same-origin requests with no origin header
     if (!origin) return callback(null, true)
     if (allowedOrigins.includes(origin)) return callback(null, true)
@@ -31,8 +32,19 @@ app.use(cors({
 }))
 
 app.use(express.json())
+
+// Health check endpoint
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'Server is running!', 
+    timestamp: new Date().toISOString(),
+    port: PORT 
+  })
+})
+
 app.use('/api/employees', employeesRouter)
 app.use('/api/invitations', invitationsRouter)
+app.use('/api/auth', authRouter)
 
 
 app.listen(PORT,()=>{

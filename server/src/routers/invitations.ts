@@ -5,6 +5,54 @@ import * as bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 const router = Router()
 
+// Get invitation details by token
+router.get('/:token', async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params
+    if (!token) {
+      return res.status(400).json({ error: 'Token is required' })
+    }
+
+    const invitation = await prisma.userInvitation.findUnique({
+      where: { token },
+      include: {
+        employee: {
+          include: {
+            official: true
+          }
+        }
+      }
+    })
+
+    if (!invitation) {
+      return res.status(404).json({ error: 'Invitation not found' })
+    }
+
+    if (invitation.status !== 'pending') {
+      return res.status(400).json({ error: 'Invitation already used or expired' })
+    }
+
+    if (invitation.expiresAt < new Date()) {
+      return res.status(400).json({ error: 'Invitation expired' })
+    }
+
+    return res.json({
+      email: invitation.email,
+      role: invitation.role,
+      status: invitation.status,
+      expiresAt: invitation.expiresAt,
+      employee: invitation.employee ? {
+        id: invitation.employee.id,
+        employeeId: invitation.employee.employeeId,
+        official: invitation.employee.official
+      } : null
+    })
+  } catch (err: any) {
+    console.error('Get invitation error:', err)
+    return res.status(500).json({ error: 'Failed to fetch invitation', details: err?.message })
+  }
+})
+
 // Accept invitation: create/update user with password; fill personal and bank info
 // Expected payload:
 // {
@@ -95,6 +143,7 @@ router.post('/accept', async (req: Request, res: Response) => {
 
     return res.json({ message: 'Invitation accepted', userId: user.id })
   } catch (err: any) {
+    console.error('Accept invitation error:', err)
     return res.status(500).json({ error: 'Failed to accept invitation', details: err?.message })
   }
 })

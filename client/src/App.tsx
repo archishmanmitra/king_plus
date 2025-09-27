@@ -20,6 +20,8 @@ import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
 import Contact from "@/pages/Contact";
 import Invite from "@/pages/Invite";
+import Setup from "@/pages/Setup";
+import TestFlow from "@/pages/TestFlow";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,7 @@ const AppRoutes = () => {
   if (!user) {
     return (
       <Routes>
+        <Route path="/setup" element={<Setup />} />
         <Route path="/invite" element={<Invite />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<LoginForm />} />
@@ -56,6 +59,7 @@ const AppRoutes = () => {
         <Route path="/project/:projectId" element={<ProjectDetail />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/test" element={<TestFlow />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </MainLayout>
@@ -68,7 +72,12 @@ const App = () => (
       <AuthProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
           <AppRoutes />
         </BrowserRouter>
       </AuthProvider>
