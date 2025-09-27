@@ -16,6 +16,7 @@ interface FinancialInformationProps {
   showBankAccount?: boolean;
   showRetiralOnly?: boolean;
   canEdit?: boolean;
+  onChange?: (field: string, value: any) => void;
 }
 
 const FinancialInformation: React.FC<FinancialInformationProps> = ({ 
@@ -25,7 +26,8 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
   isEditMode = false,
   showBankAccount = true,
   showRetiralOnly = false,
-  canEdit = false
+  canEdit = false,
+  onChange
 }) => {
   const [activeTab, setActiveTab] = useState(showRetiralOnly ? 'retiral' : 'bank');
 
@@ -164,8 +166,9 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="basicSalary" 
                           type="number" 
-                          defaultValue={data.retiral.basicSalary || 0} 
-                                                  disabled={!effectiveCanEditRetiral}
+                          value={data.retiral.basicSalary || 0} 
+                          onChange={(e) => onChange?.('basicSalary', parseFloat(e.target.value) || 0)}
+                          disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                       <div className="space-y-2">
@@ -173,8 +176,9 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="houseRentAllowance" 
                           type="number" 
-                          defaultValue={data.retiral.houseRentAllowance || 0} 
-                                                  disabled={!effectiveCanEditRetiral}
+                          value={data.retiral.houseRentAllowance || 0} 
+                          onChange={(e) => onChange?.('houseRentAllowance', parseFloat(e.target.value) || 0)}
+                          disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                       <div className="space-y-2">
@@ -182,8 +186,9 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="specialAllowance" 
                           type="number" 
-                          defaultValue={data.retiral.specialAllowance || 0} 
-                                                  disabled={!effectiveCanEditRetiral}
+                          value={data.retiral.specialAllowance || 0} 
+                          onChange={(e) => onChange?.('specialAllowance', parseFloat(e.target.value) || 0)}
+                          disabled={!effectiveCanEditRetiral}
                         />
                       </div>
                       <div className="space-y-2">
@@ -238,7 +243,8 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="employerPF" 
                           type="number" 
-                          defaultValue={data.retiral.employerPF || 0} 
+                          value={data.retiral.employerPF || 0} 
+                          onChange={(e) => onChange?.('employerPF', parseFloat(e.target.value) || 0)}
                           disabled={!effectiveCanEditRetiral}
                         />
                       </div>
@@ -247,7 +253,8 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="employerESI" 
                           type="number" 
-                          defaultValue={data.retiral.employerESI || 0} 
+                          value={data.retiral.employerESI || 0} 
+                          onChange={(e) => onChange?.('employerESI', parseFloat(e.target.value) || 0)}
                           disabled={!effectiveCanEditRetiral}
                         />
                       </div>
@@ -300,7 +307,8 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="employeePF" 
                           type="number" 
-                          defaultValue={data.retiral.employeePF || 0} 
+                          value={data.retiral.employeePF || 0} 
+                          onChange={(e) => onChange?.('employeePF', parseFloat(e.target.value) || 0)}
                           disabled={!effectiveCanEditRetiral}
                         />
                       </div>
@@ -309,7 +317,8 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="employeeESI" 
                           type="number" 
-                          defaultValue={data.retiral.employeeESI || 0} 
+                          value={data.retiral.employeeESI || 0} 
+                          onChange={(e) => onChange?.('employeeESI', parseFloat(e.target.value) || 0)}
                           disabled={!effectiveCanEditRetiral}
                         />
                       </div>
@@ -318,7 +327,8 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="professionalTax" 
                           type="number" 
-                          defaultValue={data.retiral.professionalTax || 0} 
+                          value={data.retiral.professionalTax || 0} 
+                          onChange={(e) => onChange?.('professionalTax', parseFloat(e.target.value) || 0)}
                           disabled={!effectiveCanEditRetiral}
                         />
                       </div>
@@ -327,7 +337,8 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="incomeTax" 
                           type="number" 
-                          defaultValue={data.retiral.incomeTax || 0} 
+                          value={data.retiral.incomeTax || 0} 
+                          onChange={(e) => onChange?.('incomeTax', parseFloat(e.target.value) || 0)}
                           disabled={!effectiveCanEditRetiral}
                         />
                       </div>
@@ -347,7 +358,8 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="netTakeHome" 
                           type="number" 
-                          defaultValue={data.retiral.netTakeHome || 0} 
+                          value={data.retiral.netTakeHome || 0} 
+                          onChange={(e) => onChange?.('netTakeHome', parseFloat(e.target.value) || 0)}
                           disabled={!effectiveCanEditRetiral}
                           className="font-bold text-green-600"
                         />
@@ -357,7 +369,8 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="costToCompany" 
                           type="number" 
-                          defaultValue={data.retiral.costToCompany || 0} 
+                          value={data.retiral.costToCompany || 0} 
+                          onChange={(e) => onChange?.('costToCompany', parseFloat(e.target.value) || 0)}
                           disabled={!effectiveCanEditRetiral}
                           className="font-bold text-blue-600"
                         />
@@ -367,7 +380,8 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
                         <Input 
                           id="pfTotal" 
                           type="number" 
-                          defaultValue={data.retiral.pfTotal || 0} 
+                          value={data.retiral.pfTotal || 0} 
+                          onChange={(e) => onChange?.('pfTotal', parseFloat(e.target.value) || 0)}
                           disabled={!effectiveCanEditRetiral}
                           className="font-bold"
                         />
@@ -460,3 +474,458 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
 };
 
 export default FinancialInformation;
+
+
+                    <>
+
+                      <div className="space-y-2">
+
+                        <Label htmlFor="employerPF">Provident Fund</Label>
+
+                        <Input 
+
+                          id="employerPF" 
+
+                          type="number" 
+
+                          defaultValue={data.retiral.employerPF || 0} 
+
+                          disabled={!effectiveCanEditRetiral}
+
+                        />
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <Label htmlFor="employerESI">Employee's Insurance</Label>
+
+                        <Input 
+
+                          id="employerESI" 
+
+                          type="number" 
+
+                          defaultValue={data.retiral.employerESI || 0} 
+
+                          disabled={!effectiveCanEditRetiral}
+
+                        />
+
+                      </div>
+
+                      <div className="space-y-2 md:col-span-2">
+
+                        <Label htmlFor="totalStatutoryLiabilities">Total - Organization's Statutory Liabilities</Label>
+
+                        <Input 
+
+                          id="totalStatutoryLiabilities" 
+
+                          type="number" 
+
+                          defaultValue={((data.retiral.employerPF || 0) + (data.retiral.employerESI || 0))} 
+                          disabled={true}
+
+                          readOnly
+                          className="font-bold"
+
+                        />
+
+                      </div>
+
+                    </>
+
+                  ) : (
+
+                    <>
+
+                      <div className="space-y-2">
+
+                        <label className="text-sm font-medium text-muted-foreground">Provident Fund</label>
+
+                        <p className="text-foreground font-medium">₹{data.retiral.employerPF?.toLocaleString() || 'N/A'}</p>
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <label className="text-sm font-medium text-muted-foreground">Employee's Insurance</label>
+
+                        <p className="text-foreground font-medium">₹{data.retiral.employerESI?.toLocaleString() || 'N/A'}</p>
+
+                      </div>
+
+                      <div className="space-y-2 md:col-span-2">
+
+                        <label className="text-sm font-medium text-muted-foreground">Total - Organization's Statutory Liabilities</label>
+
+                        <p className="text-foreground font-bold">
+
+                          ₹{((data.retiral.employerPF || 0) + (data.retiral.employerESI || 0)).toLocaleString()}
+
+                        </p>
+
+                      </div>
+
+                    </>
+
+                  )}
+
+                </div>
+
+              </div>
+
+
+
+              <Separator />
+
+
+
+              {/* Deductions */}
+
+              <div>
+
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+
+                  <TrendingUp className="h-5 w-5 mr-2" />
+
+                  Deductions
+
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-red-50 rounded-lg">
+
+                  {isEditMode ? (
+
+                    <>
+
+                      <div className="space-y-2">
+
+                        <Label htmlFor="employeePF">Employee's Provident Fund</Label>
+
+                        <Input 
+
+                          id="employeePF" 
+
+                          type="number" 
+
+                          defaultValue={data.retiral.employeePF || 0} 
+
+                          disabled={!effectiveCanEditRetiral}
+
+                        />
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <Label htmlFor="employeeESI">Employee's State Insurance</Label>
+
+                        <Input 
+
+                          id="employeeESI" 
+
+                          type="number" 
+
+                          defaultValue={data.retiral.employeeESI || 0} 
+
+                          disabled={!effectiveCanEditRetiral}
+
+                        />
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <Label htmlFor="professionalTax">Professional Tax</Label>
+
+                        <Input 
+
+                          id="professionalTax" 
+
+                          type="number" 
+
+                          defaultValue={data.retiral.professionalTax || 0} 
+
+                          disabled={!effectiveCanEditRetiral}
+
+                        />
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <Label htmlFor="incomeTax">Income Tax ***</Label>
+
+                        <Input 
+
+                          id="incomeTax" 
+
+                          type="number" 
+
+                          defaultValue={data.retiral.incomeTax || 0} 
+
+                          disabled={!effectiveCanEditRetiral}
+
+                        />
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <Label htmlFor="totalDeductions">Total Stipend Deduction</Label>
+
+                        <Input 
+
+                          id="totalDeductions" 
+
+                          type="number" 
+
+                          defaultValue={((data.retiral.employeePF || 0) + (data.retiral.employeeESI || 0) + (data.retiral.professionalTax || 0) + (data.retiral.incomeTax || 0))} 
+                          disabled={true}
+
+                          readOnly
+                          className="font-bold"
+
+                        />
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <Label htmlFor="netTakeHome">Net Take Home</Label>
+
+                        <Input 
+
+                          id="netTakeHome" 
+
+                          type="number" 
+
+                          defaultValue={data.retiral.netTakeHome || 0} 
+
+                          disabled={!effectiveCanEditRetiral}
+
+                          className="font-bold text-green-600"
+
+                        />
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <Label htmlFor="costToCompany">Cost To Company</Label>
+
+                        <Input 
+
+                          id="costToCompany" 
+
+                          type="number" 
+
+                          defaultValue={data.retiral.costToCompany || 0} 
+
+                          disabled={!effectiveCanEditRetiral}
+
+                          className="font-bold text-blue-600"
+
+                        />
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <Label htmlFor="pfTotal">PF Total</Label>
+
+                        <Input 
+
+                          id="pfTotal" 
+
+                          type="number" 
+
+                          defaultValue={data.retiral.pfTotal || 0} 
+
+                          disabled={!effectiveCanEditRetiral}
+
+                          className="font-bold"
+
+                        />
+
+                      </div>
+
+                    </>
+
+                  ) : (
+
+                    <>
+
+                      <div className="space-y-2">
+
+                        <label className="text-sm font-medium text-muted-foreground">Employee's Provident Fund</label>
+
+                        <p className="text-foreground font-medium">₹{data.retiral.employeePF?.toLocaleString() || 'N/A'}</p>
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <label className="text-sm font-medium text-muted-foreground">Employee's State Insurance</label>
+
+                        <p className="text-foreground font-medium">₹{data.retiral.employeeESI?.toLocaleString() || 'N/A'}</p>
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <label className="text-sm font-medium text-muted-foreground">Professional Tax</label>
+
+                        <p className="text-foreground font-medium">₹{data.retiral.professionalTax?.toLocaleString() || 'N/A'}</p>
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <label className="text-sm font-medium text-muted-foreground">Income Tax ***</label>
+
+                        <p className="text-foreground font-medium">₹{data.retiral.incomeTax?.toLocaleString() || 'N/A'}</p>
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <label className="text-sm font-medium text-muted-foreground">Total Stipend Deduction</label>
+
+                        <p className="text-foreground font-bold">
+
+                          ₹{((data.retiral.employeePF || 0) + (data.retiral.employeeESI || 0) + (data.retiral.professionalTax || 0) + (data.retiral.incomeTax || 0)).toLocaleString()}
+
+                        </p>
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <label className="text-sm font-medium text-muted-foreground">Net Take Home</label>
+
+                        <p className="text-foreground font-bold text-green-600">
+
+                          ₹{data.retiral.netTakeHome?.toLocaleString() || 'N/A'}
+
+                        </p>
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <label className="text-sm font-medium text-muted-foreground">Cost To Company</label>
+
+                        <p className="text-foreground font-bold text-blue-600">
+
+                          ₹{data.retiral.costToCompany?.toLocaleString() || 'N/A'}
+
+                        </p>
+
+                      </div>
+
+                      <div className="space-y-2">
+
+                        <label className="text-sm font-medium text-muted-foreground">PF Total</label>
+
+                        <p className="text-foreground font-bold">
+
+                          ₹{data.retiral.pfTotal?.toLocaleString() || 'N/A'}
+
+                        </p>
+
+                      </div>
+
+                    </>
+
+                  )}
+
+                </div>
+
+              </div>
+
+
+
+              <Separator />
+
+
+
+              {/* Summary */}
+
+              <div className="bg-muted/30 p-4 rounded-lg">
+
+                <h4 className="font-medium mb-3">Salary Summary</h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                  <div className="text-center">
+
+                    <p className="text-sm text-muted-foreground">Gross Salary</p>
+
+                    <p className="text-lg font-bold">
+
+                      ₹{((data.retiral.basicSalary || 0) + (data.retiral.houseRentAllowance || 0) + (data.retiral.specialAllowance || 0)).toLocaleString()}
+
+                    </p>
+
+                  </div>
+
+                  <div className="text-center">
+
+                    <p className="text-sm text-muted-foreground">Total Deductions</p>
+
+                    <p className="text-lg font-bold text-red-600">
+
+                      ₹{((data.retiral.employeePF || 0) + (data.retiral.employeeESI || 0) + (data.retiral.professionalTax || 0) + (data.retiral.incomeTax || 0)).toLocaleString()}
+
+                    </p>
+
+                  </div>
+
+                  <div className="text-center">
+
+                    <p className="text-sm text-muted-foreground">Net Take Home</p>
+
+                    <p className="text-lg font-bold text-green-600">
+
+                      ₹{data.retiral.netTakeHome?.toLocaleString() || 'N/A'}
+
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+
+              {/* Footnote */}
+
+              <div className="text-xs text-muted-foreground">
+
+                *** Income Tax deduction as per Income Tax Act, 1961 (if applicable)
+
+              </div>
+
+            </CardContent>
+
+          </Card>
+
+        </TabsContent>
+
+      </Tabs>
+
+    </div>
+
+  );
+
+};
+
+
+
+export default FinancialInformation;
+
+

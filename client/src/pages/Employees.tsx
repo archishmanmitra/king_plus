@@ -49,7 +49,7 @@ const Employees: React.FC = () => {
   const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
-  const [employees, setEmployees] = useState(mockEmployees);
+  const [employees, setEmployees] = useState(mockEmployees || []);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -63,11 +63,13 @@ const Employees: React.FC = () => {
   ];
   const statuses = ["all", "active", "inactive", "terminated"];
 
-  const filteredEmployees = employees.filter((employee) => {
+  const filteredEmployees = (employees || []).filter((employee) => {
+    if (!employee) return false;
+    
     const matchesSearch =
-      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.employeeId.toLowerCase().includes(searchTerm.toLowerCase());
+      (employee.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (employee.email?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (employee.employeeId?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     const matchesDepartment =
       selectedDepartment === "all" ||
       employee.department === selectedDepartment;
@@ -98,11 +100,26 @@ const Employees: React.FC = () => {
   };
 
   const handleAddEmployee = (newEmployee: (typeof mockEmployees)[0]) => {
-    setEmployees((prev) => [...prev, newEmployee]);
+    // Ensure the new employee has all required properties
+    const employeeWithDefaults = {
+      ...newEmployee,
+      name: newEmployee.name || 'Unknown Employee',
+      email: newEmployee.email || 'no-email@company.com',
+      employeeId: newEmployee.employeeId || `EMP${Date.now()}`,
+      phone: newEmployee.phone || 'N/A',
+      position: newEmployee.position || 'Employee',
+      department: newEmployee.department || 'General',
+      manager: newEmployee.manager || 'N/A',
+      joinDate: newEmployee.joinDate || new Date().toISOString().split('T')[0],
+      status: newEmployee.status || 'active',
+      avatar: newEmployee.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+    };
+    
+    setEmployees((prev) => [...prev, employeeWithDefaults]);
     setIsAddEmployeeModalOpen(false);
     toast({
       title: "Success",
-      description: `Employee ${newEmployee.name} has been added successfully!`,
+      description: `Employee ${employeeWithDefaults.name} has been added successfully!`,
     });
   };
 
@@ -447,3 +464,452 @@ const Employees: React.FC = () => {
 };
 
 export default Employees;
+
+
+                <SelectTrigger className="w-full md:w-48">
+
+                  <SelectValue placeholder="Department" />
+
+                </SelectTrigger>
+
+                <SelectContent>
+
+                  {departments.map((dept) => (
+
+                    <SelectItem key={dept} value={dept}>
+
+                      {dept === "all" ? "All Departments" : dept}
+
+                    </SelectItem>
+
+                  ))}
+
+                </SelectContent>
+
+              </Select>
+
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+
+                <SelectTrigger className="w-full md:w-48">
+
+                  <SelectValue placeholder="Status" />
+
+                </SelectTrigger>
+
+                <SelectContent>
+
+                  {statuses.map((status) => (
+
+                    <SelectItem key={status} value={status}>
+
+                      {status === "all"
+
+                        ? "All Statuses"
+
+                        : status.charAt(0).toUpperCase() + status.slice(1)}
+
+                    </SelectItem>
+
+                  ))}
+
+                </SelectContent>
+
+              </Select>
+
+            </div>
+
+          </div>
+
+        </CardContent>
+
+      </Card>
+
+
+
+      {/* Employee List */}
+
+      <Tabs defaultValue="grid" className="space-y-3 md:space-y-4">
+
+        <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-2">
+
+          <TabsTrigger value="grid" className="text-sm">
+
+            Grid View
+
+          </TabsTrigger>
+
+          <TabsTrigger value="table" className="text-sm">
+
+            Table View
+
+          </TabsTrigger>
+
+        </TabsList>
+
+
+
+        <TabsContent value="grid">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+
+            {filteredEmployees.map((employee) => (
+
+              <Card
+
+                key={employee.id}
+
+                className="hover:shadow-lg transition-shadow"
+
+              >
+
+                <CardHeader className="pb-3">
+
+                  <div className="flex flex-col space-y-3 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
+
+                    <div className="flex items-center space-x-3">
+
+                      <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
+
+                        <AvatarImage
+
+                          src={employee.avatar}
+
+                          alt={employee.name}
+
+                        />
+
+                        <AvatarFallback className="text-xs sm:text-sm">
+
+                          {employee.name
+
+                            .split(" ")
+
+                            .map((n) => n[0])
+
+                            .join("")}
+
+                        </AvatarFallback>
+
+                      </Avatar>
+
+                      <div className="min-w-0 flex-1">
+
+                        <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
+
+                          {employee.name}
+
+                        </h3>
+
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
+
+                          {employee.position}
+
+                        </p>
+
+                        <p className="text-xs text-muted-foreground">
+
+                          {employee.employeeId}
+
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                    <div className="flex justify-end sm:justify-start">
+
+                      {getStatusBadge(employee.status)}
+
+                    </div>
+
+                  </div>
+
+                </CardHeader>
+
+                <CardContent className="space-y-2 sm:space-y-3">
+
+                  <div className="flex items-center space-x-2 text-xs sm:text-sm">
+
+                    <Building2 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+
+                    <span className="text-muted-foreground truncate">
+
+                      {employee.department}
+
+                    </span>
+
+                  </div>
+
+                  <div className="flex items-center space-x-2 text-xs sm:text-sm">
+
+                    <Mail className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+
+                    <span className="text-muted-foreground truncate">
+
+                      {employee.email}
+
+                    </span>
+
+                  </div>
+
+                  <div className="flex items-center space-x-2 text-xs sm:text-sm">
+
+                    <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+
+                    <span className="text-muted-foreground">
+
+                      {employee.phone}
+
+                    </span>
+
+                  </div>
+
+                  <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 pt-2">
+
+                    <Button
+
+                      size="sm"
+
+                      variant="outline"
+
+                      className="flex-1 text-xs"
+
+                      onClick={() => viewEmployeeProfile(employee.employeeId)}
+
+                    >
+
+                      <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+
+                      <span className="hidden sm:inline">View Profile</span>
+
+                      <span className="sm:hidden">View</span>
+
+                    </Button>
+
+                    <Button
+
+                      size="sm"
+
+                      variant="outline"
+
+                      className="flex-1 text-xs"
+
+                    >
+
+                      <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+
+                      Edit
+
+                    </Button>
+
+                  </div>
+
+                </CardContent>
+
+              </Card>
+
+            ))}
+
+          </div>
+
+        </TabsContent>
+
+
+
+        <TabsContent value="table">
+
+          <Card>
+
+            <div className="overflow-x-auto">
+
+              <Table>
+
+                <TableHeader>
+
+                  <TableRow>
+
+                    <TableHead className="min-w-[200px]">Employee</TableHead>
+
+                    <TableHead className="min-w-[100px]">ID</TableHead>
+
+                    <TableHead className="min-w-[120px]">Department</TableHead>
+
+                    <TableHead className="min-w-[150px]">Position</TableHead>
+
+                    <TableHead className="min-w-[100px]">Join Date</TableHead>
+
+                    <TableHead className="min-w-[80px]">Status</TableHead>
+
+                    <TableHead className="text-right min-w-[100px]">
+
+                      Actions
+
+                    </TableHead>
+
+                  </TableRow>
+
+                </TableHeader>
+
+                <TableBody>
+
+                  {filteredEmployees.map((employee) => (
+
+                    <TableRow key={employee.id}>
+
+                      <TableCell>
+
+                        <div className="flex items-center space-x-3">
+
+                          <Avatar className="h-8 w-8 flex-shrink-0">
+
+                            <AvatarImage
+
+                              src={employee.avatar}
+
+                              alt={employee.name}
+
+                            />
+
+                            <AvatarFallback className="text-xs">
+
+                              {employee.name
+
+                                .split(" ")
+
+                                .map((n) => n[0])
+
+                                .join("")}
+
+                            </AvatarFallback>
+
+                          </Avatar>
+
+                          <div className="min-w-0">
+
+                            <div className="font-medium text-sm truncate">
+
+                              {employee.name}
+
+                            </div>
+
+                            <div className="text-xs text-muted-foreground truncate">
+
+                              {employee.email}
+
+                            </div>
+
+                          </div>
+
+                        </div>
+
+                      </TableCell>
+
+                      <TableCell className="font-mono text-xs">
+
+                        {employee.employeeId}
+
+                      </TableCell>
+
+                      <TableCell className="text-sm">
+
+                        {employee.department}
+
+                      </TableCell>
+
+                      <TableCell className="text-sm">
+
+                        {employee.position}
+
+                      </TableCell>
+
+                      <TableCell className="text-sm">
+
+                        {new Date(employee.joinDate).toLocaleDateString()}
+
+                      </TableCell>
+
+                      <TableCell>{getStatusBadge(employee.status)}</TableCell>
+
+                      <TableCell className="text-right">
+
+                        <div className="flex justify-end space-x-1">
+
+                          <Button
+
+                            size="sm"
+
+                            variant="outline"
+
+                            className="h-8 w-8 p-0"
+
+                            onClick={() =>
+
+                              viewEmployeeProfile(employee.employeeId)
+
+                            }
+
+                          >
+
+                            <Eye className="h-3 w-3" />
+
+                          </Button>
+
+                          <Button
+
+                            size="sm"
+
+                            variant="outline"
+
+                            className="h-8 w-8 p-0"
+
+                          >
+
+                            <Edit className="h-3 w-3" />
+
+                          </Button>
+
+                        </div>
+
+                      </TableCell>
+
+                    </TableRow>
+
+                  ))}
+
+                </TableBody>
+
+              </Table>
+
+            </div>
+
+          </Card>
+
+        </TabsContent>
+
+      </Tabs>
+
+
+
+      {/* Add Employee Modal */}
+
+      <AddEmployeeModal
+
+        isOpen={isAddEmployeeModalOpen}
+
+        onClose={() => setIsAddEmployeeModalOpen(false)}
+
+        onSave={handleAddEmployee}
+
+      />
+
+    </div>
+
+  );
+
+};
+
+
+
+export default Employees;
+
+

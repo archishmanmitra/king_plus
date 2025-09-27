@@ -194,11 +194,12 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
 
       const { employee, invitation } = await response.json();
 
-      onSave({ ...employee, invitation });
+      // Don't call onSave immediately - wait until admin copies the link
+      // onSave({ ...employee, invitation });
       const url = `${window.location.origin}/invite?token=${invitation.token}`;
       setInviteUrl(url);
       setShowInvite(true);
-      toast({ title: 'Success', description: 'Employee added and invitation created.' });
+      toast({ title: 'Success', description: 'Employee added and invitation created. Please copy and share the invitation link below.' });
     } catch (e: any) {
       toast({ title: 'Error', description: e?.message || 'Something went wrong', variant: 'destructive' });
     } finally {
@@ -207,6 +208,25 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
   };
 
   const handleCancel = () => {
+    // If we have an invite URL, save the employee data before closing
+    if (inviteUrl && showInvite) {
+      // Get the employee data from the current state
+      const newEmployee = {
+        id: `EMP${Date.now()}`, // Generate a temporary ID
+        employeeId: `EMP${Date.now()}`,
+        name: `${employeeData.officialInfo.firstName} ${employeeData.officialInfo.lastName}`.trim() || 'New Employee',
+        email: employeeData.userDetails.email,
+        phone: employeeData.personalInfo.phoneNumber || 'N/A',
+        position: employeeData.officialInfo.designation || 'Employee',
+        department: employeeData.officialInfo.stream || 'General',
+        manager: employeeData.officialInfo.unitHead || 'N/A',
+        joinDate: employeeData.officialInfo.dateOfJoining || new Date().toISOString().split('T')[0],
+        status: 'active',
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+      };
+      onSave(newEmployee);
+    }
+    
     setEmployeeData(emptyEmployeeData);
     setActiveTab('user');
     setInviteUrl(null);
@@ -305,6 +325,15 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
                 data={employeeData.officialInfo} 
                 canEdit={true}
                 isEditMode={true}
+                onChange={(field, value) => {
+                  setEmployeeData(prev => ({
+                    ...prev,
+                    officialInfo: {
+                      ...prev.officialInfo,
+                      [field]: value
+                    }
+                  }));
+                }}
               />
             </TabsContent>
             
@@ -315,28 +344,56 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
                 isEditMode={true}
                 showBankAccount={false}
                 showRetiralOnly={true}
+                onChange={(field, value) => {
+                  setEmployeeData(prev => ({
+                    ...prev,
+                    financialInfo: {
+                      ...prev.financialInfo,
+                      retiral: {
+                        ...prev.financialInfo.retiral,
+                        [field]: value
+                      }
+                    }
+                  }));
+                }}
               />
             </TabsContent>
           </Tabs>
 
           {showInvite && inviteUrl && (
-            <div className="space-y-2 p-4 border rounded-md bg-muted/30">
-              <Label>Invitation URL (expires in 24 hours)</Label>
+            <div className="space-y-4 p-6 border-2 border-green-200 rounded-lg bg-green-50">
               <div className="flex items-center space-x-2">
-                <Input readOnly value={inviteUrl} className="flex-1" />
-                <Button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(inviteUrl)
-                      toast({ title: 'Copied', description: 'Invitation URL copied to clipboard.' })
-                    } catch (e) {
-                      toast({ title: 'Copy failed', description: 'Please copy the link manually.', variant: 'destructive' })
-                    }
-                  }}
-                >
-                  Copy
-                </Button>
+                <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                <Label className="text-green-800 font-semibold">Employee Created Successfully!</Label>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-green-700">
+                  Invitation URL (expires in 24 hours from now)
+                </Label>
+                <div className="flex items-center space-x-2">
+                  <Input 
+                    readOnly 
+                    value={inviteUrl} 
+                    className="flex-1 font-mono text-sm bg-white border-green-300" 
+                  />
+                  <Button
+                    type="button"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(inviteUrl)
+                        toast({ title: 'Copied!', description: 'Invitation URL copied to clipboard. Share this link with the employee.' })
+                      } catch (e) {
+                        toast({ title: 'Copy failed', description: 'Please copy the link manually.', variant: 'destructive' })
+                      }
+                    }}
+                  >
+                    Copy Link
+                  </Button>
+                </div>
+                <p className="text-xs text-green-600">
+                  <strong>Important:</strong> Share this link with the employee. They must use it within 24 hours to complete their account setup.
+                </p>
               </div>
             </div>
           )}
@@ -344,7 +401,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
           {/* Action Buttons */}
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
-              {showInvite ? 'Close' : 'Cancel'}
+              {showInvite ? 'Done & Add to List' : 'Cancel'}
             </Button>
             {!showInvite && (
               <Button onClick={handleSave} disabled={isSubmitting}>

@@ -14,9 +14,10 @@ interface OfficialInformationProps {
   data: any;
   canEdit: boolean;
   isEditMode?: boolean;
+  onChange?: (field: string, value: any) => void;
 }
 
-const OfficialInformation: React.FC<OfficialInformationProps> = ({ data, canEdit, isEditMode = false }) => {
+const OfficialInformation: React.FC<OfficialInformationProps> = ({ data, canEdit, isEditMode = false, onChange }) => {
   const [activeTab, setActiveTab] = useState('personal');
 
   return (
@@ -49,7 +50,8 @@ const OfficialInformation: React.FC<OfficialInformationProps> = ({ data, canEdit
                       <Label htmlFor="firstName">First Name</Label>
                       <Input 
                         id="firstName" 
-                        defaultValue={data.firstName} 
+                        value={data.firstName || ''} 
+                        onChange={(e) => onChange?.('firstName', e.target.value)}
                         disabled={!canEdit}
                       />
                     </div>
@@ -57,7 +59,8 @@ const OfficialInformation: React.FC<OfficialInformationProps> = ({ data, canEdit
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input 
                         id="lastName" 
-                        defaultValue={data.lastName} 
+                        value={data.lastName || ''} 
+                        onChange={(e) => onChange?.('lastName', e.target.value)}
                         disabled={!canEdit}
                       />
                     </div>
@@ -65,7 +68,8 @@ const OfficialInformation: React.FC<OfficialInformationProps> = ({ data, canEdit
                       <Label htmlFor="knownAs">Known As</Label>
                       <Input 
                         id="knownAs" 
-                        defaultValue={data.knownAs} 
+                        value={data.knownAs || ''} 
+                        onChange={(e) => onChange?.('knownAs', e.target.value)}
                         disabled={!canEdit}
                       />
                     </div>
@@ -74,7 +78,8 @@ const OfficialInformation: React.FC<OfficialInformationProps> = ({ data, canEdit
                       <Input 
                         id="dateOfJoining" 
                         type="date" 
-                        defaultValue={data.dateOfJoining} 
+                        value={data.dateOfJoining || ''} 
+                        onChange={(e) => onChange?.('dateOfJoining', e.target.value)}
                         disabled={!canEdit}
                       />
                     </div>
@@ -83,7 +88,8 @@ const OfficialInformation: React.FC<OfficialInformationProps> = ({ data, canEdit
                       <div className="flex items-center space-x-2">
                         <Checkbox 
                           id="jobConfirmation" 
-                          defaultChecked={data.jobConfirmation} 
+                          checked={data.jobConfirmation || false} 
+                          onCheckedChange={(checked) => onChange?.('jobConfirmation', checked)}
                           disabled={!canEdit}
                         />
                         <Label htmlFor="jobConfirmation" className="text-sm">
@@ -95,7 +101,8 @@ const OfficialInformation: React.FC<OfficialInformationProps> = ({ data, canEdit
                       <Label htmlFor="role">Role</Label>
                       <Input 
                         id="role" 
-                        defaultValue={data.role} 
+                        value={data.role || ''} 
+                        onChange={(e) => onChange?.('role', e.target.value)}
                         disabled={!canEdit}
                       />
                     </div>
@@ -103,7 +110,8 @@ const OfficialInformation: React.FC<OfficialInformationProps> = ({ data, canEdit
                       <Label htmlFor="designation">Designation</Label>
                       <Input 
                         id="designation" 
-                        defaultValue={data.designation} 
+                        value={data.designation || ''} 
+                        onChange={(e) => onChange?.('designation', e.target.value)}
                         disabled={!canEdit}
                       />
                     </div>
