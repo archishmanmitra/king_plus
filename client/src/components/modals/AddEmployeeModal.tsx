@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Save, UserPlus } from 'lucide-react';
+import PersonalInformation from '@/components/profile/PersonalInformation';
 import OfficialInformation from '@/components/profile/OfficialInformation';
+import FinancialInformation from '@/components/profile/FinancialInformation';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface AddEmployeeModalProps {
@@ -15,17 +17,6 @@ interface AddEmployeeModalProps {
   onClose: () => void;
   onSave: (employeeData: any) => void;
 }
-
-type NewEmployeeData = {
-  userDetails: {
-    email: string;
-    role: 'employee' | 'manager' | 'hr_manager' | 'global_admin';
-  };
-  officialInfo: {
-    firstName: string;
-    lastName: string;
-  };
-};
 
 const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, onSave }) => {
   const { toast } = useToast();
@@ -36,20 +27,142 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
   const [showInvite, setShowInvite] = useState(false);
 
   // Empty employee data structure for new employee
-  const emptyEmployeeData: NewEmployeeData = {
-    userDetails: { email: '', role: 'employee' },
-    officialInfo: { firstName: '', lastName: '' }
+  const emptyEmployeeData = {
+    userDetails: {
+      email: '',
+      role: 'employee'
+    },
+    personalInfo: {
+      firstName: '',
+      lastName: '',
+      gender: '',
+      dateOfBirth: '',
+      maritalStatus: '',
+      nationality: '',
+      primaryCitizenship: '',
+      phoneNumber: '',
+      email: '',
+      addresses: {
+        present: {
+          contactName: '',
+          address1: '',
+          city: '',
+          state: '',
+          country: '',
+          pinCode: '',
+          mobileNumber: '',
+          alternativeMobile: '',
+          area: '',
+          landmark: '',
+          latitude: 0,
+          longitude: 0
+        },
+        primary: {
+          contactName: '',
+          address1: '',
+          city: '',
+          state: '',
+          country: '',
+          pinCode: '',
+          mobileNumber: '',
+          alternativeMobile: '',
+          area: '',
+          landmark: '',
+          latitude: 0,
+          longitude: 0
+        },
+        emergency: {
+          contactName: '',
+          relation: '',
+          phoneNumber: '',
+          address: {
+            contactName: '',
+            address1: '',
+            city: '',
+            state: '',
+            country: '',
+            pinCode: '',
+            mobileNumber: ''
+          }
+        }
+      },
+      passport: {
+        passportNumber: '',
+        expiryDate: '',
+        issuingOffice: '',
+        issuingCountry: '',
+        contactNumber: '',
+        address: ''
+      },
+      identityNumbers: {
+        aadharNumber: '',
+        panNumber: '',
+        nsr: {
+          itpin: '',
+          tin: ''
+        }
+      },
+      dependents: [],
+      education: [],
+      experience: []
+    },
+    officialInfo: {
+      firstName: '',
+      lastName: '',
+      knownAs: '',
+      dateOfJoining: '',
+      jobConfirmation: false,
+      role: '',
+      designation: '',
+      stream: '',
+      subStream: '',
+      baseLocation: '',
+      currentLocation: '',
+      unit: '',
+      unitHead: '',
+      confirmationDetails: {
+        status: '',
+        confirmationDate: '',
+        approval: '',
+        rating: 0
+      },
+      documents: []
+    },
+    financialInfo: {
+      bankAccount: {
+        bankName: '',
+        accountNumber: '',
+        ifscCode: '',
+        modifiedDate: '',
+        country: ''
+      },
+      retiral: {
+        pfTotal: 0,
+        employeePF: 0,
+        employerPF: 0,
+        employeeESI: 0,
+        employerESI: 0,
+        professionalTax: 0,
+        incomeTax: 0,
+        netTakeHome: 0,
+        costToCompany: 0,
+        basicSalary: 0,
+        houseRentAllowance: 0,
+        specialAllowance: 0
+      }
+    }
   };
 
-  const [employeeData, setEmployeeData] = useState<NewEmployeeData>(emptyEmployeeData);
+  const [employeeData, setEmployeeData] = useState(emptyEmployeeData);
 
   const handleSave = async () => {
-    // Basic validation for required fields (minimal)
+    // Basic validation for required fields
     if (!employeeData.userDetails.email || !employeeData.userDetails.role ||
-        !employeeData.officialInfo.firstName || !employeeData.officialInfo.lastName) {
+        !employeeData.officialInfo.firstName || !employeeData.officialInfo.lastName || 
+        !employeeData.officialInfo.designation || !employeeData.officialInfo.dateOfJoining) {
       toast({
         title: "Validation Error",
-        description: "Please fill first name, last name, email and role.",
+        description: "Please fill email, role and all required official information fields.",
         variant: "destructive"
       });
       return;
@@ -68,6 +181,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
         body: JSON.stringify({
           userDetails: employeeData.userDetails,
           officialInfo: employeeData.officialInfo,
+          financialInfo: { retiral: employeeData.financialInfo.retiral },
           createdByUserId: user.id
         })
       });
@@ -100,64 +214,34 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) {
-          handleCancel();
-        }
-      }}
-    >
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card border border-border/60 shadow-xl rounded-2xl supports-[backdrop-filter]:backdrop-blur-md">
+    <Dialog open={isOpen} onOpenChange={handleCancel}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center text-lg md:text-xl font-semibold text-foreground">
+          <DialogTitle className="flex items-center">
             <UserPlus className="h-5 w-5 mr-2" />
             Add New Employee
           </DialogTitle>
-          <DialogDescription>
-            Enter first name, last name, email, and role to generate an invite link.
-          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 bg-muted/40 rounded-xl p-1">
-              <TabsTrigger value="user" className="rounded-lg text-sm data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="user">
                 User Details
               </TabsTrigger>
-              <TabsTrigger value="official" className="rounded-lg text-sm data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground">
+              <TabsTrigger value="personal" disabled>
+                Personal (Read-only)
+              </TabsTrigger>
+              <TabsTrigger value="official">
                 Official
+              </TabsTrigger>
+              <TabsTrigger value="financial">
+                Financial
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="user" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="first-name">First Name</Label>
-                  <Input
-                    id="first-name"
-                    value={employeeData.officialInfo.firstName}
-                    onChange={(e) => setEmployeeData(prev => ({
-                      ...prev,
-                      officialInfo: { ...prev.officialInfo, firstName: e.target.value }
-                    }))}
-                    placeholder="John"
-                    className="focus-premium"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last-name">Last Name</Label>
-                  <Input
-                    id="last-name"
-                    value={employeeData.officialInfo.lastName}
-                    onChange={(e) => setEmployeeData(prev => ({
-                      ...prev,
-                      officialInfo: { ...prev.officialInfo, lastName: e.target.value }
-                    }))}
-                    placeholder="Doe"
-                    className="focus-premium"
-                  />
-                </div>
                 <div className="space-y-2">
                   <Label htmlFor="user-email">Email</Label>
                   <Input
@@ -169,24 +253,18 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
                       userDetails: { ...prev.userDetails, email: e.target.value }
                     }))}
                     placeholder="employee@company.com"
-                    className="focus-premium"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="user-role">Role</Label>
                   <Select
                     value={employeeData.userDetails.role}
-                    onValueChange={(val) =>
-                      setEmployeeData(prev => ({
-                        ...prev,
-                        userDetails: {
-                          ...prev.userDetails,
-                          role: val as NewEmployeeData['userDetails']['role']
-                        }
-                      }))
-                    }
+                    onValueChange={(val) => setEmployeeData(prev => ({
+                      ...prev,
+                      userDetails: { ...prev.userDetails, role: val }
+                    }))}
                   >
-                    <SelectTrigger id="user-role" className="focus-premium">
+                    <SelectTrigger id="user-role">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -201,7 +279,22 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
               <p className="text-xs text-muted-foreground">The invitation link will be sent to this email and will expire in 24 hours.</p>
             </TabsContent>
             
-            
+            <TabsContent value="personal" className="space-y-4">
+              <div className="p-6 border-2 border-dashed border-muted rounded-lg text-center">
+                <div className="text-muted-foreground">
+                  <UserPlus className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">Personal Information</h3>
+                  <p className="text-sm">
+                    Personal information will be empty for new employees.
+                    <br />
+                    Employees can fill this information themselves after account creation.
+                  </p>
+                  <p className="text-sm mt-2 text-amber-600">
+                    <strong>Note:</strong> Admin/HR can only edit Official and Financial information.
+                  </p>
+                </div>
+              </div>
+            </TabsContent>
             
             <TabsContent value="official" className="space-y-4">
               <OfficialInformation 
@@ -211,14 +304,22 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
               />
             </TabsContent>
             
-            
+            <TabsContent value="financial" className="space-y-4">
+              <FinancialInformation 
+                data={employeeData.financialInfo} 
+                canEdit={true}
+                isEditMode={true}
+                showBankAccount={false}
+                showRetiralOnly={true}
+              />
+            </TabsContent>
           </Tabs>
 
           {showInvite && inviteUrl && (
-            <div className="space-y-2 p-4 border border-border/60 rounded-lg bg-muted/20">
+            <div className="space-y-2 p-4 border rounded-md bg-muted/30">
               <Label>Invitation URL (expires in 24 hours)</Label>
               <div className="flex items-center space-x-2">
-                <Input readOnly value={inviteUrl} className="flex-1 focus-premium" />
+                <Input readOnly value={inviteUrl} className="flex-1" />
                 <Button
                   type="button"
                   onClick={async () => {
@@ -232,29 +333,19 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
                 >
                   Copy
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    const mailto = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(employeeData.userDetails.email)}&su=${encodeURIComponent('Your KIN-G+ invitation')}&body=${encodeURIComponent('Please complete your registration using this link: ' + inviteUrl)}`
-                    window.open(mailto, '_blank')
-                  }}
-                >
-                  Send Gmail
-                </Button>
               </div>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-border/60">
+          <div className="flex justify-end space-x-3 pt-4 border-t">
             <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               {showInvite ? 'Close' : 'Cancel'}
             </Button>
             {!showInvite && (
               <Button onClick={handleSave} disabled={isSubmitting}>
                 <Save className="h-4 w-4 mr-2" />
-                {isSubmitting ? 'Creating...' : 'Create Invite Link'}
+                {isSubmitting ? 'Adding...' : 'Add Employee'}
               </Button>
             )}
           </div>
