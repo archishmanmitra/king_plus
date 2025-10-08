@@ -25,19 +25,7 @@ enum EmployeeStatus {
   terminated
 }
 
-enum AttendanceStatus {
-  present
-  absent
-  late
-  half_day
-}
 
-enum AttendanceMethod {
-  biometric
-  geo
-  selfie
-  manual
-}
 
 enum LeaveType {
   earned
@@ -148,6 +136,7 @@ model User {
   invitations UserInvitation[]
 
   @@map("users")
+  Attendance Attendance[]
 }
 
 model Employee {
@@ -354,20 +343,35 @@ model UserInvitation {
 model Attendance {
   id             String            @id @default(cuid())
   employeeId     String
-  date           DateTime
+  workDate       DateTime           // normalized to start of day (00:00)
   clockIn        DateTime
   clockOut       DateTime?
   totalHours     Float             @default(0)
-  overtimeHours  Float             @default(0)
-  status         AttendanceStatus
-  method         AttendanceMethod
-  location       String?
-  notes          String?
+  status         String            @default("submitted") // submitted | approved | rejected
+  approverId     String?
+  submittedAt    DateTime?
+  approvedAt     DateTime?
 
-  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  // Relations
+  employee       Employee          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  approver       User?             @relation(fields: [approverId], references: [id], onDelete: SetNull)
+  timestamps     AttendanceTimestamp[]
 
-  @@unique([employeeId, date])
+  @@unique([employeeId, workDate])
+  @@index([employeeId, workDate])
   @@map("attendances")
+}
+
+model AttendanceTimestamp {
+  id            String   @id @default(cuid())
+  attendanceId  String
+  startTime     DateTime
+  endTime       DateTime? 
+
+  attendance Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+
+  @@index([attendanceId])
+  @@map("attendance_timestamps")
 }
 
 model LeaveRequest {
