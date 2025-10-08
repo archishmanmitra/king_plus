@@ -1,17 +1,29 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { Save, UserPlus } from 'lucide-react';
-import PersonalInformation from '@/components/profile/PersonalInformation';
-import OfficialInformation from '@/components/profile/OfficialInformation';
-import FinancialInformation from '@/components/profile/FinancialInformation';
-import { useAuth } from '@/contexts/AuthContext';
-const API_URL= import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { Save, UserPlus } from "lucide-react";
+import PersonalInformation from "@/components/profile/PersonalInformation";
+import OfficialInformation from "@/components/profile/OfficialInformation";
+import FinancialInformation from "@/components/profile/FinancialInformation";
+import { useAuth } from "@/contexts/AuthContext";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 interface AddEmployeeModalProps {
   isOpen: boolean;
@@ -19,10 +31,14 @@ interface AddEmployeeModalProps {
   onSave: (employeeData: any) => void;
 }
 
-const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, onSave }) => {
+const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+}) => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('user');
+  const [activeTab, setActiveTab] = useState("user");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [showInvite, setShowInvite] = useState(false);
@@ -30,112 +46,112 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
   // Empty employee data structure for new employee
   const emptyEmployeeData = {
     userDetails: {
-      email: '',
-      role: 'employee'
+      email: "",
+      role: "employee",
     },
     personalInfo: {
-      firstName: '',
-      lastName: '',
-      gender: '',
-      dateOfBirth: '',
-      maritalStatus: '',
-      nationality: '',
-      primaryCitizenship: '',
-      phoneNumber: '',
-      email: '',
+      firstName: "",
+      lastName: "",
+      gender: "",
+      dateOfBirth: "",
+      maritalStatus: "",
+      nationality: "",
+      primaryCitizenship: "",
+      phoneNumber: "",
+      email: "",
       addresses: {
         present: {
-          contactName: '',
-          address1: '',
-          city: '',
-          state: '',
-          country: '',
-          pinCode: '',
-          mobileNumber: '',
-          alternativeMobile: '',
-          area: '',
-          landmark: '',
+          contactName: "",
+          address1: "",
+          city: "",
+          state: "",
+          country: "",
+          pinCode: "",
+          mobileNumber: "",
+          alternativeMobile: "",
+          area: "",
+          landmark: "",
           latitude: 0,
-          longitude: 0
+          longitude: 0,
         },
         primary: {
-          contactName: '',
-          address1: '',
-          city: '',
-          state: '',
-          country: '',
-          pinCode: '',
-          mobileNumber: '',
-          alternativeMobile: '',
-          area: '',
-          landmark: '',
+          contactName: "",
+          address1: "",
+          city: "",
+          state: "",
+          country: "",
+          pinCode: "",
+          mobileNumber: "",
+          alternativeMobile: "",
+          area: "",
+          landmark: "",
           latitude: 0,
-          longitude: 0
+          longitude: 0,
         },
         emergency: {
-          contactName: '',
-          relation: '',
-          phoneNumber: '',
+          contactName: "",
+          relation: "",
+          phoneNumber: "",
           address: {
-            contactName: '',
-            address1: '',
-            city: '',
-            state: '',
-            country: '',
-            pinCode: '',
-            mobileNumber: ''
-          }
-        }
+            contactName: "",
+            address1: "",
+            city: "",
+            state: "",
+            country: "",
+            pinCode: "",
+            mobileNumber: "",
+          },
+        },
       },
       passport: {
-        passportNumber: '',
-        expiryDate: '',
-        issuingOffice: '',
-        issuingCountry: '',
-        contactNumber: '',
-        address: ''
+        passportNumber: "",
+        expiryDate: "",
+        issuingOffice: "",
+        issuingCountry: "",
+        contactNumber: "",
+        address: "",
       },
       identityNumbers: {
-        aadharNumber: '',
-        panNumber: '',
+        aadharNumber: "",
+        panNumber: "",
         nsr: {
-          itpin: '',
-          tin: ''
-        }
+          itpin: "",
+          tin: "",
+        },
       },
       dependents: [],
       education: [],
-      experience: []
+      experience: [],
     },
     officialInfo: {
-      firstName: '',
-      lastName: '',
-      knownAs: '',
-      dateOfJoining: '',
+      firstName: "",
+      lastName: "",
+      knownAs: "",
+      dateOfJoining: "",
       jobConfirmation: false,
-      role: '',
-      designation: '',
-      stream: '',
-      subStream: '',
-      baseLocation: '',
-      currentLocation: '',
-      unit: '',
-      unitHead: '',
+      role: "",
+      designation: "",
+      stream: "",
+      subStream: "",
+      baseLocation: "",
+      currentLocation: "",
+      unit: "",
+      unitHead: "",
       confirmationDetails: {
-        status: '',
-        confirmationDate: '',
-        approval: '',
-        rating: 0
+        status: "",
+        confirmationDate: "",
+        approval: "",
+        rating: 0,
       },
-      documents: []
+      documents: [],
     },
     financialInfo: {
       bankAccount: {
-        bankName: '',
-        accountNumber: '',
-        ifscCode: '',
-        modifiedDate: '',
-        country: ''
+        bankName: "",
+        accountNumber: "",
+        ifscCode: "",
+        modifiedDate: "",
+        country: "",
       },
       retiral: {
         pfTotal: 0,
@@ -149,47 +165,57 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
         costToCompany: 0,
         basicSalary: 0,
         houseRentAllowance: 0,
-        specialAllowance: 0
-      }
-    }
+        specialAllowance: 0,
+      },
+    },
   };
 
   const [employeeData, setEmployeeData] = useState(emptyEmployeeData);
 
   const handleSave = async () => {
     // Basic validation for required fields
-    if (!employeeData.userDetails.email || !employeeData.userDetails.role ||
-        !employeeData.officialInfo.firstName || !employeeData.officialInfo.lastName || 
-        !employeeData.officialInfo.designation || !employeeData.officialInfo.dateOfJoining) {
+    if (
+      !employeeData.userDetails.email ||
+      !employeeData.userDetails.role ||
+      !employeeData.officialInfo.firstName ||
+      !employeeData.officialInfo.lastName ||
+      !employeeData.officialInfo.designation ||
+      !employeeData.officialInfo.dateOfJoining
+    ) {
       toast({
         title: "Validation Error",
-        description: "Please fill email, role and all required official information fields.",
-        variant: "destructive"
+        description:
+          "Please fill email, role and all required official information fields.",
+        variant: "destructive",
       });
       return;
     }
 
     if (!user?.id) {
-      toast({ title: 'Not authenticated', description: 'Please login first', variant: 'destructive' });
+      toast({
+        title: "Not authenticated",
+        description: "Please login first",
+        variant: "destructive",
+      });
       return;
     }
 
     try {
       setIsSubmitting(true);
       const response = await fetch(`${API_URL}/employees`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userDetails: employeeData.userDetails,
           officialInfo: employeeData.officialInfo,
           financialInfo: { retiral: employeeData.financialInfo.retiral },
-          createdByUserId: user.id
-        })
+          createdByUserId: user.id,
+        }),
       });
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
-        throw new Error(err?.error || 'Failed to create employee');
+        throw new Error(err?.error || "Failed to create employee");
       }
 
       const { employee, invitation } = await response.json();
@@ -199,9 +225,17 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
       const url = `${window.location.origin}/invite?token=${invitation.token}`;
       setInviteUrl(url);
       setShowInvite(true);
-      toast({ title: 'Success', description: 'Employee added and invitation created. Please copy and share the invitation link below.' });
+      toast({
+        title: "Success",
+        description:
+          "Employee added and invitation created. Please copy and share the invitation link below.",
+      });
     } catch (e: any) {
-      toast({ title: 'Error', description: e?.message || 'Something went wrong', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: e?.message || "Something went wrong",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -214,21 +248,26 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
       const newEmployee = {
         id: `EMP${Date.now()}`, // Generate a temporary ID
         employeeId: `EMP${Date.now()}`,
-        name: `${employeeData.officialInfo.firstName} ${employeeData.officialInfo.lastName}`.trim() || 'New Employee',
+        name:
+          `${employeeData.officialInfo.firstName} ${employeeData.officialInfo.lastName}`.trim() ||
+          "New Employee",
         email: employeeData.userDetails.email,
-        phone: employeeData.personalInfo.phoneNumber || 'N/A',
-        position: employeeData.officialInfo.designation || 'Employee',
-        department: employeeData.officialInfo.stream || 'General',
-        manager: employeeData.officialInfo.unitHead || 'N/A',
-        joinDate: employeeData.officialInfo.dateOfJoining || new Date().toISOString().split('T')[0],
-        status: 'active',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+        phone: employeeData.personalInfo.phoneNumber || "N/A",
+        position: employeeData.officialInfo.designation || "Employee",
+        department: employeeData.officialInfo.stream || "General",
+        manager: employeeData.officialInfo.unitHead || "N/A",
+        joinDate:
+          employeeData.officialInfo.dateOfJoining ||
+          new Date().toISOString().split("T")[0],
+        status: "active",
+        avatar:
+          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
       };
       onSave(newEmployee);
     }
-    
+
     setEmployeeData(emptyEmployeeData);
-    setActiveTab('user');
+    setActiveTab("user");
     setInviteUrl(null);
     setShowInvite(false);
     onClose();
@@ -243,12 +282,13 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
             Add New Employee
           </DialogTitle>
           <DialogDescription>
-            Create a new employee account and send an invitation to complete their profile setup.
+            Create a new employee account and send an invitation to complete
+            their profile setup.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          {/* <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="user">
                 User Details
@@ -358,33 +398,100 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
                 }}
               />
             </TabsContent>
-          </Tabs>
-
+          </Tabs> */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="space-y-2">
+              <Label htmlFor="username">Name</Label>
+              <Input
+                id="username"
+                type="text"
+                value={employeeData.userDetails.email}
+                onChange={(e) =>
+                  setEmployeeData((prev) => ({
+                    ...prev,
+                    userDetails: { ...prev.userDetails, email: e.target.value },
+                  }))
+                }
+                placeholder="Walter White"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="user-email">Email</Label>
+              <Input
+                id="user-email"
+                type="email"
+                value={employeeData.userDetails.email}
+                onChange={(e) =>
+                  setEmployeeData((prev) => ({
+                    ...prev,
+                    userDetails: { ...prev.userDetails, email: e.target.value },
+                  }))
+                }
+                placeholder="employee@company.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="user-role">Role</Label>
+              <Select
+                value={employeeData.userDetails.role}
+                onValueChange={(val) =>
+                  setEmployeeData((prev) => ({
+                    ...prev,
+                    userDetails: { ...prev.userDetails, role: val },
+                  }))
+                }
+              >
+                <SelectTrigger id="user-role">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="employee">Employee</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="hr_manager">HR Manager</SelectItem>
+                  <SelectItem value="global_admin">Global Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            The invitation link will be sent to this email and will expire in 24
+            hours.
+          </p>
           {showInvite && inviteUrl && (
             <div className="space-y-4 p-6 border-2 border-green-200 rounded-lg bg-green-50">
               <div className="flex items-center space-x-2">
                 <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                <Label className="text-green-800 font-semibold">Employee Created Successfully!</Label>
+                <Label className="text-green-800 font-semibold">
+                  Employee Created Successfully!
+                </Label>
               </div>
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-green-700">
                   Invitation URL (expires in 24 hours from now)
                 </Label>
                 <div className="flex items-center space-x-2">
-                  <Input 
-                    readOnly 
-                    value={inviteUrl} 
-                    className="flex-1 font-mono text-sm bg-white border-green-300" 
+                  <Input
+                    readOnly
+                    value={inviteUrl}
+                    className="flex-1 font-mono text-sm bg-white border-green-300"
                   />
                   <Button
                     type="button"
                     className="bg-green-600 hover:bg-green-700 text-white"
                     onClick={async () => {
                       try {
-                        await navigator.clipboard.writeText(inviteUrl)
-                        toast({ title: 'Copied!', description: 'Invitation URL copied to clipboard. Share this link with the employee.' })
+                        await navigator.clipboard.writeText(inviteUrl);
+                        toast({
+                          title: "Copied!",
+                          description:
+                            "Invitation URL copied to clipboard. Share this link with the employee.",
+                        });
                       } catch (e) {
-                        toast({ title: 'Copy failed', description: 'Please copy the link manually.', variant: 'destructive' })
+                        toast({
+                          title: "Copy failed",
+                          description: "Please copy the link manually.",
+                          variant: "destructive",
+                        });
                       }
                     }}
                   >
@@ -392,7 +499,9 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
                   </Button>
                 </div>
                 <p className="text-xs text-green-600">
-                  <strong>Important:</strong> Share this link with the employee. They must use it within 24 hours to complete their account setup.
+                  <strong>Important:</strong> Share this link with the employee.
+                  They must use it within 24 hours to complete their account
+                  setup.
                 </p>
               </div>
             </div>
@@ -400,13 +509,18 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
-              {showInvite ? 'Done & Add to List' : 'Cancel'}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+            >
+              {showInvite ? "Done & Add to List" : "Cancel"}
             </Button>
             {!showInvite && (
               <Button onClick={handleSave} disabled={isSubmitting}>
                 <Save className="h-4 w-4 mr-2" />
-                {isSubmitting ? 'Adding...' : 'Add Employee'}
+                {isSubmitting ? "Adding..." : "Add Employee"}
               </Button>
             )}
           </div>
