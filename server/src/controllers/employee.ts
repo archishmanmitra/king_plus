@@ -34,8 +34,7 @@ export const createEmployee = async (req: Request, res: Response) => {
     const employee = await prisma.employee.create({
       data: {
         employeeId: `EMP${Date.now()}`,
-        joinDate: new Date(),
-        status: 'pending',
+
       },
     })
 
@@ -283,5 +282,357 @@ export const getEmployeeByEmployeeId = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error('Get employee by id error:', err)
     return res.status(500).json({ error: 'Failed to fetch employee', details: err?.message })
+  }
+}
+
+export const updateEmployeeProfile = async (req: Request, res: Response) => {
+  try {
+    const { employeeId } = req.params
+    if (!employeeId) return res.status(400).json({ error: 'employeeId is required' })
+
+    // Fetch target employee
+    let employee = await prisma.employee.findUnique({ where: { employeeId } })
+    // If missing, create minimal employee and optionally link to requesting user
+    if (!employee) {
+      employee = await prisma.employee.create({
+        data: {
+          employeeId,
+        }
+      })
+      if (req.user) {
+        const reqUser = await prisma.user.findUnique({ where: { id: req.user.id } })
+        if (reqUser && !reqUser.employeeId) {
+          await prisma.user.update({ where: { id: reqUser.id }, data: { employeeId: employee.id } })
+        }
+      }
+    }
+
+    // Authorization: non-admins can only update their own profile and only certain sections
+    const requestingUser = req.user
+    let isAdmin = false
+    if (requestingUser) {
+      isAdmin = requestingUser.role === 'global_admin' || requestingUser.role === 'hr_manager'
+    }
+
+    if (!isAdmin) {
+      const user = await prisma.user.findUnique({ where: { id: requestingUser?.id } })
+      if (!user || user.employeeId !== employee.id) {
+        return res.status(403).json({ error: 'You can only update your own profile' })
+      }
+    }
+
+    const body = req.body || {}
+    const updates: any = {}
+
+    // Official info - admin only or self with admin role per business rule
+    if (body.officialInfo) {
+      if (!isAdmin) {
+        return res.status(403).json({ error: 'Only HR/Admin can update official information' })
+      }
+      const o = body.officialInfo
+      await prisma.employeeOfficial.upsert({
+        where: { employeeId: employee.id },
+        update: {
+          firstName: o.firstName ?? undefined,
+          lastName: o.lastName ?? undefined,
+          knownAs: o.knownAs ?? undefined,
+          designation: o.designation ?? undefined,
+          stream: o.stream ?? undefined,
+          subStream: o.subStream ?? undefined,
+          baseLocation: o.baseLocation ?? undefined,
+          currentLocation: o.currentLocation ?? undefined,
+          unit: o.unit ?? undefined,
+          unitHead: o.unitHead ?? undefined,
+          jobConfirmation: o.jobConfirmation ?? undefined,
+          confirmationDate: o.confirmationDetails?.confirmationDate ? new Date(o.confirmationDetails.confirmationDate) : undefined,
+          approval: o.confirmationDetails?.approval ?? undefined,
+          rating: o.confirmationDetails?.rating ?? undefined,
+        },
+        create: {
+          employeeId: employee.id,
+          firstName: o.firstName || '',
+          lastName: o.lastName || '',
+          knownAs: o.knownAs || null,
+          designation: o.designation || null,
+          stream: o.stream || null,
+          subStream: o.subStream || null,
+          baseLocation: o.baseLocation || null,
+          currentLocation: o.currentLocation || null,
+          unit: o.unit || null,
+          unitHead: o.unitHead || null,
+          jobConfirmation: !!o.jobConfirmation,
+          confirmationDate: o.confirmationDetails?.confirmationDate ? new Date(o.confirmationDetails.confirmationDate) : null,
+          approval: o.confirmationDetails?.approval || null,
+          rating: typeof o.confirmationDetails?.rating === 'number' ? o.confirmationDetails.rating : null,
+        }
+      })
+    }
+
+    // Personal info - self editable by any user; HR/Admin can edit anyone
+    if (body.personalInfo) {
+      const p = body.personalInfo
+      await prisma.employeePersonal.upsert({
+        where: { employeeId: employee.id },
+        update: {
+          firstName: p.firstName ?? undefined,
+          lastName: p.lastName ?? undefined,
+          gender: p.gender ?? undefined,
+          dateOfBirth: p.dateOfBirth ? new Date(p.dateOfBirth) : undefined,
+          maritalStatus: p.maritalStatus ?? undefined,
+          nationality: p.nationality ?? undefined,
+          primaryCitizenship: p.primaryCitizenship ?? undefined,
+          phoneNumber: p.phoneNumber ?? undefined,
+          personalEmail: p.email ?? undefined,
+        },
+        create: {
+          employeeId: employee.id,
+          firstName: p.firstName || null,
+          lastName: p.lastName || null,
+          gender: p.gender || null,
+          dateOfBirth: p.dateOfBirth ? new Date(p.dateOfBirth) : null,
+          maritalStatus: p.maritalStatus || null,
+          nationality: p.nationality || null,
+          primaryCitizenship: p.primaryCitizenship || null,
+          phoneNumber: p.phoneNumber || null,
+          personalEmail: p.email || null,
+        }
+      })
+    }
+
+    // Bank Account - self editable
+    if (body.financialInfo?.bankAccount) {
+      const b = body.financialInfo.bankAccount
+      await prisma.bankAccount.upsert({
+        where: { employeeId: employee.id },
+        update: {
+          bankName: b.bankName ?? undefined,
+          accountNumber: b.accountNumber ?? undefined,
+          ifscCode: b.ifscCode ?? undefined,
+          country: b.branchName ?? undefined,
+          modifiedDate: new Date(),
+        },
+        create: {
+          employeeId: employee.id,
+          bankName: b.bankName || null,
+          accountNumber: b.accountNumber || null,
+          ifscCode: b.ifscCode || null,
+          country: b.branchName || null,
+          modifiedDate: new Date(),
+        }
+      })
+    }
+
+    // Retiral - admin only
+    if (body.financialInfo?.retiral) {
+      if (!isAdmin) {
+        return res.status(403).json({ error: 'Only HR/Admin can update retiral information' })
+      }
+      const r = body.financialInfo.retiral
+      await prisma.employeeRetiral.upsert({
+        where: { employeeId: employee.id },
+        update: {
+          pfTotal: r.pfTotal ?? undefined,
+          employeePF: r.employeePF ?? undefined,
+          employerPF: r.employerPF ?? undefined,
+          employeeESI: r.employeeESI ?? undefined,
+          employerESI: r.employerESI ?? undefined,
+          professionalTax: r.professionalTax ?? undefined,
+          incomeTax: r.incomeTax ?? undefined,
+          netTakeHome: r.netTakeHome ?? undefined,
+          costToCompany: r.costToCompany ?? undefined,
+          basicSalary: r.basicSalary ?? undefined,
+          houseRentAllowance: r.houseRentAllowance ?? undefined,
+          specialAllowance: r.specialAllowance ?? undefined,
+        },
+        create: {
+          employeeId: employee.id,
+          pfTotal: r.pfTotal ?? 0,
+          employeePF: r.employeePF ?? 0,
+          employerPF: r.employerPF ?? 0,
+          employeeESI: r.employeeESI ?? 0,
+          employerESI: r.employerESI ?? 0,
+          professionalTax: r.professionalTax ?? 0,
+          incomeTax: r.incomeTax ?? 0,
+          netTakeHome: r.netTakeHome ?? 0,
+          costToCompany: r.costToCompany ?? 0,
+          basicSalary: r.basicSalary ?? 0,
+          houseRentAllowance: r.houseRentAllowance ?? 0,
+          specialAllowance: r.specialAllowance ?? 0,
+        }
+      })
+    }
+
+    // Passport
+    if (body.personalInfo?.passport) {
+      const pp = body.personalInfo.passport
+      await prisma.passport.upsert({
+        where: { employeeId: employee.id },
+        update: {
+          passportNumber: pp.passportNumber ?? undefined,
+          expiryDate: pp.expiryDate ? new Date(pp.expiryDate) : undefined,
+          issuingOffice: pp.issuingOffice ?? undefined,
+          issuingCountry: pp.issuingCountry ?? undefined,
+          contactNumber: pp.contactNumber ?? undefined,
+          address: pp.address ?? undefined,
+        },
+        create: {
+          employeeId: employee.id,
+          passportNumber: pp.passportNumber || null,
+          expiryDate: pp.expiryDate ? new Date(pp.expiryDate) : null,
+          issuingOffice: pp.issuingOffice || null,
+          issuingCountry: pp.issuingCountry || null,
+          contactNumber: pp.contactNumber || null,
+          address: pp.address || null,
+        }
+      })
+    }
+
+    // Identity Numbers
+    if (body.personalInfo?.identityNumbers) {
+      const idn = body.personalInfo.identityNumbers
+      await prisma.identityNumbers.upsert({
+        where: { employeeId: employee.id },
+        update: {
+          aadhar: idn.aadharNumber ?? undefined,
+          pan: idn.panNumber ?? undefined,
+          nsrItpin: idn.nsr?.itpin ?? undefined,
+          nsrTin: idn.nsr?.tin ?? undefined,
+        },
+        create: {
+          employeeId: employee.id,
+          aadhar: idn.aadharNumber || null,
+          pan: idn.panNumber || null,
+          nsrItpin: idn.nsr?.itpin || null,
+          nsrTin: idn.nsr?.tin || null,
+        }
+      })
+    }
+
+    // Addresses (present, primary, emergency) — replace-or-upsert by type when provided
+    if (body.personalInfo?.addresses) {
+      const a = body.personalInfo.addresses
+      const saveAddr = async (type: 'present'|'primary'|'emergency', payload?: any) => {
+        if (!payload) return
+        const existing = await prisma.address.findFirst({ where: { employeeId: employee.id, type } })
+        if (existing) {
+          await prisma.address.update({
+            where: { id: existing.id },
+            data: {
+              contactName: payload.contactName ?? undefined,
+              address1: payload.address1 ?? undefined,
+              city: payload.city ?? undefined,
+              state: payload.state ?? undefined,
+              country: payload.country ?? undefined,
+              pinCode: payload.pinCode ?? undefined,
+              mobileNumber: payload.mobileNumber ?? undefined,
+              alternativeMobile: payload.alternativeMobile ?? undefined,
+              area: payload.area ?? undefined,
+              landmark: payload.landmark ?? undefined,
+              latitude: payload.latitude ? Number(payload.latitude) : undefined,
+              longitude: payload.longitude ? Number(payload.longitude) : undefined,
+              relation: type === 'emergency' ? (payload.relation ?? undefined) : undefined,
+              emergencyPhone: type === 'emergency' ? (payload.phoneNumber ?? undefined) : undefined,
+            }
+          })
+        } else {
+          await prisma.address.create({
+            data: {
+              employeeId: employee.id,
+              type,
+              contactName: payload.contactName || null,
+              address1: payload.address1 || null,
+              city: payload.city || null,
+              state: payload.state || null,
+              country: payload.country || null,
+              pinCode: payload.pinCode || null,
+              mobileNumber: payload.mobileNumber || null,
+              alternativeMobile: payload.alternativeMobile || null,
+              area: payload.area || null,
+              landmark: payload.landmark || null,
+              latitude: payload.latitude ? Number(payload.latitude) : null,
+              longitude: payload.longitude ? Number(payload.longitude) : null,
+              relation: type === 'emergency' ? (payload.relation || null) : null,
+              emergencyPhone: type === 'emergency' ? (payload.phoneNumber || null) : null,
+            }
+          })
+        }
+      }
+      await saveAddr('present', a.present)
+      await saveAddr('primary', a.primary)
+      await saveAddr('emergency', a.emergency)
+    }
+
+    // For arrays like dependents/education/experience, support full replace when provided
+    if (Array.isArray(body.personalInfo?.dependents)) {
+      await prisma.dependent.deleteMany({ where: { employeeId: employee.id } })
+      if (body.personalInfo.dependents.length) {
+        await prisma.dependent.createMany({ data: body.personalInfo.dependents.map((d: any) => ({
+          employeeId: employee.id,
+          relation: d.relation || 'other',
+          name: d.name || '',
+          nationality: d.nationality || '',
+          dateOfBirth: d.dateOfBirth ? new Date(d.dateOfBirth) : new Date(),
+          occupation: d.occupation || null,
+          relationEmployeeNumber: d.relationEmployeeNumber || null,
+          passport: d.passport || null,
+          address: d.address || null,
+        })) })
+      }
+    }
+
+    if (Array.isArray(body.personalInfo?.education)) {
+      await prisma.education.deleteMany({ where: { employeeId: employee.id } })
+      if (body.personalInfo.education.length) {
+        await prisma.education.createMany({ data: body.personalInfo.education.map((ed: any) => ({
+          employeeId: employee.id,
+          branch: ed.branch || '',
+          instituteName: ed.instituteName || '',
+          passoutYear: ed.passoutYear || '',
+          qualification: ed.qualification || '',
+          universityName: ed.universityName || '',
+          level: ed.level || 'ug',
+        })) })
+      }
+    }
+
+    if (Array.isArray(body.personalInfo?.experience)) {
+      await prisma.experience.deleteMany({ where: { employeeId: employee.id } })
+      if (body.personalInfo.experience.length) {
+        await prisma.experience.createMany({ data: body.personalInfo.experience.map((ex: any) => ({
+          employeeId: employee.id,
+          country: ex.country || '',
+          organisationName: ex.organisationName || '',
+          fromDate: ex.fromDate ? new Date(ex.fromDate) : new Date(),
+          toDate: ex.toDate ? new Date(ex.toDate) : null,
+          designation: ex.designation || '',
+          city: ex.city || '',
+          documentProof: ex.documentProof || null,
+        })) })
+      }
+    }
+
+    // Return fresh copy
+    const fresh = await prisma.employee.findUnique({
+      where: { employeeId },
+      include: {
+        user: true,
+        official: true,
+        personal: true,
+        bankAccount: true,
+        retiral: true,
+        addresses: true,
+        passport: true,
+        identity: true,
+        documents: true,
+        dependents: true,
+        educations: true,
+        experiences: true,
+      }
+    })
+    const profile = mapEmployeeToProfile(fresh)
+    return res.json({ employee: profile })
+  } catch (err: any) {
+    console.error('Update employee error:', err)
+    return res.status(500).json({ error: 'Failed to update employee', details: err?.message })
   }
 }

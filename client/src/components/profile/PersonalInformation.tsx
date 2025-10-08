@@ -14,9 +14,10 @@ interface PersonalInformationProps {
   data: any;
   canEdit: boolean;
   isEditMode?: boolean;
+  onChange?: (nextData: any) => void;
 }
 
-const PersonalInformation: React.FC<PersonalInformationProps> = ({ data, canEdit, isEditMode = false }) => {
+const PersonalInformation: React.FC<PersonalInformationProps> = ({ data, canEdit, isEditMode = false, onChange }) => {
   const [activeTab, setActiveTab] = useState('personal');
   const [localData, setLocalData] = useState(data);
   
@@ -27,6 +28,14 @@ const PersonalInformation: React.FC<PersonalInformationProps> = ({ data, canEdit
   useEffect(() => {
     setLocalData(data);
   }, [data]);
+
+  const updateLocal = (updater: (prev: any) => any) => {
+    setLocalData(prev => {
+      const next = updater(prev);
+      if (onChange) onChange(next);
+      return next;
+    });
+  };
 
   // Add new dependent
   const addDependent = () => {
@@ -137,7 +146,8 @@ const PersonalInformation: React.FC<PersonalInformationProps> = ({ data, canEdit
                       <Label htmlFor="firstName">First Name</Label>
                       <Input 
                         id="firstName" 
-                        defaultValue={localData.firstName} 
+                        value={localData.firstName}
+                        onChange={(e) => updateLocal(prev => ({ ...prev, firstName: e.target.value }))}
                         disabled={!canEditAllPersonalTabs}
                       />
                     </div>
@@ -145,13 +155,14 @@ const PersonalInformation: React.FC<PersonalInformationProps> = ({ data, canEdit
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input 
                         id="lastName" 
-                        defaultValue={localData.lastName} 
+                        value={localData.lastName}
+                        onChange={(e) => updateLocal(prev => ({ ...prev, lastName: e.target.value }))}
                         disabled={!canEditAllPersonalTabs}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="gender">Gender</Label>
-                      <Select defaultValue={localData.gender} disabled={!canEditAllPersonalTabs}>
+                      <Select value={localData.gender} disabled={!canEditAllPersonalTabs} onValueChange={(val) => updateLocal(prev => ({ ...prev, gender: val }))}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -167,13 +178,14 @@ const PersonalInformation: React.FC<PersonalInformationProps> = ({ data, canEdit
                       <Input 
                         id="dateOfBirth" 
                         type="date" 
-                        defaultValue={localData.dateOfBirth} 
+                        value={localData.dateOfBirth}
+                        onChange={(e) => updateLocal(prev => ({ ...prev, dateOfBirth: e.target.value }))}
                         disabled={!canEditAllPersonalTabs}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="maritalStatus">Marital Status</Label>
-                      <Select defaultValue={localData.maritalStatus} disabled={!canEditAllPersonalTabs}>
+                      <Select value={localData.maritalStatus} disabled={!canEditAllPersonalTabs} onValueChange={(val) => updateLocal(prev => ({ ...prev, maritalStatus: val }))}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -189,7 +201,8 @@ const PersonalInformation: React.FC<PersonalInformationProps> = ({ data, canEdit
                       <Label htmlFor="nationality">Nationality</Label>
                       <Input 
                         id="nationality" 
-                        defaultValue={localData.nationality} 
+                        value={localData.nationality}
+                        onChange={(e) => updateLocal(prev => ({ ...prev, nationality: e.target.value }))}
                         disabled={!canEditAllPersonalTabs}
                       />
                     </div>
@@ -197,7 +210,8 @@ const PersonalInformation: React.FC<PersonalInformationProps> = ({ data, canEdit
                       <Label htmlFor="primaryCitizenship">Primary Citizenship</Label>
                       <Input 
                         id="primaryCitizenship" 
-                        defaultValue={localData.primaryCitizenship} 
+                        value={localData.primaryCitizenship}
+                        onChange={(e) => updateLocal(prev => ({ ...prev, primaryCitizenship: e.target.value }))}
                         disabled={!canEditAllPersonalTabs}
                       />
                     </div>
@@ -205,7 +219,8 @@ const PersonalInformation: React.FC<PersonalInformationProps> = ({ data, canEdit
                       <Label htmlFor="phoneNumber">Phone Number</Label>
                       <Input 
                         id="phoneNumber" 
-                        defaultValue={localData.phoneNumber} 
+                        value={localData.phoneNumber}
+                        onChange={(e) => updateLocal(prev => ({ ...prev, phoneNumber: e.target.value }))}
                         disabled={!canEditAllPersonalTabs}
                       />
                     </div>
@@ -214,7 +229,8 @@ const PersonalInformation: React.FC<PersonalInformationProps> = ({ data, canEdit
                       <Input 
                         id="email" 
                         type="email" 
-                        defaultValue={localData.email} 
+                        value={localData.email}
+                        onChange={(e) => updateLocal(prev => ({ ...prev, email: e.target.value }))}
                         disabled={!canEditAllPersonalTabs}
                       />
                     </div>

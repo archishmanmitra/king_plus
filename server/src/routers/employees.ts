@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createEmployee, getEmployees, getEmployeeByEmployeeId } from '../controllers/employee'
+import { createEmployee, getEmployees, getEmployeeByEmployeeId, updateEmployeeProfile } from '../controllers/employee'
 import { authenticateToken, requireAdmin } from '../middleware/auth'
 
 const router = Router()
@@ -12,5 +12,8 @@ router.get('/', authenticateToken, getEmployees)
 
 // Get employee by external employeeId (protected)
 router.get('/:employeeId', authenticateToken, getEmployeeByEmployeeId)
+
+// Partial update profile (supports sub-sections); mixed permissions handled inside controller
+router.patch('/:employeeId', authenticateToken, updateEmployeeProfile)
 
 export default router

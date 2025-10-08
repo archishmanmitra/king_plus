@@ -12,7 +12,7 @@ import { Edit, Plus, MapPin, Phone, Mail, Calendar, User, Building, GraduationCa
 import PersonalInformation from '@/components/profile/PersonalInformation';
 import OfficialInformation from '@/components/profile/OfficialInformation';
 import FinancialInformation from '@/components/profile/FinancialInformation';
-import { getEmployeeByEmployeeId } from '@/api/employees';
+import { getEmployeeByEmployeeId, updateEmployeeProfile } from '@/api/employees';
 
 const MyProfile: React.FC = () => {
   const { user } = useAuth();
@@ -22,6 +22,9 @@ const MyProfile: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [draftPersonal, setDraftPersonal] = useState<any>(null);
+  const [draftOfficial, setDraftOfficial] = useState<any>(null);
+  const [draftFinancial, setDraftFinancial] = useState<any>(null);
   
   // Target employee id: either route param or current user's
   const targetEmployeeId = employeeId || user?.employeeId;
@@ -160,11 +163,21 @@ const MyProfile: React.FC = () => {
         const merged = { ...emptyProfile, ...serverProfile };
         // Ensure name from authenticated user if empty
         if (!merged.name && user?.name) merged.name = user.name;
-        if (isMounted) setProfile(merged);
+        if (isMounted) {
+          setProfile(merged);
+          setDraftPersonal(merged.personalInfo);
+          setDraftOfficial(merged.officialInfo);
+          setDraftFinancial(merged.financialInfo);
+        }
       } catch (e) {
         const fallback = { ...emptyProfile };
         if (!fallback.name && user?.name) fallback.name = user.name;
-        if (isMounted) setProfile(fallback);
+        if (isMounted) {
+          setProfile(fallback);
+          setDraftPersonal(fallback.personalInfo);
+          setDraftOfficial(fallback.officialInfo);
+          setDraftFinancial(fallback.financialInfo);
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -258,26 +271,38 @@ const MyProfile: React.FC = () => {
                       
                       <TabsContent value="personal" className="space-y-4">
                         <PersonalInformation 
-                          data={profile?.personalInfo || emptyProfile.personalInfo} 
+                          data={draftPersonal || emptyProfile.personalInfo} 
                           canEdit={canEditPersonal}
                           isEditMode={true}
+                          onChange={(next) => setDraftPersonal(next)}
                         />
                       </TabsContent>
                       
                       <TabsContent value="official" className="space-y-4">
                         <OfficialInformation 
-                          data={profile?.officialInfo || emptyProfile.officialInfo} 
+                          data={draftOfficial || emptyProfile.officialInfo} 
                           canEdit={canEditOfficial}
                           isEditMode={true}
+                          onChange={(field, value) => setDraftOfficial((prev: any) => ({ ...prev, [field]: value }))}
                         />
                       </TabsContent>
                       
                       <TabsContent value="financial" className="space-y-4">
                         <FinancialInformation 
-                          data={profile?.financialInfo || emptyProfile.financialInfo} 
+                          data={draftFinancial || emptyProfile.financialInfo} 
                           canEditBank={canEditBankDetails}
                           canEditRetiral={canEditRetiral}
                           isEditMode={true}
+                          canEdit={canEditBankDetails || canEditRetiral}
+                          onChange={(field, value) => setDraftFinancial((prev: any) => {
+                            const next = { ...prev }
+                            if (['bankName','accountNumber','ifscCode','branchName'].includes(field)) {
+                              next.bankAccount = { ...(next.bankAccount || {}), [field]: value }
+                            } else {
+                              next.retiral = { ...(next.retiral || {}), [field]: value }
+                            }
+                            return next
+                          })}
                         />
                       </TabsContent>
                     </Tabs>
@@ -286,9 +311,19 @@ const MyProfile: React.FC = () => {
                       <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
                         Cancel
                       </Button>
-                      <Button onClick={() => {
-                        // TODO: Implement save functionality
-                        setIsEditModalOpen(false);
+                      <Button onClick={async () => {
+                        try {
+                          const payload: any = {}
+                          if (draftPersonal && canEditPersonal) payload.personalInfo = draftPersonal
+                          if (draftOfficial && canEditOfficial) payload.officialInfo = draftOfficial
+                          if (draftFinancial) payload.financialInfo = draftFinancial
+                          const id = profile?.employeeId || targetEmployeeId || ''
+                          const res = await updateEmployeeProfile(id, payload)
+                          setProfile(res.employee)
+                          setIsEditModalOpen(false)
+                        } catch (e) {
+                          console.error(e)
+                        }
                       }}>
                         Save Changes
                       </Button>

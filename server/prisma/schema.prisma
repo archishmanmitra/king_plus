@@ -153,8 +153,8 @@ model User {
 model Employee {
   id         String         @id @default(cuid())
   employeeId String         @unique
-  joinDate   DateTime
-  status     EmployeeStatus @default(active)
+  // joinDate   DateTime
+  // status     EmployeeStatus @default(active)
   avatar     String?
 
   // Core relations
