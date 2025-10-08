@@ -87,41 +87,41 @@ const navigationItems = [
     icon: DollarSign,
     roles: ["global_admin", "hr_manager"],
   },
-  {
-    title: "Expenses",
-    url: "/expenses",
-    icon: FileText,
-    roles: ["global_admin", "hr_manager", "manager", "employee"],
-  },
-  {
-    title: "Performance",
-    url: "/performance",
-    icon: Target,
-    roles: [
-      "global_admin",
-      "hr_manager",
-      "employee",
-      "manager",
-    ],
-  },
-  {
-    title: "Projects",
-    url: "/projects",
-    icon: FolderOpen,
-    roles: ["global_admin", "manager", "employee"],
-  },
-  {
-    title: "Reports",
-    url: "/reports",
-    icon: TrendingUp,
-    roles: ["global_admin", "hr_manager", "manager"],
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
-    roles: ["global_admin", "hr_manager"],
-  },
+  // {
+  //   title: "Expenses",
+  //   url: "/expenses",
+  //   icon: FileText,
+  //   roles: ["global_admin", "hr_manager", "manager", "employee"],
+  // },
+  // {
+  //   title: "Performance",
+  //   url: "/performance",
+  //   icon: Target,
+  //   roles: [
+  //     "global_admin",
+  //     "hr_manager",
+  //     "employee",
+  //     "manager",
+  //   ],
+  // },
+  // {
+  //   title: "Projects",
+  //   url: "/projects",
+  //   icon: FolderOpen,
+  //   roles: ["global_admin", "manager", "employee"],
+  // },
+  // {
+  //   title: "Reports",
+  //   url: "/reports",
+  //   icon: TrendingUp,
+  //   roles: ["global_admin", "hr_manager", "manager"],
+  // },
+  // {
+  //   title: "Settings",
+  //   url: "/settings",
+  //   icon: Settings,
+  //   roles: ["global_admin", "hr_manager"],
+  // },
 ];
 
 export function AppSidebar() {

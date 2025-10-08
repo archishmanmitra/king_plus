@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -7,11 +7,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
-import { mockEmployees } from '@/data/mockData';
+// Removed mock data; page now supports empty/default profile when data is unavailable
 import { Edit, Plus, MapPin, Phone, Mail, Calendar, User, Building, GraduationCap, Briefcase, CreditCard, PiggyBank, Shield, Crown, ArrowLeft } from 'lucide-react';
 import PersonalInformation from '@/components/profile/PersonalInformation';
 import OfficialInformation from '@/components/profile/OfficialInformation';
 import FinancialInformation from '@/components/profile/FinancialInformation';
+import { getEmployeeByEmployeeId } from '@/api/employees';
 
 const MyProfile: React.FC = () => {
   const { user } = useAuth();
@@ -19,22 +20,163 @@ const MyProfile: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('personal');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   
-  // Find the employee data - either the current user's or the specified employee
+  // Target employee id: either route param or current user's
   const targetEmployeeId = employeeId || user?.employeeId;
-  const employeeData = mockEmployees.find(emp => emp.employeeId === targetEmployeeId);
+
+  // Empty/default profile shape to ensure subcomponents render without errors when data is absent
+  const emptyProfile = {
+    avatar: '',
+    name: '',
+    position: '',
+    department: '',
+    employeeId: targetEmployeeId || '',
+    personalInfo: {
+      firstName: '',
+      lastName: '',
+      gender: '',
+      dateOfBirth: '',
+      maritalStatus: '',
+      nationality: '',
+      primaryCitizenship: '',
+      phoneNumber: '',
+      email: '',
+      addresses: {
+        present: {
+          contactName: '',
+          address1: '',
+          city: '',
+          state: '',
+          country: '',
+          pinCode: '',
+          mobileNumber: '',
+          alternativeMobile: '',
+          area: '',
+          landmark: '',
+          latitude: '',
+          longitude: ''
+        },
+        primary: {
+          contactName: '',
+          address1: '',
+          city: '',
+          state: '',
+          country: '',
+          pinCode: '',
+          mobileNumber: '',
+          alternativeMobile: '',
+          area: '',
+          landmark: '',
+          latitude: '',
+          longitude: ''
+        },
+        emergency: {
+          contactName: '',
+          relation: '',
+          phoneNumber: '',
+          address: {
+            address1: '',
+            city: '',
+            state: '',
+            country: '',
+            pinCode: ''
+          }
+        }
+      },
+      passport: {
+        passportNumber: '',
+        expiryDate: '',
+        issuingOffice: '',
+        issuingCountry: '',
+        contactNumber: '',
+        address: ''
+      },
+      identityNumbers: {
+        aadharNumber: '',
+        panNumber: '',
+        nsr: { itpin: '', tin: '' }
+      },
+      dependents: [],
+      education: [],
+      experience: []
+    },
+    officialInfo: {
+      firstName: '',
+      lastName: '',
+      knownAs: '',
+      dateOfJoining: '',
+      jobConfirmation: false,
+      role: '',
+      designation: '',
+      stream: '',
+      subStream: '',
+      baseLocation: '',
+      currentLocation: '',
+      unit: '',
+      unitHead: '',
+      confirmationDetails: {
+        status: '',
+        confirmationDate: '',
+        approval: '',
+        rating: 0
+      },
+      documents: []
+    },
+    financialInfo: {
+      bankAccount: {
+        bankName: '',
+        accountNumber: '',
+        ifscCode: '',
+        branchName: ''
+      },
+      retiral: {
+        basicSalary: 0,
+        houseRentAllowance: 0,
+        specialAllowance: 0,
+        employerPF: 0,
+        employerESI: 0,
+        employeePF: 0,
+        employeeESI: 0,
+        professionalTax: 0,
+        incomeTax: 0,
+        netTakeHome: 0,
+        costToCompany: 0,
+        pfTotal: 0
+      }
+    }
+  };
+
+  // Fetch real data; fall back to emptyProfile while ensuring name from basic user schema
+  useEffect(() => {
+    let isMounted = true;
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const id = targetEmployeeId || '';
+        const json = await getEmployeeByEmployeeId(id);
+        const serverProfile = json?.employee || {};
+        const merged = { ...emptyProfile, ...serverProfile };
+        // Ensure name from authenticated user if empty
+        if (!merged.name && user?.name) merged.name = user.name;
+        if (isMounted) setProfile(merged);
+      } catch (e) {
+        const fallback = { ...emptyProfile };
+        if (!fallback.name && user?.name) fallback.name = user.name;
+        if (isMounted) setProfile(fallback);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    if (targetEmployeeId) fetchProfile();
+    return () => { isMounted = false; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetEmployeeId]);
   
   // Check if viewing own profile or someone else's
   const isOwnProfile = !employeeId || employeeId === user?.employeeId;
   
-  if (!employeeData) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Employee data not found</p>
-      </div>
-    );
-  }
-
   // Permission logic based on user role and profile ownership
   // All users (except HR/Admin) can edit their own personal info + bank account
   // Permission logic:
@@ -80,13 +222,13 @@ const MyProfile: React.FC = () => {
         <CardHeader className="text-center">
           <div className="flex flex-col items-center space-y-4">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={employeeData.avatar} alt={employeeData.name} />
-              <AvatarFallback className="text-2xl">{employeeData.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+              <AvatarImage src={profile?.avatar || ''} alt={profile?.name || ''} />
+              <AvatarFallback className="text-2xl">{((profile?.name || user?.name || '')).split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">{employeeData.name}</h1>
-              <p className="text-xl text-muted-foreground">{employeeData.position}</p>
-              <p className="text-muted-foreground">{employeeData.department} • {employeeData.employeeId}</p>
+              <h1 className="text-3xl font-bold text-foreground">{profile?.name || user?.name || ''}</h1>
+              <p className="text-xl text-muted-foreground">{profile?.position || ''}</p>
+              <p className="text-muted-foreground">{profile?.department || ''} • {profile?.employeeId || targetEmployeeId}</p>
               <div className="mt-2">
                 {getRoleBadge(user?.role || 'employee')}
                 {!isOwnProfile && (
@@ -116,7 +258,7 @@ const MyProfile: React.FC = () => {
                       
                       <TabsContent value="personal" className="space-y-4">
                         <PersonalInformation 
-                          data={employeeData.personalInfo} 
+                          data={profile?.personalInfo || emptyProfile.personalInfo} 
                           canEdit={canEditPersonal}
                           isEditMode={true}
                         />
@@ -124,7 +266,7 @@ const MyProfile: React.FC = () => {
                       
                       <TabsContent value="official" className="space-y-4">
                         <OfficialInformation 
-                          data={employeeData.officialInfo} 
+                          data={profile?.officialInfo || emptyProfile.officialInfo} 
                           canEdit={canEditOfficial}
                           isEditMode={true}
                         />
@@ -132,7 +274,7 @@ const MyProfile: React.FC = () => {
                       
                       <TabsContent value="financial" className="space-y-4">
                         <FinancialInformation 
-                          data={employeeData.financialInfo} 
+                          data={profile?.financialInfo || emptyProfile.financialInfo} 
                           canEditBank={canEditBankDetails}
                           canEditRetiral={canEditRetiral}
                           isEditMode={true}
@@ -186,7 +328,7 @@ const MyProfile: React.FC = () => {
             </p>
           </div>
           <PersonalInformation 
-            data={employeeData.personalInfo} 
+            data={profile?.personalInfo || emptyProfile.personalInfo} 
             canEdit={canEditPersonal}
           />
         </TabsContent>
@@ -201,7 +343,7 @@ const MyProfile: React.FC = () => {
             </p>
           </div>
           <OfficialInformation 
-            data={employeeData.officialInfo} 
+            data={profile?.officialInfo || emptyProfile.officialInfo} 
             canEdit={canEditOfficial}
           />
         </TabsContent>
@@ -217,7 +359,7 @@ const MyProfile: React.FC = () => {
             </p>
           </div>
           <FinancialInformation 
-            data={employeeData.financialInfo} 
+            data={profile?.financialInfo || emptyProfile.financialInfo} 
             canEditBank={canEditBankDetails}
             canEditRetiral={canEditRetiral}
           />
