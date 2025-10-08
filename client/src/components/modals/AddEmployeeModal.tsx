@@ -46,7 +46,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
   // Empty employee data structure for new employee
   const emptyEmployeeData = {
     userDetails: {
-      username:"",
+      username: "",
       email: "",
       role: "employee",
     },
@@ -174,19 +174,11 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
   const [employeeData, setEmployeeData] = useState(emptyEmployeeData);
 
   const handleSave = async () => {
-    // Basic validation for required fields
-    if (
-      !employeeData.userDetails.email ||
-      !employeeData.userDetails.role ||
-      !employeeData.officialInfo.firstName ||
-      !employeeData.officialInfo.lastName ||
-      !employeeData.officialInfo.designation ||
-      !employeeData.officialInfo.dateOfJoining
-    ) {
+    // Basic validation for required fields (user-only invitation)
+    if (!employeeData.userDetails.email || !employeeData.userDetails.role) {
       toast({
         title: "Validation Error",
-        description:
-          "Please fill email, role and all required official information fields.",
+        description: "Please fill email and role.",
         variant: "destructive",
       });
       return;
@@ -203,13 +195,13 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
 
     try {
       setIsSubmitting(true);
-      const response = await fetch(`${API_URL}/employees`, {
+      // Create invitation only (no employee record here). The legacy full employee creation remains available elsewhere.
+      const response = await fetch(`${API_URL}/invitations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userDetails: employeeData.userDetails,
-          officialInfo: employeeData.officialInfo,
-          financialInfo: { retiral: employeeData.financialInfo.retiral },
+          email: employeeData.userDetails.email,
+          role: employeeData.userDetails.role,
           createdByUserId: user.id,
         }),
       });
@@ -219,7 +211,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
         throw new Error(err?.error || "Failed to create employee");
       }
 
-      const { employee, invitation } = await response.json();
+      const { invitation } = await response.json();
 
       // Don't call onSave immediately - wait until admin copies the link
       // onSave({ ...employee, invitation });
@@ -227,9 +219,9 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
       setInviteUrl(url);
       setShowInvite(true);
       toast({
-        title: "Success",
+        title: "Invitation Created",
         description:
-          "Employee added and invitation created. Please copy and share the invitation link below.",
+          "Share the generated invitation link with the user to register.",
       });
     } catch (e: any) {
       toast({
@@ -401,7 +393,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
             </TabsContent>
           </Tabs> */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="username">Name</Label>
               <Input
                 id="username"
@@ -410,7 +402,10 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                 onChange={(e) =>
                   setEmployeeData((prev) => ({
                     ...prev,
-                    userDetails: { ...prev.userDetails, username: e.target.value },
+                    userDetails: {
+                      ...prev.userDetails,
+                      username: e.target.value,
+                    },
                   }))
                 }
                 placeholder="Walter White"

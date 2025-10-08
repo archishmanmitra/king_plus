@@ -1,66 +1,84 @@
-import React, { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { useToast } from '@/hooks/use-toast'
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const InvitePage: React.FC = () => {
-  const [params] = useSearchParams()
-  const token = params.get('token') || ''
-  const { toast } = useToast()
-  const [loading, setLoading] = useState(true)
-  const [email, setEmail] = useState('')
-  const [role, setRole] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
+  const [params] = useSearchParams();
+  const token = params.get("token") || "";
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
 
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`/api/invitations/${token}`)
-        if (!res.ok) throw new Error('Invalid or expired invitation')
-        const data = await res.json()
-        if (data.status !== 'pending') throw new Error('Invitation already used or invalid')
-        setEmail(data.email)
-        setRole(data.role)
+        const res = await fetch(`/api/invitations/${token}`);
+        if (!res.ok) throw new Error("Invalid or expired invitation");
+        const data = await res.json();
+        setEmail(data.email);
+        setRole(data.role);
       } catch (e: any) {
-        toast({ title: 'Invitation error', description: e?.message || 'Invalid link', variant: 'destructive' })
+        toast({
+          title: "Invitation error",
+          description: e?.message || "Invalid link",
+          variant: "destructive",
+        });
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    if (token) load()
-  }, [token])
+    };
+    if (token) load();
+  }, [token]);
 
   const onSubmit = async () => {
     if (!password || password.length < 8) {
-      toast({ title: 'Password too short', description: 'Use at least 8 characters', variant: 'destructive' })
-      return
+      toast({
+        title: "Password too short",
+        description: "Use at least 8 characters",
+        variant: "destructive",
+      });
+      return;
     }
     if (password !== confirm) {
-      toast({ title: 'Mismatch', description: 'Passwords do not match', variant: 'destructive' })
-      return
+      toast({
+        title: "Mismatch",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
     }
     try {
-      const res = await fetch('/api/invitations/accept', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password })
-      })
+      const res = await fetch("/api/invitations/accept", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, password }),
+      });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || 'Failed to accept invitation')
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || "Failed to accept invitation");
       }
-      toast({ title: 'Success', description: 'Account created. You can sign in now.' })
-      window.location.href = '/'
+      toast({
+        title: "Success",
+        description: "Account created. You can sign in now.",
+      });
+      window.location.href = "/";
     } catch (e: any) {
-      toast({ title: 'Error', description: e?.message || 'Something went wrong', variant: 'destructive' })
+      toast({
+        title: "Error",
+        description: e?.message || "Something went wrong",
+        variant: "destructive",
+      });
     }
-  }
+  };
 
-  if (loading) return null
+  if (loading) return null;
 
   return (
     <div className="container mx-auto max-w-lg p-4 md:p-8">
@@ -80,11 +98,23 @@ const InvitePage: React.FC = () => {
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <Label htmlFor="pwd">Password</Label>
-              <Input id="pwd" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" />
+              <Input
+                id="pwd"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create a password"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm">Confirm Password</Label>
-              <Input id="confirm" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Re-enter password" />
+              <Input
+                id="confirm"
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder="Re-enter password"
+              />
             </div>
           </div>
           <div className="flex justify-end">
@@ -93,15 +123,7 @@ const InvitePage: React.FC = () => {
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default InvitePage
-
-
-
-
-
-
-
-
+export default InvitePage;
