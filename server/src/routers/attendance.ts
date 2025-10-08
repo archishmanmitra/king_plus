@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { approve, clockIn, clockOut, getMyAttendance, pause, resume, submitForApproval } from '../controllers/attendance'
+import { approve, clockIn, clockOut, getApprovalsForManager, getMyAttendance, pause, resume, submitForApproval } from '../controllers/attendance'
 
 const router = Router()
 
@@ -10,6 +10,7 @@ router.post('/clock-out', clockOut)
 router.post('/submit', submitForApproval)
 router.post('/:id/approve', approve)
 router.get('/employee/:employeeId', getMyAttendance)
+router.get('/approvals/:approverId', getApprovalsForManager)
 
 export default router
 
