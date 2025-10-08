@@ -46,6 +46,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
   // Empty employee data structure for new employee
   const emptyEmployeeData = {
     userDetails: {
+      username:"",
       email: "",
       role: "employee",
     },
@@ -405,11 +406,11 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               <Input
                 id="username"
                 type="text"
-                value={employeeData.userDetails.email}
+                value={employeeData.userDetails.username}
                 onChange={(e) =>
                   setEmployeeData((prev) => ({
                     ...prev,
-                    userDetails: { ...prev.userDetails, email: e.target.value },
+                    userDetails: { ...prev.userDetails, username: e.target.value },
                   }))
                 }
                 placeholder="Walter White"
