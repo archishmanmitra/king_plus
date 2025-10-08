@@ -27,3 +27,45 @@ export async function updateEmployeeProfile(employeeId: string, payload: any) {
 }
 
 
+// Attendance APIs
+export async function attendanceClockIn(employeeId: string) {
+  const res = await fetch(`/api/attendance/clock-in`, {
+    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ employeeId })
+  })
+  if (!res.ok) throw new Error('Clock-in failed')
+  return res.json()
+}
+
+export async function attendancePause(employeeId: string) {
+  const res = await fetch(`/api/attendance/pause`, {
+    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ employeeId })
+  })
+  if (!res.ok) throw new Error('Pause failed')
+  return res.json()
+}
+
+export async function attendanceResume(employeeId: string) {
+  const res = await fetch(`/api/attendance/resume`, {
+    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ employeeId })
+  })
+  if (!res.ok) throw new Error('Resume failed')
+  return res.json()
+}
+
+export async function attendanceClockOut(employeeId: string) {
+  const res = await fetch(`/api/attendance/clock-out`, {
+    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ employeeId })
+  })
+  if (!res.ok) throw new Error('Clock-out failed')
+  return res.json()
+}
+
+export async function attendanceSubmit(employeeId: string, approverUserId: string) {
+  const res = await fetch(`/api/attendance/submit`, {
+    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ employeeId, approverUserId })
+  })
+  if (!res.ok) throw new Error('Submit failed')
+  return res.json()
+}
+
+

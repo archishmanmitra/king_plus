@@ -3,9 +3,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,10 +14,7 @@ interface ClockOutModalProps {
 }
 
 export interface ClockOutFormData {
-  workType: 'personal' | 'official';
-  ableToWork: boolean;
-  approvalBy: string;
-  notes: string;
+  approverUserId: string;
 }
 
 export const ClockOutModal: React.FC<ClockOutModalProps> = ({ 
@@ -31,21 +25,31 @@ export const ClockOutModal: React.FC<ClockOutModalProps> = ({
 }) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState<ClockOutFormData>({
-    workType: 'official',
-    ableToWork: true,
-    approvalBy: '',
-    notes: ''
+    approverUserId: ''
   });
+  const [users, setUsers] = React.useState<Array<{ id: string; name: string }>>([]);
 
-  const managers = ['David Wilson', 'Emily Rodriguez', 'Soumodip Dey'];
+  React.useEffect(() => {
+    let abort = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/users', { credentials: 'include' });
+        if (!res.ok) return;
+        const json = await res.json();
+        const list = (json?.users || []).map((u: any) => ({ id: u.id, name: u.name || u.email })).filter((u: any) => u.id && u.name);
+        if (!abort) setUsers(list);
+      } catch {}
+    })();
+    return () => { abort = true };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.approvalBy) {
+    if (!formData.approverUserId) {
       toast({
         title: "Validation Error",
-        description: "Please select who will approve your clock out.",
+        description: "Please select an approver.",
         variant: "destructive",
       });
       return;
@@ -60,12 +64,7 @@ export const ClockOutModal: React.FC<ClockOutModalProps> = ({
   };
 
   const handleClose = () => {
-    setFormData({
-      workType: 'official',
-      ableToWork: true,
-      approvalBy: '',
-      notes: ''
-    });
+    setFormData({ approverUserId: '' });
     onClose();
   };
 
@@ -93,69 +92,23 @@ export const ClockOutModal: React.FC<ClockOutModalProps> = ({
             </div>
           </div>
 
-          {/* Work Type */}
-          <div className="space-y-3">
-            <Label className="text-sm">Work Type <span className="text-destructive">*</span></Label>
-            <RadioGroup 
-              value={formData.workType} 
-              onValueChange={(value: 'personal' | 'official') => 
-                setFormData({ ...formData, workType: value })
-              }
-              className="grid grid-cols-2 gap-3"
-            >
-              <label htmlFor="official" className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-muted/40">
-                <RadioGroupItem value="official" id="official" />
-                <span className="text-sm">Official</span>
-              </label>
-              <label htmlFor="personal" className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-muted/40">
-                <RadioGroupItem value="personal" id="personal" />
-                <span className="text-sm">Personal</span>
-              </label>
-            </RadioGroup>
-          </div>
-
-          {/* Able to Work Checkbox */}
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="ableToWork"
-              checked={formData.ableToWork}
-              onCheckedChange={(checked) => 
-                setFormData({ ...formData, ableToWork: checked as boolean })
-              }
-            />
-            <Label htmlFor="ableToWork" className="text-sm">I am able to work</Label>
-          </div>
-
           {/* Approval By */}
           <div className="space-y-2">
             <Label htmlFor="approvalBy" className="text-sm">To be approved by <span className="text-destructive">*</span></Label>
             <Select 
-              value={formData.approvalBy} 
-              onValueChange={(value) => setFormData({ ...formData, approvalBy: value })}
+              value={formData.approverUserId} 
+              onValueChange={(value) => setFormData({ ...formData, approverUserId: value })}
               required
             >
               <SelectTrigger id="approvalBy" className="focus-premium">
                 <SelectValue placeholder="Select approver" />
               </SelectTrigger>
               <SelectContent>
-                {managers.map(manager => (
-                  <SelectItem key={manager} value={manager}>{manager}</SelectItem>
+                {users.map((u) => (
+                  <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes" className="text-sm">Additional Notes</Label>
-            <Textarea
-              id="notes"
-              placeholder="Any additional notes or comments..."
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={4}
-              className="focus-premium"
-            />
           </div>
 
           <div className="flex justify-end gap-2 pt-2 border-t border-border/60">

@@ -8,7 +8,7 @@ const router = Router()
 router.post('/', authenticateToken, requireAdmin, createEmployee)
 
 // List all employees (protected)
-router.get('/', authenticateToken, getEmployees)
+router.get('/',  getEmployees)
 
 // Get employee by external employeeId (protected)
 router.get('/:employeeId', authenticateToken, getEmployeeByEmployeeId)

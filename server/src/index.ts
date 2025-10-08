@@ -4,6 +4,8 @@ import cors from 'cors'
 import helmet from 'helmet'
 import logger from './logger/logger'
 import employeesRouter from './routers/employees'
+import attendanceRouter from './routers/attendance'
+import usersRouter from './routers/users'
 import invitationsRouter from './routers/invitations'
 import authRouter from './routers/auth'
 
@@ -43,6 +45,8 @@ app.get('/api/test', (req, res) => {
 })
 
 app.use('/api/employees', employeesRouter)
+app.use('/api/attendance', attendanceRouter)
+app.use('/api/users', usersRouter)
 app.use('/api/invitations', invitationsRouter)
 app.use('/api/auth', authRouter)
 
