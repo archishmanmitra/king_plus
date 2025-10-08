@@ -9,29 +9,33 @@ function startOfDay(date: Date) {
   return d
 }
 
+async function resolveEmployeeDbId(employeeIdOrCode: string): Promise<string | null> {
+  // Try as internal id first
+  const byId = await prisma.employee.findUnique({ where: { id: employeeIdOrCode } })
+  if (byId) return byId.id
+  // Fallback to business code `employeeId`
+  const byCode = await prisma.employee.findUnique({ where: { employeeId: employeeIdOrCode } })
+  return byCode ? byCode.id : null
+}
+
 export const clockIn = async (req: Request, res: Response) => {
   try {
     const { employeeId } = req.body || {}
     if (!employeeId) return res.status(400).json({ error: 'employeeId required' })
+    const dbEmployeeId = await resolveEmployeeDbId(employeeId)
+    if (!dbEmployeeId) return res.status(404).json({ error: 'Employee not found' })
 
     const workDate = startOfDay(new Date())
-    let attendance = await prisma.attendance.findUnique({
-      where: { employeeId_workDate: { employeeId, workDate } },
+    let attendance = await (prisma as any).attendance.findUnique({
+      where: { employeeId_workDate: { employeeId: dbEmployeeId, workDate } },
     })
     if (!attendance) {
-      attendance = await prisma.attendance.create({
-        data: { employeeId, workDate, clockIn: new Date(), status: 'pending' },
+      attendance = await (prisma as any).attendance.create({
+        data: { employeeId: dbEmployeeId, workDate, clockIn: new Date() },
       })
     }
 
-    await prisma.attendanceTimestamp.create({
-      data: { attendanceId: attendance.id, startTime: new Date(), type: 'work' },
-    })
-
-    const fresh = await prisma.attendance.findUnique({
-      where: { id: attendance.id },
-      include: { timestamps: true },
-    })
+    const fresh = await (prisma as any).attendance.findUnique({ where: { id: attendance.id } })
     return res.json({ attendance: fresh })
   } catch (e: any) {
     return res.status(500).json({ error: e?.message || 'Clock-in failed' })
@@ -42,21 +46,12 @@ export const pause = async (req: Request, res: Response) => {
   try {
     const { employeeId } = req.body || {}
     if (!employeeId) return res.status(400).json({ error: 'employeeId required' })
+    const dbEmployeeId = await resolveEmployeeDbId(employeeId)
+    if (!dbEmployeeId) return res.status(404).json({ error: 'Employee not found' })
     const workDate = startOfDay(new Date())
-    const attendance = await prisma.attendance.findUnique({ where: { employeeId_workDate: { employeeId, workDate } } })
+    const attendance = await (prisma as any).attendance.findUnique({ where: { employeeId_workDate: { employeeId: dbEmployeeId, workDate } } })
     if (!attendance) return res.status(404).json({ error: 'No active attendance' })
-
-    const open = await prisma.attendanceTimestamp.findFirst({
-      where: { attendanceId: attendance.id, endTime: null, type: 'work' },
-      orderBy: { startTime: 'desc' },
-    })
-    if (open) {
-      await prisma.attendanceTimestamp.update({ where: { id: open.id }, data: { endTime: new Date() } })
-    }
-    const pauseTs = await prisma.attendanceTimestamp.create({
-      data: { attendanceId: attendance.id, startTime: new Date(), type: 'pause' },
-    })
-    return res.json({ timestamp: pauseTs })
+    return res.json({ ok: true })
   } catch (e: any) {
     return res.status(500).json({ error: e?.message || 'Pause failed' })
   }
@@ -66,21 +61,12 @@ export const resume = async (req: Request, res: Response) => {
   try {
     const { employeeId } = req.body || {}
     if (!employeeId) return res.status(400).json({ error: 'employeeId required' })
+    const dbEmployeeId = await resolveEmployeeDbId(employeeId)
+    if (!dbEmployeeId) return res.status(404).json({ error: 'Employee not found' })
     const workDate = startOfDay(new Date())
-    const attendance = await prisma.attendance.findUnique({ where: { employeeId_workDate: { employeeId, workDate } } })
+    const attendance = await (prisma as any).attendance.findUnique({ where: { employeeId_workDate: { employeeId: dbEmployeeId, workDate } } })
     if (!attendance) return res.status(404).json({ error: 'No active attendance' })
-
-    const pauseOpen = await prisma.attendanceTimestamp.findFirst({
-      where: { attendanceId: attendance.id, endTime: null, type: 'pause' },
-      orderBy: { startTime: 'desc' },
-    })
-    if (pauseOpen) {
-      await prisma.attendanceTimestamp.update({ where: { id: pauseOpen.id }, data: { endTime: new Date() } })
-    }
-    const workTs = await prisma.attendanceTimestamp.create({
-      data: { attendanceId: attendance.id, startTime: new Date(), type: 'work' },
-    })
-    return res.json({ timestamp: workTs })
+    return res.json({ ok: true })
   } catch (e: any) {
     return res.status(500).json({ error: e?.message || 'Resume failed' })
   }
@@ -90,23 +76,18 @@ export const clockOut = async (req: Request, res: Response) => {
   try {
     const { employeeId } = req.body || {}
     if (!employeeId) return res.status(400).json({ error: 'employeeId required' })
+    const dbEmployeeId = await resolveEmployeeDbId(employeeId)
+    if (!dbEmployeeId) return res.status(404).json({ error: 'Employee not found' })
     const workDate = startOfDay(new Date())
-    const attendance = await prisma.attendance.findUnique({ where: { employeeId_workDate: { employeeId, workDate } } })
+    const attendance = await prisma.attendance.findUnique({ where: { employeeId_date: { employeeId: dbEmployeeId, date: workDate } } })
     if (!attendance) return res.status(404).json({ error: 'No active attendance' })
-
-    const openTs = await prisma.attendanceTimestamp.findFirst({ where: { attendanceId: attendance.id, endTime: null }, orderBy: { startTime: 'desc' } })
-    if (openTs) await prisma.attendanceTimestamp.update({ where: { id: openTs.id }, data: { endTime: new Date() } })
-
-    const stamps = await prisma.attendanceTimestamp.findMany({ where: { attendanceId: attendance.id } })
-    const totalMs = stamps
-      .filter(s => s.type === 'work')
-      .reduce((acc, s) => acc + Math.max(0, (s.endTime ? new Date(s.endTime).getTime() : Date.now()) - new Date(s.startTime).getTime()), 0)
+    const end = new Date()
+    const totalMs = Math.max(0, end.getTime() - new Date(attendance.clockIn).getTime())
     const totalHours = Math.round((totalMs / 1000 / 3600) * 100) / 100
 
     const updated = await prisma.attendance.update({
       where: { id: attendance.id },
-      data: { clockOut: new Date(), totalHours },
-      include: { timestamps: true },
+      data: ({ clockOut: new Date(), totalHours } as any),
     })
     return res.json({ attendance: updated })
   } catch (e: any) {
@@ -118,14 +99,15 @@ export const submitForApproval = async (req: Request, res: Response) => {
   try {
     const { employeeId, approverUserId } = req.body || {}
     if (!employeeId || !approverUserId) return res.status(400).json({ error: 'employeeId and approverUserId required' })
+    const dbEmployeeId = await resolveEmployeeDbId(employeeId)
+    if (!dbEmployeeId) return res.status(404).json({ error: 'Employee not found' })
     const workDate = startOfDay(new Date())
-    const attendance = await prisma.attendance.findUnique({ where: { employeeId_workDate: { employeeId, workDate } } })
+    const attendance = await prisma.attendance.findUnique({ where: { employeeId_date: { employeeId: dbEmployeeId, date: workDate } } })
     if (!attendance) return res.status(404).json({ error: 'No attendance to submit' })
 
-    const updated = await prisma.attendance.update({
+    const updated = await (prisma as any).attendance.update({
       where: { id: attendance.id },
       data: { approverId: approverUserId, status: 'submitted', submittedAt: new Date() },
-      include: { timestamps: true, approver: true },
     })
     return res.json({ attendance: updated })
   } catch (e: any) {
@@ -136,7 +118,7 @@ export const submitForApproval = async (req: Request, res: Response) => {
 export const approve = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const updated = await prisma.attendance.update({ where: { id }, data: { status: 'approved', approvedAt: new Date() } })
+    const updated = await (prisma as any).attendance.update({ where: { id }, data: { status: 'approved', approvedAt: new Date() } })
     return res.json({ attendance: updated })
   } catch (e: any) {
     return res.status(500).json({ error: e?.message || 'Approve failed' })
@@ -145,8 +127,21 @@ export const approve = async (req: Request, res: Response) => {
 
 export const getMyAttendance = async (req: Request, res: Response) => {
   try {
-    const { employeeId } = req.params
-    const list = await prisma.attendance.findMany({ where: { employeeId }, orderBy: { workDate: 'desc' }, include: { timestamps: true, approver: true } })
+    const { employeeId } = req.params as any
+    const dbEmployeeId = await resolveEmployeeDbId(employeeId)
+    if (!dbEmployeeId) return res.status(404).json({ error: 'Employee not found' })
+    const list = await prisma.attendance.findMany({ where: { employeeId: dbEmployeeId }, orderBy: { date: 'desc' } })
+    return res.json({ attendances: list })
+  } catch (e: any) {
+    return res.status(500).json({ error: e?.message || 'Fetch failed' })
+  }
+}
+
+export const getApprovalsForManager = async (req: Request, res: Response) => {
+  try {
+    const { approverId } = req.params as any
+    if (!approverId) return res.status(400).json({ error: 'approverId required' })
+    const list = await (prisma as any).attendance.findMany({ where: { approverId, status: 'submitted' }, orderBy: { workDate: 'desc' } })
     return res.json({ attendances: list })
   } catch (e: any) {
     return res.status(500).json({ error: e?.message || 'Fetch failed' })
