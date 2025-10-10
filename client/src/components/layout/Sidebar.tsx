@@ -81,12 +81,12 @@ const navigationItems = [
       "manager",
     ],
   },
-  {
-    title: "Payroll",
-    url: "/payroll",
-    icon: DollarSign,
-    roles: ["global_admin", "hr_manager"],
-  },
+  // {
+  //   title: "Payroll",
+  //   url: "/payroll",
+  //   icon: DollarSign,
+  //   roles: ["global_admin", "hr_manager"],
+  // },
   // {
   //   title: "Expenses",
   //   url: "/expenses",
@@ -104,12 +104,12 @@ const navigationItems = [
   //     "manager",
   //   ],
   // },
-  // {
-  //   title: "Projects",
-  //   url: "/projects",
-  //   icon: FolderOpen,
-  //   roles: ["global_admin", "manager", "employee"],
-  // },
+  {
+    title: "Projects",
+    url: "/projects",
+    icon: FolderOpen,
+    roles: ["global_admin", "hr_manager", "manager", "employee"],
+  },
   // {
   //   title: "Reports",
   //   url: "/reports",

@@ -547,7 +547,7 @@ model KeyResult {
 
   @@map("key_results")
 }
-
+//manager aar admin e shudhu parbe eta edit korte
 model Project {
   id                   String              @id @default(cuid())
   name                 String
@@ -556,9 +556,9 @@ model Project {
   status               ProjectStatus       @default(planning)
   startDate            DateTime?
   endDate              DateTime?
-  budget               Float               @default(0)
-  billableHours        Float               @default(0)
-  nonBillableHours     Float               @default(0)
+  budget               Float?              @default(0)
+  billableHours        Float?               @default(0)
+  nonBillableHours     Float?               @default(0)
   teamMembers          String[]            // Array of employee IDs
   manager              String?
   progress             Float               @default(0)
