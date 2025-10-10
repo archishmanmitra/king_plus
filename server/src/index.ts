@@ -8,6 +8,8 @@ import attendanceRouter from './routers/attendance'
 import usersRouter from './routers/users'
 import invitationsRouter from './routers/invitations'
 import authRouter from './routers/auth'
+import leaveRouter from './routers/leave'
+import roleAssignmentRouter from './routers/roleAssignment'
 
 dotenv.config()
 
@@ -49,6 +51,8 @@ app.use('/api/attendance', attendanceRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/invitations', invitationsRouter)
 app.use('/api/auth', authRouter)
+app.use('/api/leave', leaveRouter)
+app.use('/api/roles', roleAssignmentRouter)
 
 
 app.listen(PORT,()=>{
