@@ -26,8 +26,8 @@ const MyProfile: React.FC = () => {
   const [draftOfficial, setDraftOfficial] = useState<any>(null);
   const [draftFinancial, setDraftFinancial] = useState<any>(null);
   
-  // Target employee id: either route param or current user's
-  const targetEmployeeId = employeeId || user?.employeeId;
+  // Target key used for profile API: prefer route param (admin/HR viewing by code), else current user's user.id
+  const targetKey = employeeId || user?.id;
 
   // Empty/default profile shape to ensure subcomponents render without errors when data is absent
   const emptyProfile = {
@@ -35,7 +35,7 @@ const MyProfile: React.FC = () => {
     name: '',
     position: '',
     department: '',
-    employeeId: targetEmployeeId || '',
+    employeeId: '',
     personalInfo: {
       firstName: '',
       lastName: '',
@@ -157,7 +157,7 @@ const MyProfile: React.FC = () => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
-        const id = targetEmployeeId || '';
+        const id = targetKey || '';
         const json = await getEmployeeByEmployeeId(id);
         const serverProfile = json?.employee || {};
         const merged = { ...emptyProfile, ...serverProfile };
@@ -182,10 +182,10 @@ const MyProfile: React.FC = () => {
         if (isMounted) setLoading(false);
       }
     };
-    if (targetEmployeeId) fetchProfile();
+    if (targetKey) fetchProfile();
     return () => { isMounted = false; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetEmployeeId]);
+  }, [targetKey]);
   
   // Check if viewing own profile or someone else's
   const isOwnProfile = !employeeId || employeeId === user?.employeeId;
@@ -195,10 +195,11 @@ const MyProfile: React.FC = () => {
   // Permission logic:
   // - All users (except HR/Admin): Can edit their own Personal Information and Bank Account
   // - HR/Admin: Can edit their own everything, and others' Official Information and Retiral
-  const canEditPersonal = isOwnProfile;
-  const canEditOfficial = (isOwnProfile && (user?.role === 'hr_manager' || user?.role === 'global_admin')) || (!isOwnProfile && (user?.role === 'hr_manager' || user?.role === 'global_admin'));
-  const canEditBankDetails = isOwnProfile;
-  const canEditRetiral = (isOwnProfile && (user?.role === 'hr_manager' || user?.role === 'global_admin')) || (!isOwnProfile && (user?.role === 'hr_manager' || user?.role === 'global_admin'));
+  const canEditPersonal = isOwnProfile; // all users can edit their personal info
+  const isHrOrAdmin = user?.role === 'hr_manager' || user?.role === 'global_admin';
+  const canEditOfficial = isHrOrAdmin; // only HR/Admin
+  const canEditBankDetails = isOwnProfile; // employees can edit own bank
+  const canEditRetiral = isHrOrAdmin; // only HR/Admin can edit retiral
 
   const getRoleBadge = (role: string) => {
     switch (role) {
@@ -241,7 +242,7 @@ const MyProfile: React.FC = () => {
             <div>
               <h1 className="text-3xl font-bold text-foreground">{profile?.name || user?.name || ''}</h1>
               <p className="text-xl text-muted-foreground">{profile?.position || ''}</p>
-              <p className="text-muted-foreground">{profile?.department || ''} • {profile?.employeeId || targetEmployeeId}</p>
+              <p className="text-muted-foreground">{profile?.department || ''} • {profile?.employeeId || ''}</p>
               <div className="mt-2">
                 {getRoleBadge(user?.role || 'employee')}
                 {!isOwnProfile && (
@@ -288,12 +289,11 @@ const MyProfile: React.FC = () => {
                       </TabsContent>
                       
                       <TabsContent value="financial" className="space-y-4">
-                        <FinancialInformation 
+                          <FinancialInformation 
                           data={draftFinancial || emptyProfile.financialInfo} 
                           canEditBank={canEditBankDetails}
                           canEditRetiral={canEditRetiral}
                           isEditMode={true}
-                          canEdit={canEditBankDetails || canEditRetiral}
                           onChange={(field, value) => setDraftFinancial((prev: any) => {
                             const next = { ...prev }
                             if (['bankName','accountNumber','ifscCode','branchName'].includes(field)) {
@@ -316,8 +316,13 @@ const MyProfile: React.FC = () => {
                           const payload: any = {}
                           if (draftPersonal && canEditPersonal) payload.personalInfo = draftPersonal
                           if (draftOfficial && canEditOfficial) payload.officialInfo = draftOfficial
-                          if (draftFinancial) payload.financialInfo = draftFinancial
-                          const id = profile?.employeeId || targetEmployeeId || ''
+                          if (draftFinancial) {
+                            const fin: any = {}
+                            if (canEditBankDetails && draftFinancial.bankAccount) fin.bankAccount = draftFinancial.bankAccount
+                            if (canEditRetiral && draftFinancial.retiral) fin.retiral = draftFinancial.retiral
+                            if (Object.keys(fin).length > 0) payload.financialInfo = fin
+                          }
+                          const id = (user?.id || '') as string
                           const res = await updateEmployeeProfile(id, payload)
                           setProfile(res.employee)
                           setIsEditModalOpen(false)

@@ -15,7 +15,6 @@ interface FinancialInformationProps {
   isEditMode?: boolean;
   showBankAccount?: boolean;
   showRetiralOnly?: boolean;
-  canEdit?: boolean;
   onChange?: (field: string, value: any) => void;
 }
 
@@ -26,14 +25,13 @@ const FinancialInformation: React.FC<FinancialInformationProps> = ({
   isEditMode = false,
   showBankAccount = true,
   showRetiralOnly = false,
-  canEdit = false,
   onChange
 }) => {
   const [activeTab, setActiveTab] = useState(showRetiralOnly ? 'retiral' : 'bank');
 
-  // Determine effective permissions
-  const effectiveCanEditBank = canEdit || canEditBank;
-  const effectiveCanEditRetiral = canEdit || canEditRetiral;
+  // Determine effective permissions (role-specific flags only)
+  const effectiveCanEditBank = !!canEditBank;
+  const effectiveCanEditRetiral = !!canEditRetiral;
 
   return (
     <div className="space-y-6">

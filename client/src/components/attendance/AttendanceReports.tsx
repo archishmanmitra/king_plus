@@ -22,8 +22,7 @@ interface DailyStats {
   date: string;
   present: number;
   absent: number;
-  late: number;
-  halfDay: number;
+  // late and halfDay removed
   onLeave: number;
   total: number;
 }
@@ -40,7 +39,7 @@ export const AttendanceReports: React.FC<AttendanceReportsProps> = ({
 
   // Get unique departments for filtering
   const departments = ['all', ...Array.from(new Set(employees.map(emp => emp.department)))];
-  const statuses = ['all', 'present', 'absent', 'late', 'half-day'];
+  const statuses = ['all', 'present', 'absent'];
 
   // Calculate daily statistics for all employees
   const getDailyStats = (): DailyStats[] => {
@@ -57,8 +56,7 @@ export const AttendanceReports: React.FC<AttendanceReportsProps> = ({
         date,
         present: 0,
         absent: 0,
-        late: 0,
-        halfDay: 0,
+        // late/halfDay removed
         onLeave: 0,
         total: employees.length
       });
@@ -75,12 +73,6 @@ export const AttendanceReports: React.FC<AttendanceReportsProps> = ({
           case 'absent':
             stats.absent++;
             break;
-          case 'late':
-            stats.late++;
-            break;
-          case 'half-day':
-            stats.halfDay++;
-            break;
         }
       }
     });
@@ -94,11 +86,10 @@ export const AttendanceReports: React.FC<AttendanceReportsProps> = ({
       if (dayOfWeek === 0 || dayOfWeek === 6) {
         stats.absent = stats.total;
         stats.present = 0;
-        stats.late = 0;
-        stats.halfDay = 0;
+        // removed
       } else {
-        // For weekdays, calculate absent as total - present - late - halfDay
-        stats.absent = stats.total - stats.present - stats.late - stats.halfDay;
+        // For weekdays, calculate absent as total - present
+        stats.absent = stats.total - stats.present;
       }
     });
 
@@ -134,8 +125,7 @@ export const AttendanceReports: React.FC<AttendanceReportsProps> = ({
   const totalEmployees = employees.length;
   const presentCount = filteredAttendance.filter(r => r.status === 'present').length;
   const absentCount = totalEmployees - presentCount;
-  const lateCount = filteredAttendance.filter(r => r.status === 'late').length;
-  const halfDayCount = filteredAttendance.filter(r => r.status === 'half-day').length;
+  // removed late/halfDay counters
   const attendanceRate = totalEmployees > 0 ? Math.round((presentCount / totalEmployees) * 100) : 0;
 
   // Get month details for calendar
@@ -303,16 +293,7 @@ export const AttendanceReports: React.FC<AttendanceReportsProps> = ({
                              {stats.present} Present
                            </div>
                          )}
-                         {stats.late > 0 && (
-                           <div className="text-xs bg-yellow-500 text-white px-1 py-0.5 rounded">
-                             {stats.late} Late
-                           </div>
-                         )}
-                         {stats.halfDay > 0 && (
-                           <div className="text-xs bg-purple-500 text-white px-1 py-0.5 rounded">
-                             {stats.halfDay} Half
-                           </div>
-                         )}
+                    {/* Late/Half Day removed */}
                          {stats.absent > 0 && (
                            <div className="text-xs bg-red-500 text-white px-1 py-0.5 rounded">
                              {stats.absent} Absent

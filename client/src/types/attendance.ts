@@ -6,7 +6,7 @@ export interface AttendanceRecord {
   clockOut?: string;
   totalHours: number;
   overtimeHours: number;
-  status: 'present' | 'absent' | 'late' | 'half-day';
+  status: 'present' | 'absent';
   method: 'biometric' | 'geo' | 'selfie' | 'manual';
   location?: string;
   notes?: string;

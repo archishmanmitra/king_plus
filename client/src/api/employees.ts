@@ -68,4 +68,36 @@ export async function attendanceSubmit(employeeId: string, approverUserId: strin
   return res.json()
 }
 
+export async function getMyAttendance(employeeId: string) {
+  const res = await fetch(`/api/attendance/employee/${employeeId}`, {
+    method: 'GET', credentials: 'include', headers: { ...authHeaders() }
+  })
+  if (!res.ok) throw new Error('Failed to fetch attendance')
+  return res.json()
+}
+
+export async function getPendingApprovals(approverUserId: string) {
+  const res = await fetch(`/api/attendance/approvals/${approverUserId}`, {
+    method: 'GET', credentials: 'include', headers: { ...authHeaders() }
+  })
+  if (!res.ok) throw new Error('Failed to fetch approvals')
+  return res.json()
+}
+
+export async function approveAttendance(attendanceId: string) {
+  const res = await fetch(`/api/attendance/${attendanceId}/approve`, {
+    method: 'POST', credentials: 'include', headers: { ...authHeaders() }
+  })
+  if (!res.ok) throw new Error('Failed to approve attendance')
+  return res.json()
+}
+
+export async function rejectAttendance(attendanceId: string) {
+  const res = await fetch(`/api/attendance/${attendanceId}/reject`, {
+    method: 'POST', credentials: 'include', headers: { ...authHeaders() }
+  })
+  if (!res.ok) throw new Error('Failed to reject attendance')
+  return res.json()
+}
+
 

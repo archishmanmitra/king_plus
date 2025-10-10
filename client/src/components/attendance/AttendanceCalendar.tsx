@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, CalendarIcon, CheckCircle, XCircle, Clock, M
 
 interface AttendanceDay {
   date: string;
-  status: 'present' | 'absent' | 'late' | 'half-day';
+  status: 'present' | 'absent';
   clockIn: string;
   clockOut?: string;
   totalHours: number;
@@ -35,7 +35,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
   onDateSelect,
   employees = []
 }) => {
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date(2024, 8, 1)); // September 2024
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clickedDate, setClickedDate] = useState<Date | null>(null);
 
@@ -48,7 +48,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
   });
 
   // Function to get attendance status for a specific date
-  const getAttendanceStatus = (date: Date): 'present' | 'absent' | 'late' | 'half-day' | null => {
+  const getAttendanceStatus = (date: Date): 'present' | 'absent' | null => {
     const dateString = date.toISOString().split('T')[0];
     const attendanceRecords = attendanceMap.get(dateString);
     if (!attendanceRecords || attendanceRecords.length === 0) return null;
@@ -132,10 +132,8 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
     const stats = {
       present: 0,
       absent: 0,
-      late: 0,
-      halfDay: 0,
       total: records.length
-    };
+    } as any;
     
     records.forEach(record => {
       switch (record.status) {
@@ -145,11 +143,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
         case 'absent':
           stats.absent++;
           break;
-        case 'late':
-          stats.late++;
-          break;
-        case 'half-day':
-          stats.halfDay++;
+        default:
           break;
       }
     });
@@ -185,7 +179,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
   return (
     <div className="space-y-6">
       {/* Attendance Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-foreground">{attendanceData.length}</div>
@@ -208,22 +202,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
             <div className="text-sm text-muted-foreground">Absent</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-warning">
-              {attendanceData.filter(r => r.status === 'late').length}
-            </div>
-            <div className="text-sm text-muted-foreground">Late</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-primary">
-              {attendanceData.filter(r => r.status === 'half-day').length}
-            </div>
-            <div className="text-sm text-muted-foreground">Half Day</div>
-          </CardContent>
-        </Card>
+        
       </div>
 
       {/* Big Custom Calendar */}
@@ -287,12 +266,6 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
                 } else if (attendanceStatus === 'absent') {
                   dayClass += " bg-red-100 border-red-300 hover:bg-red-200";
                   statusIndicator = <XCircle className="h-4 w-4 text-red-600 mx-auto mb-1" />;
-                } else if (attendanceStatus === 'late') {
-                  dayClass += " bg-yellow-100 border-yellow-300 hover:bg-yellow-200";
-                  statusIndicator = <Clock className="h-4 w-4 text-yellow-600 mx-auto mb-1" />;
-                } else if (attendanceStatus === 'half-day') {
-                  dayClass += " bg-purple-100 border-purple-300 hover:bg-purple-200";
-                  statusIndicator = <Minus className="h-4 w-4 text-purple-600 mx-auto mb-1" />;
                 } else {
                   dayClass += " bg-gray-50 border-gray-200";
                 }
@@ -327,16 +300,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
                               {dateStats.present} Present
                             </div>
                           )}
-                          {dateStats.late > 0 && (
-                            <div className="text-xs bg-yellow-500 text-white px-1 rounded mb-1">
-                              {dateStats.late} Late
-                            </div>
-                          )}
-                          {dateStats.halfDay > 0 && (
-                            <div className="text-xs bg-purple-500 text-white px-1 rounded mb-1">
-                              {dateStats.halfDay} Half
-                            </div>
-                          )}
+                          {/* Late and Half Day removed */}
                           {dateStats.absent > 0 && (
                             <div className="text-xs bg-red-500 text-white px-1 rounded">
                               {dateStats.absent} Absent
@@ -367,7 +331,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
                   return (
                     <div className="space-y-4">
                       {/* Summary Statistics */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                         <div className="text-center p-3 bg-green-50 rounded-lg">
                           <div className="text-lg font-bold text-green-700">
                             {details.filter(d => d.status === 'present').length}
@@ -380,18 +344,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
                           </div>
                           <div className="text-sm text-red-600">Absent</div>
                         </div>
-                        <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                          <div className="text-lg font-bold text-yellow-700">
-                            {details.filter(d => d.status === 'late').length}
-                          </div>
-                          <div className="text-sm text-yellow-600">Late</div>
-                        </div>
-                        <div className="text-center p-3 bg-purple-50 rounded-lg">
-                          <div className="text-lg font-bold text-purple-700">
-                            {details.filter(d => d.status === 'half-day').length}
-                          </div>
-                          <div className="text-sm text-purple-600">Half Day</div>
-                        </div>
+                        {/* Late/Half Day removed */}
                       </div>
 
                       {/* Individual Records */}
@@ -404,10 +357,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
                                 {getEmployeeName(record.employeeId)}
                               </span>
                               <Badge variant={
-                                record.status === 'present' ? 'default' :
-                                record.status === 'absent' ? 'destructive' :
-                                record.status === 'late' ? 'secondary' :
-                                'outline'
+                                record.status === 'present' ? 'default' : 'destructive'
                               }>
                                 {record.status}
                               </Badge>
@@ -470,7 +420,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
           <CardTitle>Calendar Legend</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 rounded bg-green-500"></div>
               <span className="text-sm">Present</span>
@@ -479,14 +429,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
               <div className="w-4 h-4 rounded bg-red-500"></div>
               <span className="text-sm">Absent</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded bg-yellow-500"></div>
-              <span className="text-sm">Late</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded bg-purple-500"></div>
-              <span className="text-sm">Half Day</span>
-            </div>
+            {/* Late and Half Day removed */}
           </div>
         </CardContent>
       </Card>
@@ -524,18 +467,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
                       </div>
                       <div className="text-sm text-red-600">Absent</div>
                     </div>
-                    <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                      <div className="text-lg font-bold text-yellow-700">
-                        {details.filter(d => d.status === 'late').length}
-                      </div>
-                      <div className="text-sm text-yellow-600">Late</div>
-                    </div>
-                    <div className="text-center p-3 bg-purple-50 rounded-lg">
-                      <div className="text-lg font-bold text-purple-700">
-                        {details.filter(d => d.status === 'half-day').length}
-                      </div>
-                      <div className="text-sm text-purple-600">Half Day</div>
-                    </div>
+                    
                   </div>
 
                   {/* Individual Records */}

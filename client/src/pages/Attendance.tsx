@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockAttendanceExtended, mockEmployees } from "@/data/mockData";
 import {
   Clock,
   CheckCircle,
@@ -28,9 +27,17 @@ import {
 import { AttendanceCalendar } from "@/components/attendance/AttendanceCalendar";
 import { AttendanceReports } from "@/components/attendance/AttendanceReports";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { approveAttendance, getMyAttendance, getPendingApprovals, rejectAttendance, attendanceClockIn, attendanceClockOut, attendancePause, attendanceResume } from "@/api/employees";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Attendance: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [myAttendances, setMyAttendances] = useState<Array<{ id: string; employeeId: string; workDate?: string; date?: string; clockIn: string | null; clockOut: string | null; totalHours: number; status: string; approverId?: string | null; submittedAt?: string | null; approvedAt?: string | null; timestamps?: Array<{ id: string; attendanceId: string; startTime: string; endTime: string | null; }>; }>>([]);
+  const [approvals, setApprovals] = useState<any[]>([]);
+  const [timestampsModal, setTimestampsModal] = useState<{ open: boolean; attendance: any | null }>({ open: false, attendance: null });
   const [isClockOutModalOpen, setIsClockOutModalOpen] = useState(false);
   const [historySelectedDate, setHistorySelectedDate] = useState<
     Date | undefined
@@ -49,32 +56,48 @@ const Attendance: React.FC = () => {
   } = useAttendanceTimer();
 
   const handleClockIn = () => {
+    if (!user?.employeeId) return;
+    attendanceClockIn(user.employeeId)
+      .then(() => {
     clockIn();
-    toast({
-      title: "Clocked In",
-      description: "You have successfully clocked in. Timer is now running.",
-    });
+        toast({ title: "Clocked In", description: "You have successfully clocked in." });
+        // Refresh my attendance after action
+        return getMyAttendance(user.employeeId);
+      })
+      .then((res) => setMyAttendances(res.attendances || []))
+      .catch(() => toast({ title: 'Clock-in failed', variant: 'destructive' }));
   };
 
   const handleClockOut = () => {
+    if (!user?.employeeId) return;
+    attendanceClockOut(user.employeeId)
+      .then(() => {
     clockOut();
     setIsClockOutModalOpen(true);
+        return getMyAttendance(user.employeeId);
+      })
+      .then((res) => setMyAttendances(res.attendances || []))
+      .catch(() => toast({ title: 'Clock-out failed', variant: 'destructive' }));
   };
 
   const handlePause = () => {
+    if (!user?.employeeId) return;
+    attendancePause(user.employeeId)
+      .then(() => {
     pauseTimer();
-    toast({
-      title: "Timer Paused",
-      description: "Your timer has been paused. Click resume to continue.",
-    });
+        toast({ title: "Timer Paused", description: "Timer paused." });
+      })
+      .catch(() => toast({ title: 'Pause failed', variant: 'destructive' }));
   };
 
   const handleResume = () => {
+    if (!user?.employeeId) return;
+    attendanceResume(user.employeeId)
+      .then(() => {
     resumeTimer();
-    toast({
-      title: "Timer Resumed",
-      description: "Your timer is now running again.",
-    });
+        toast({ title: "Timer Resumed", description: "Timer resumed." });
+      })
+      .catch(() => toast({ title: 'Resume failed', variant: 'destructive' }));
   };
 
   const handleClockOutSubmit = (data: ClockOutFormData) => {
@@ -106,18 +129,125 @@ const Attendance: React.FC = () => {
     }
   };
 
-  // Mock attendance history data for the calendar - using September data
-  const mockAttendanceHistory = mockAttendanceExtended.map((record) => ({
-    date: record.date,
-    status: record.status,
-    clockIn: record.clockIn,
-    clockOut: record.clockOut,
-    totalHours: record.totalHours,
-    method: record.method,
-    location: record.location,
-    notes: record.notes,
-    employeeId: record.employeeId,
-  }));
+  useEffect(() => {
+    const load = async () => {
+      if (!user?.employeeId) return;
+      try {
+        setIsLoading(true);
+        const res = await getMyAttendance(user.employeeId);
+        setMyAttendances(res.attendances || []);
+      } catch (e: any) {
+        console.error(e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, [user?.employeeId]);
+
+  useEffect(() => {
+    const loadApprovals = async () => {
+      if (!user || user.role === 'employee') return;
+      try {
+        const res = await getPendingApprovals(user.id);
+        setApprovals(res.attendances || []);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    loadApprovals();
+  }, [user]);
+
+  const calendarData = useMemo(() => {
+    return myAttendances.map((a) => ({
+      date: new Date(a.workDate || a.date as string).toISOString().split('T')[0],
+      status: (a.clockIn ? 'present' : 'absent') as 'present' | 'absent',
+      clockIn: a.clockIn ? new Date(a.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--',
+      clockOut: a.clockOut ? new Date(a.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : undefined,
+      totalHours: Number(a.totalHours || 0),
+      method: 'manual' as 'manual',
+      location: undefined as undefined,
+      notes: undefined as undefined,
+      employeeId: user?.employeeId,
+    }));
+  }, [myAttendances, user?.employeeId]);
+
+  const todaysAttendance = useMemo(() => {
+    const todayKey = new Date();
+    todayKey.setHours(0,0,0,0);
+    return myAttendances.find((a) => new Date(a.workDate || a.date as string).getTime() === todayKey.getTime()) || null;
+  }, [myAttendances]);
+
+  const openTimestamps = (attendance: any) => setTimestampsModal({ open: true, attendance });
+  const closeTimestamps = () => setTimestampsModal({ open: false, attendance: null });
+
+  const handleApprove = async (id: string) => {
+    try {
+      await approveAttendance(id);
+      toast({ title: 'Approved', description: 'Attendance approved.' });
+      setApprovals((prev) => prev.filter((a) => a.id !== id));
+    } catch (e: any) {
+      toast({ title: 'Error', description: 'Failed to approve', variant: 'destructive' });
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    try {
+      await rejectAttendance(id);
+      toast({ title: 'Rejected', description: 'Attendance rejected.' });
+      setApprovals((prev) => prev.filter((a) => a.id !== id));
+    } catch (e: any) {
+      toast({ title: 'Error', description: 'Failed to reject', variant: 'destructive' });
+    }
+  };
+
+  const getTodayHours = useMemo(() => {
+    if (!todaysAttendance) return 0;
+    if (todaysAttendance.clockIn && !todaysAttendance.clockOut) {
+      const start = new Date(todaysAttendance.clockIn).getTime();
+      const now = Date.now();
+      return Math.max(0, (now - start) / 1000 / 3600);
+    }
+    return Number(todaysAttendance.totalHours || 0);
+  }, [todaysAttendance]);
+
+  function getMonday(d: Date) {
+    const date = new Date(d);
+    const day = (date.getDay() + 6) % 7; // 0=Mon ... 6=Sun
+    date.setDate(date.getDate() - day);
+    date.setHours(0,0,0,0);
+    return date;
+  }
+
+  function getSundayOfWeek(d: Date) {
+    const monday = getMonday(d);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23,59,59,999);
+    return sunday;
+  }
+
+  function sumHoursInRange(start: Date, end: Date) {
+    return myAttendances.reduce((sum, a) => {
+      const wd = new Date(a.workDate || a.date as string);
+      if (wd >= start && wd <= end) {
+        if (a.clockIn && !a.clockOut && wd.toDateString() === new Date().toDateString()) {
+          const curr = Math.max(0, (Date.now() - new Date(a.clockIn).getTime()) / 1000 / 3600);
+          return sum + curr;
+        }
+        return sum + Number(a.totalHours || 0);
+      }
+      return sum;
+    }, 0);
+  }
+
+  const weekStart = useMemo(() => getMonday(new Date()), []);
+  const weekEnd = useMemo(() => getSundayOfWeek(new Date()), []);
+  const monthStart = useMemo(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1, 0,0,0,0); }, []);
+  const monthEnd = useMemo(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth()+1, 0, 23,59,59,999); }, []);
+
+  const weekHours = useMemo(() => sumHoursInRange(weekStart, weekEnd), [myAttendances, weekStart, weekEnd]);
+  const monthHours = useMemo(() => sumHoursInRange(monthStart, monthEnd), [myAttendances, monthStart, monthEnd]);
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -245,7 +375,14 @@ const Attendance: React.FC = () => {
               <Card>
                 <CardContent className="p-3 md:p-4 text-center">
                   <div className="text-lg md:text-2xl font-bold text-success">
-                    {isClockedIn ? formatTime(elapsedTime) : "00:00:00"}
+                    {(() => {
+                      const h = getTodayHours;
+                      const totalSeconds = Math.round(h * 3600);
+                      const hh = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+                      const mm = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+                      const ss = String(totalSeconds % 60).padStart(2, '0');
+                      return `${hh}:${mm}:${ss}`;
+                    })()}
                   </div>
                   <div className="text-xs md:text-sm text-muted-foreground">
                     Today's Hours
@@ -255,7 +392,7 @@ const Attendance: React.FC = () => {
               <Card>
                 <CardContent className="p-3 md:p-4 text-center">
                   <div className="text-lg md:text-2xl font-bold text-primary">
-                    40h
+                    {weekHours.toFixed(1)}h
                   </div>
                   <div className="text-xs md:text-sm text-muted-foreground">
                     This Week
@@ -265,7 +402,7 @@ const Attendance: React.FC = () => {
               <Card>
                 <CardContent className="p-3 md:p-4 text-center">
                   <div className="text-lg md:text-2xl font-bold text-foreground">
-                    172h
+                    {monthHours.toFixed(1)}h
                   </div>
                   <div className="text-xs md:text-sm text-muted-foreground">
                     This Month
@@ -306,16 +443,23 @@ const Attendance: React.FC = () => {
       </div>
 
       <Tabs defaultValue="today" className="space-y-3 md:space-y-4">
-        <TabsList className="grid w-full grid-cols-3 md:w-auto md:grid-cols-3">
+        <TabsList className={`grid w-full ${user?.role === 'employee' ? 'grid-cols-2' : 'grid-cols-4'} md:w-auto`}>
           <TabsTrigger value="today" className="text-xs md:text-sm">
             Today's Attendance
           </TabsTrigger>
           <TabsTrigger value="history" className="text-xs md:text-sm">
             Attendance History
           </TabsTrigger>
+          {user?.role !== 'employee' && (
+            <TabsTrigger value="approvals" className="text-xs md:text-sm">
+              Approvals
+            </TabsTrigger>
+          )}
+          {user?.role !== 'employee' && (
           <TabsTrigger value="reports" className="text-xs md:text-sm">
             Reports
           </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="today">
@@ -365,100 +509,103 @@ const Attendance: React.FC = () => {
                 </div>
               </div>
 
+              {todaysAttendance ? (
               <div className="space-y-3 md:space-y-4">
-                {mockAttendanceExtended.slice(0, 8).map((record) => {
-                  const employee = mockEmployees.find(
-                    (e) => e.employeeId === record.employeeId
-                  );
-                  return (
-                    <div
-                      key={record.id}
-                      className="flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0 p-3 md:p-4 border rounded-lg"
-                    >
-                      <div className="flex items-center space-x-3 md:space-x-4">
-                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs md:text-sm font-medium flex-shrink-0">
-                          {employee?.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </div>
+                  <div className="flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0 p-3 md:p-4 border rounded-lg">
                         <div className="min-w-0">
                           <div className="font-medium text-sm md:text-base truncate">
-                            {employee?.name}
+                        {user?.name}
                           </div>
                           <div className="text-xs md:text-sm text-muted-foreground truncate">
-                            {employee?.department}
-                          </div>
-                        </div>
+                        {user?.employeeId}
                       </div>
-
+                    </div>
                       <div className="flex items-center justify-between md:space-x-4">
                         <div className="flex space-x-4 md:space-x-4">
                           <div className="text-center md:text-right">
                             <div className="font-medium text-xs md:text-sm">
-                              {record.clockIn}
+                            {todaysAttendance.clockIn ? new Date(todaysAttendance.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                              Clock In
-                            </div>
+                          <div className="text-xs text-muted-foreground">Clock In</div>
                           </div>
                           <div className="text-center md:text-right">
                             <div className="font-medium text-xs md:text-sm">
-                              {record.clockOut || "--:--"}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              Clock Out
-                            </div>
+                            {todaysAttendance.clockOut ? new Date(todaysAttendance.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
                           </div>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                          <Badge
-                            variant={
-                              record.status === "present"
-                                ? "default"
-                                : "destructive"
-                            }
-                            className="text-xs"
-                          >
-                            {record.status}
-                          </Badge>
-                          <div className="flex space-x-1">
-                            {record.method === "biometric" && (
-                              <CheckCircle className="h-3 w-3 md:h-4 md:w-4 text-success" />
-                            )}
-                            {record.method === "geo" && (
-                              <MapPin className="h-3 w-3 md:h-4 md:w-4 text-primary" />
-                            )}
-                            {record.method === "selfie" && (
-                              <Camera className="h-3 w-3 md:h-4 md:w-4 text-warning" />
-                            )}
-                          </div>
+                          <div className="text-xs text-muted-foreground">Clock Out</div>
                         </div>
                       </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge
+                          variant={todaysAttendance.clockIn ? "default" : "destructive"}
+                            className="text-xs"
+                          >
+                          {todaysAttendance.clockIn ? 'present' : 'absent'}
+                          </Badge>
+                        <Button variant="outline" size="sm" onClick={() => openTimestamps(todaysAttendance)}>View Timestamps</Button>
+                      </div>
                     </div>
-                  );
-                })}
+                  </div>
               </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">No attendance for today.</div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="history">
           <AttendanceCalendar
-            attendanceData={mockAttendanceHistory}
+            attendanceData={calendarData}
             selectedDate={historySelectedDate}
             onDateSelect={setHistorySelectedDate}
-            employees={mockEmployees}
+            employees={[]}
           />
         </TabsContent>
 
+        {user?.role !== 'employee' && (
+          <TabsContent value="approvals">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base md:text-lg">Pending Approvals</CardTitle>
+                <CardDescription className="text-xs md:text-sm">Approve or reject submitted attendances</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {approvals.length ? (
+                  <div className="space-y-3">
+                    {approvals.map((a) => (
+                      <div key={a.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <div>
+                            <div className="font-medium">{new Date(a.workDate || a.date as string).toLocaleDateString()}</div>
+                            <div className="text-xs text-muted-foreground">
+                              In {a.clockIn ? new Date(a.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'} • Out {a.clockOut ? new Date(a.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button size="sm" onClick={() => handleApprove(a.id)}>Approve</Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleReject(a.id)}>Reject</Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">No pending approvals.</div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+
+        {user?.role !== 'employee' && (
         <TabsContent value="reports">
           <AttendanceReports
-            attendanceData={mockAttendanceExtended}
-            employees={mockEmployees}
+              attendanceData={calendarData as any}
+              employees={[]}
           />
         </TabsContent>
+        )}
       </Tabs>
 
       {/* Clock Out Modal */}
@@ -468,6 +615,35 @@ const Attendance: React.FC = () => {
         onSubmit={handleClockOutSubmit}
         totalTime={formatTime(elapsedTime)}
       />
+
+      {/* Timestamps Modal */}
+      <Dialog open={timestampsModal.open} onOpenChange={(open) => (open ? null : closeTimestamps())}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Timestamps</DialogTitle>
+          </DialogHeader>
+          {timestampsModal.attendance && (
+            <div className="space-y-2">
+              {(timestampsModal.attendance.timestamps || []).length ? (
+                (timestampsModal.attendance.timestamps || []).map((t: any) => (
+                  <div key={t.id} className="flex items-center justify-between p-2 border rounded">
+                    <div className="text-sm">
+                      <div className="font-medium">Start</div>
+                      <div className="text-muted-foreground">{new Date(t.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                    </div>
+                    <div className="text-sm text-right">
+                      <div className="font-medium">End</div>
+                      <div className="text-muted-foreground">{t.endTime ? new Date(t.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-sm text-muted-foreground">No timestamps recorded.</div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
