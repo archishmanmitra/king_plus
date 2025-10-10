@@ -28,7 +28,7 @@ import { AttendanceCalendar } from "@/components/attendance/AttendanceCalendar";
 import { AttendanceReports } from "@/components/attendance/AttendanceReports";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { approveAttendance, getMyAttendance, getPendingApprovals, rejectAttendance, attendanceClockIn, attendanceClockOut, attendancePause, attendanceResume } from "@/api/employees";
+import { approveAttendance, getMyAttendance, getPendingApprovals, rejectAttendance, attendanceClockIn, attendanceClockOut, attendancePause, attendanceResume, attendanceSubmit } from "@/api/employees";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Attendance: React.FC = () => {
@@ -100,25 +100,19 @@ const Attendance: React.FC = () => {
       .catch(() => toast({ title: 'Resume failed', variant: 'destructive' }));
   };
 
-  const handleClockOutSubmit = (data: ClockOutFormData) => {
-    console.log("Clock out submitted:", {
-      ...data,
-      totalTime: formatTime(elapsedTime),
-      clockOutTime: new Date().toLocaleTimeString(),
-      clockInTime: new Date(Date.now() - elapsedTime).toLocaleTimeString(),
-    });
-
-    // Here you would typically send the data to your backend
-    // For now, we'll just show a success message and reset the timer
-
-    toast({
-      title: "Clock Out Complete",
-      description: `You have worked for ${formatTime(elapsedTime)} today.`,
-    });
-
-    // Reset the timer after successful submission
-    resetTimer();
-    setIsClockOutModalOpen(false);
+  const handleClockOutSubmit = async (data: ClockOutFormData) => {
+    try {
+      if (!user?.employeeId) return;
+      await attendanceSubmit(user.employeeId, data.approverUserId);
+      const res = await getMyAttendance(user.employeeId);
+      setMyAttendances(res.attendances || []);
+      toast({ title: "Submitted for approval", description: `Approver selected.` });
+    } catch (e) {
+      toast({ title: 'Submit failed', variant: 'destructive' });
+    } finally {
+      resetTimer();
+      setIsClockOutModalOpen(false);
+    }
   };
 
   const handleClockOutModalClose = () => {
@@ -150,7 +144,8 @@ const Attendance: React.FC = () => {
       if (!user || user.role === 'employee') return;
       try {
         const res = await getPendingApprovals(user.id);
-        setApprovals(res.attendances || []);
+        const list = (res.attendances || []).filter((a: any) => String(a.status).toLowerCase() === 'submitted' && a.approverId === user.id);
+        setApprovals(list);
       } catch (e) {
         console.error(e);
       }
@@ -159,7 +154,9 @@ const Attendance: React.FC = () => {
   }, [user]);
 
   const calendarData = useMemo(() => {
-    return myAttendances.map((a) => ({
+    return myAttendances
+      .filter((a) => String(a.status).toLowerCase() === 'approved')
+      .map((a) => ({
       date: new Date(a.workDate || a.date as string).toISOString().split('T')[0],
       status: (a.clockIn ? 'present' : 'absent') as 'present' | 'absent',
       clockIn: a.clockIn ? new Date(a.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--',

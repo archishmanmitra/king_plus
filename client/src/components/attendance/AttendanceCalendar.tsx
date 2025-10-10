@@ -14,7 +14,8 @@ interface AttendanceDay {
   method?: 'biometric' | 'geo' | 'selfie' | 'manual';
   location?: string;
   notes?: string;
-  employeeId?: string;
+  employeeId?: string; // Employee.id
+  timestamps?: Array<{ startTime: string; endTime?: string | null }>;
 }
 
 interface AttendanceCalendarProps {
@@ -22,6 +23,7 @@ interface AttendanceCalendarProps {
   selectedDate: Date | undefined;
   onDateSelect: (date: Date | undefined) => void;
   employees?: Array<{
+    user: any;
     id: string;
     employeeId: string;
     name: string;
@@ -172,8 +174,9 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
   // Get employee name
   const getEmployeeName = (employeeId?: string) => {
     if (!employeeId || employees.length === 0) return 'Unknown Employee';
-    const employee = employees.find(emp => emp.employeeId === employeeId);
-    return employee?.name || 'Unknown Employee';
+    // Attendance.employeeId refers to Employee.id per schema
+    const employee = employees.find(emp => emp.id === employeeId);
+    return employee?.user?.name || employee?.name || 'Unknown Employee';
   };
 
   return (
@@ -362,7 +365,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
                                 {record.status}
                               </Badge>
                             </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                               <div>
                                 <span className="text-muted-foreground">Clock In:</span>
                                 <span className="ml-2 font-medium">{record.clockIn}</span>
@@ -374,13 +377,6 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
                               <div>
                                 <span className="text-muted-foreground">Hours:</span>
                                 <span className="ml-2 font-medium">{record.totalHours}h</span>
-                              </div>
-                              <div className="flex items-center">
-                                <span className="text-muted-foreground">Method:</span>
-                                <span className="ml-2 flex items-center">
-                                  {getMethodIcon(record.method)}
-                                  <span className="ml-1 capitalize">{record.method || 'N/A'}</span>
-                                </span>
                               </div>
                             </div>
                             {record.location && (
@@ -488,7 +484,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
                             {record.status}
                           </Badge>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                           <div>
                             <span className="text-muted-foreground">Clock In:</span>
                             <span className="ml-2 font-medium">{record.clockIn}</span>
@@ -500,13 +496,6 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
                           <div>
                             <span className="text-muted-foreground">Hours:</span>
                             <span className="ml-2 font-medium">{record.totalHours}h</span>
-                          </div>
-                          <div className="flex items-center">
-                            <span className="text-muted-foreground">Method:</span>
-                            <span className="ml-2 flex items-center">
-                              {getMethodIcon(record.method)}
-                              <span className="ml-1 capitalize">{record.method || 'N/A'}</span>
-                            </span>
                           </div>
                         </div>
                         {record.location && (
