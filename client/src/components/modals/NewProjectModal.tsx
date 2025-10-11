@@ -132,11 +132,11 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onSa
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center">
+          <DialogTitle className="flex items-center text-white">
             <FolderOpen className="h-5 w-5 mr-2" />
             Create New Project
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className='text-white'>
             Fill in the project details to create a new project.
           </DialogDescription>
         </DialogHeader>
@@ -144,7 +144,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onSa
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
           <div className="space-y-4">
-            <h3 className="font-medium text-lg">Basic Information</h3>
+            <h3 className="font-medium text-lg text-white">Basic Information</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -211,7 +211,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onSa
 
           {/* Project Configuration */}
           <div className="space-y-4">
-            <h3 className="font-medium text-lg">Project Configuration</h3>
+            <h3 className="font-medium text-lg text-white">Project Configuration</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -255,7 +255,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onSa
 
           {/* Timeline */}
           <div className="space-y-4">
-            <h3 className="font-medium text-lg">Timeline</h3>
+            <h3 className="font-medium text-lg text-white">Timeline</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -290,7 +290,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onSa
 
           {/* Team Management */}
           <div className="space-y-4">
-            <h3 className="font-medium text-lg">Team Management</h3>
+            <h3 className="font-medium text-lg text-white">Team Management</h3>
             
             <div className="space-y-2">
               <Label htmlFor="reportingManager">
