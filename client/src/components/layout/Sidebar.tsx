@@ -25,6 +25,7 @@ import {
   Settings,
   Building2,
   X,
+  Network,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,12 @@ const navigationItems = [
     title: "Employees",
     url: "/employees",
     icon: Users,
+    roles: ["global_admin", "hr_manager"],
+  },
+  {
+    title: "Teams",
+    url: "/teams",
+    icon: Network,
     roles: ["global_admin", "hr_manager"],
   },
   {

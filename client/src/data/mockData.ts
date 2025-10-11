@@ -11,12 +11,12 @@ export const mockEmployees: Employee[] = [
     name: 'Soumodip Dey',
     email: 'soumodip.dey@company.com',
     phone: '+1 (555) 123-4567',
-    position: 'CEO (Chief Executive Officer) ',
+    position: 'CEO (Chief Executive Officer)',
     department: 'IT',
-    manager: 'David Wilson',
+    manager: '',
     joinDate: '2022-01-15',
     status: 'active',
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612c8d6?w=150&h=150&fit=crop&crop=face',
+    avatar: '/images/Soumodip.jpeg',
     
     // Personal Information
     personalInfo: {
@@ -266,7 +266,7 @@ export const mockEmployees: Employee[] = [
     manager: 'Lisa Thompson',
     joinDate: '2021-03-10',
     status: 'active',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+    avatar: '/images/Indrajit.jpeg',
     
     // Personal Information
     personalInfo: {
@@ -488,10 +488,10 @@ export const mockEmployees: Employee[] = [
     phone: '+1 (555) 345-6789',
     position: 'Payroll Administrator',
     department: 'Finance',
-    manager: 'Robert Kim',
+    manager: 'David Wilson',
     joinDate: '2023-01-05',
     status: 'active',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+    avatar: '/images/placeholder.svg',
     
     // Personal Information
     personalInfo: {
@@ -698,7 +698,7 @@ export const mockEmployees: Employee[] = [
     phone: '+1 (555) 456-7890',
     position: 'Software Engineer',
     department: 'Engineering',
-    manager: 'Emily Rodriguez',
+    manager: 'David Wilson',
     joinDate: '2023-06-01',
     status: 'active',
     avatar: '/images/Abir3.png',
@@ -915,6 +915,456 @@ export const mockEmployees: Employee[] = [
         type: 'joined',
         title: 'Joined Company',
         description: 'Started as Software Engineer in Engineering team'
+      }
+    ]
+  },
+  {
+    id: '5',
+    employeeId: 'EMP005',
+    name: 'David Wilson',
+    email: 'david.wilson@company.com',
+    phone: '+1 (555) 567-8901',
+    position: 'Engineering Manager',
+    department: 'Engineering',
+    manager: 'Soumodip Dey',
+    joinDate: '2021-08-15',
+    status: 'active',
+    avatar: '/images/placeholder.svg',
+    
+    // Personal Information
+    personalInfo: {
+      firstName: 'David',
+      lastName: 'Wilson',
+      gender: 'male',
+      dateOfBirth: '1985-07-20',
+      maritalStatus: 'married',
+      nationality: 'American',
+      primaryCitizenship: 'United States',
+      phoneNumber: '+1 (555) 567-8901',
+      email: 'david.wilson@company.com',
+      
+      addresses: {
+        present: {
+          contactName: 'David Wilson',
+          address1: '1234 Manager Lane',
+          city: 'Seattle',
+          state: 'WA',
+          country: 'United States',
+          pinCode: '98101',
+          mobileNumber: '+1 (555) 567-8901',
+          alternativeMobile: '+1 (555) 567-8902',
+          area: 'Downtown',
+          landmark: 'Near Amazon HQ',
+          latitude: 47.6062,
+          longitude: -122.3321
+        },
+        primary: {
+          contactName: 'David Wilson',
+          address1: '1234 Manager Lane',
+          city: 'Seattle',
+          state: 'WA',
+          country: 'United States',
+          pinCode: '98101',
+          mobileNumber: '+1 (555) 567-8901',
+          alternativeMobile: '+1 (555) 567-8902',
+          area: 'Downtown',
+          landmark: 'Near Amazon HQ',
+          latitude: 47.6062,
+          longitude: -122.3321
+        },
+        emergency: {
+          contactName: 'Sarah Wilson',
+          relation: 'Wife',
+          phoneNumber: '+1 (555) 987-6543',
+          address: {
+            contactName: 'Sarah Wilson',
+            address1: '1234 Manager Lane',
+            city: 'Seattle',
+            state: 'WA',
+            country: 'United States',
+            pinCode: '98101',
+            mobileNumber: '+1 (555) 987-6543'
+          }
+        }
+      },
+      
+      passport: {
+        passportNumber: 'US123456789',
+        expiryDate: '2030-07-20',
+        issuingOffice: 'Seattle Passport Agency',
+        issuingCountry: 'United States',
+        contactNumber: '+1 (555) 567-8901',
+        address: '1234 Manager Lane, Seattle, WA 98101'
+      },
+      
+      identityNumbers: {
+        aadharNumber: 'N/A',
+        panNumber: 'N/A',
+        nsr: {
+          itpin: 'N/A',
+          tin: 'N/A'
+        }
+      },
+      
+      dependents: [
+        {
+          relation: 'wife',
+          name: 'Sarah Wilson',
+          nationality: 'American',
+          dateOfBirth: '1987-03-15',
+          occupation: 'Marketing Director',
+          address: '1234 Manager Lane, Seattle, WA 98101'
+        }
+      ],
+      
+      education: [
+        {
+          branch: 'Computer Science',
+          instituteName: 'University of Washington',
+          passoutYear: '2007',
+          qualification: 'Bachelor of Science',
+          universityName: 'University of Washington',
+          level: 'ug'
+        },
+        {
+          branch: 'Business Administration',
+          instituteName: 'Stanford University',
+          passoutYear: '2009',
+          qualification: 'Master of Business Administration',
+          universityName: 'Stanford University',
+          level: 'pg'
+        }
+      ],
+      
+      experience: [
+        {
+          country: 'United States',
+          organisationName: 'Microsoft',
+          fromDate: '2009-08-01',
+          toDate: '2018-12-31',
+          designation: 'Senior Software Engineer',
+          city: 'Seattle',
+          documentProof: 'microsoft_experience.pdf'
+        },
+        {
+          country: 'United States',
+          organisationName: 'Amazon',
+          fromDate: '2019-01-01',
+          toDate: '2021-07-31',
+          designation: 'Engineering Manager',
+          city: 'Seattle',
+          documentProof: 'amazon_experience.pdf'
+        }
+      ]
+    },
+    
+    // Official Information
+    officialInfo: {
+      firstName: 'David',
+      lastName: 'Wilson',
+      knownAs: 'David',
+      dateOfJoining: '2021-08-15',
+      jobConfirmation: true,
+      role: 'Engineering Manager',
+      designation: 'Senior Engineering Manager',
+      stream: 'Engineering',
+      subStream: 'Software Development',
+      baseLocation: 'Seattle Office',
+      currentLocation: 'Seattle Office',
+      unit: 'Engineering Team',
+      unitHead: 'Soumodip Dey',
+      
+      confirmationDetails: {
+        status: 'Confirmed',
+        confirmationDate: '2022-02-15',
+        approval: 'Approved by CEO',
+        rating: 4.8
+      },
+      
+      documents: [
+        {
+          id: '8',
+          employeeId: 'EMP005',
+          name: 'Offer Letter',
+          type: 'Offer Letter',
+          uploadDate: '2021-08-15',
+          size: '278 KB',
+          url: '/documents/offer_letter_david.pdf',
+          uploadedBy: 'hr'
+        }
+      ]
+    },
+    
+    // Financial Information
+    financialInfo: {
+      bankAccount: {
+        bankName: 'Chase Bank',
+        accountNumber: '1122334455',
+        ifscCode: 'CHASUS33',
+        modifiedDate: '2021-08-15',
+        country: 'United States'
+      },
+      retiral: {
+        pfTotal: 35000,
+        employeePF: 28000,
+        employerPF: 7000,
+        employeeESI: 1500,
+        employerESI: 6000,
+        professionalTax: 400,
+        incomeTax: 12000,
+        netTakeHome: 95000,
+        costToCompany: 120000,
+        basicSalary: 70000,
+        houseRentAllowance: 25000,
+        specialAllowance: 25000
+      }
+    },
+    
+    // Legacy fields for backward compatibility
+    personalInfoLegacy: {
+      dateOfBirth: '1985-07-20',
+      address: '1234 Manager Ln, Seattle, WA 98101',
+      emergencyContact: '+1 (555) 987-6543',
+      bloodGroup: 'O+'
+    },
+    workInfo: {
+      workLocation: 'Seattle Office',
+      employmentType: 'full-time',
+      salary: 100000,
+      benefits: ['Health Insurance', 'Dental', '401k', 'Stock Options', 'Management Bonus']
+    },
+    timeline: [
+      {
+        id: '5',
+        date: '2021-08-15',
+        type: 'joined',
+        title: 'Joined Company',
+        description: 'Started as Engineering Manager'
+      }
+    ]
+  },
+  {
+    id: '6',
+    employeeId: 'EMP006',
+    name: 'Lisa Thompson',
+    email: 'lisa.thompson@company.com',
+    phone: '+1 (555) 678-9012',
+    position: 'HR Director',
+    department: 'Human Resources',
+    manager: 'Soumodip Dey',
+    joinDate: '2020-11-01',
+    status: 'active',
+    avatar: '/images/placeholder.svg',
+    
+    // Personal Information
+    personalInfo: {
+      firstName: 'Lisa',
+      lastName: 'Thompson',
+      gender: 'female',
+      dateOfBirth: '1982-12-10',
+      maritalStatus: 'married',
+      nationality: 'American',
+      primaryCitizenship: 'United States',
+      phoneNumber: '+1 (555) 678-9012',
+      email: 'lisa.thompson@company.com',
+      
+      addresses: {
+        present: {
+          contactName: 'Lisa Thompson',
+          address1: '5678 HR Street',
+          city: 'San Francisco',
+          state: 'CA',
+          country: 'United States',
+          pinCode: '94102',
+          mobileNumber: '+1 (555) 678-9012',
+          alternativeMobile: '+1 (555) 678-9013',
+          area: 'Mission District',
+          landmark: 'Near Dolores Park',
+          latitude: 37.7749,
+          longitude: -122.4194
+        },
+        primary: {
+          contactName: 'Lisa Thompson',
+          address1: '5678 HR Street',
+          city: 'San Francisco',
+          state: 'CA',
+          country: 'United States',
+          pinCode: '94102',
+          mobileNumber: '+1 (555) 678-9012',
+          alternativeMobile: '+1 (555) 678-9013',
+          area: 'Mission District',
+          landmark: 'Near Dolores Park',
+          latitude: 37.7749,
+          longitude: -122.4194
+        },
+        emergency: {
+          contactName: 'Michael Thompson',
+          relation: 'Husband',
+          phoneNumber: '+1 (555) 876-5432',
+          address: {
+            contactName: 'Michael Thompson',
+            address1: '5678 HR Street',
+            city: 'San Francisco',
+            state: 'CA',
+            country: 'United States',
+            pinCode: '94102',
+            mobileNumber: '+1 (555) 876-5432'
+          }
+        }
+      },
+      
+      passport: {
+        passportNumber: 'US987654321',
+        expiryDate: '2032-12-10',
+        issuingOffice: 'San Francisco Passport Agency',
+        issuingCountry: 'United States',
+        contactNumber: '+1 (555) 678-9012',
+        address: '5678 HR Street, San Francisco, CA 94102'
+      },
+      
+      identityNumbers: {
+        aadharNumber: 'N/A',
+        panNumber: 'N/A',
+        nsr: {
+          itpin: 'N/A',
+          tin: 'N/A'
+        }
+      },
+      
+      dependents: [
+        {
+          relation: 'husband',
+          name: 'Michael Thompson',
+          nationality: 'American',
+          dateOfBirth: '1980-05-25',
+          occupation: 'Financial Advisor',
+          address: '5678 HR Street, San Francisco, CA 94102'
+        }
+      ],
+      
+      education: [
+        {
+          branch: 'Human Resources',
+          instituteName: 'UC Berkeley',
+          passoutYear: '2004',
+          qualification: 'Bachelor of Arts',
+          universityName: 'University of California, Berkeley',
+          level: 'ug'
+        },
+        {
+          branch: 'Organizational Psychology',
+          instituteName: 'Stanford University',
+          passoutYear: '2006',
+          qualification: 'Master of Science',
+          universityName: 'Stanford University',
+          level: 'pg'
+        }
+      ],
+      
+      experience: [
+        {
+          country: 'United States',
+          organisationName: 'Google',
+          fromDate: '2006-08-01',
+          toDate: '2015-12-31',
+          designation: 'HR Business Partner',
+          city: 'Mountain View',
+          documentProof: 'google_experience.pdf'
+        },
+        {
+          country: 'United States',
+          organisationName: 'Facebook',
+          fromDate: '2016-01-01',
+          toDate: '2020-10-31',
+          designation: 'Senior HR Director',
+          city: 'Menlo Park',
+          documentProof: 'facebook_experience.pdf'
+        }
+      ]
+    },
+    
+    // Official Information
+    officialInfo: {
+      firstName: 'Lisa',
+      lastName: 'Thompson',
+      knownAs: 'Lisa',
+      dateOfJoining: '2020-11-01',
+      jobConfirmation: true,
+      role: 'HR Director',
+      designation: 'Senior HR Director',
+      stream: 'Human Resources',
+      subStream: 'Strategic HR',
+      baseLocation: 'San Francisco Office',
+      currentLocation: 'San Francisco Office',
+      unit: 'HR Operations',
+      unitHead: 'Soumodip Dey',
+      
+      confirmationDetails: {
+        status: 'Confirmed',
+        confirmationDate: '2021-05-01',
+        approval: 'Approved by CEO',
+        rating: 4.9
+      },
+      
+      documents: [
+        {
+          id: '9',
+          employeeId: 'EMP006',
+          name: 'Offer Letter',
+          type: 'Offer Letter',
+          uploadDate: '2020-11-01',
+          size: '289 KB',
+          url: '/documents/offer_letter_lisa.pdf',
+          uploadedBy: 'hr'
+        }
+      ]
+    },
+    
+    // Financial Information
+    financialInfo: {
+      bankAccount: {
+        bankName: 'Wells Fargo',
+        accountNumber: '2233445566',
+        ifscCode: 'WFBIUS6S',
+        modifiedDate: '2020-11-01',
+        country: 'United States'
+      },
+      retiral: {
+        pfTotal: 45000,
+        employeePF: 36000,
+        employerPF: 9000,
+        employeeESI: 2000,
+        employerESI: 8000,
+        professionalTax: 500,
+        incomeTax: 15000,
+        netTakeHome: 110000,
+        costToCompany: 140000,
+        basicSalary: 80000,
+        houseRentAllowance: 30000,
+        specialAllowance: 30000
+      }
+    },
+    
+    // Legacy fields for backward compatibility
+    personalInfoLegacy: {
+      dateOfBirth: '1982-12-10',
+      address: '5678 HR St, San Francisco, CA 94102',
+      emergencyContact: '+1 (555) 876-5432',
+      bloodGroup: 'A+'
+    },
+    workInfo: {
+      workLocation: 'San Francisco Office',
+      employmentType: 'full-time',
+      salary: 120000,
+      benefits: ['Health Insurance', 'Dental', '401k', 'Stock Options', 'Executive Bonus']
+    },
+    timeline: [
+      {
+        id: '6',
+        date: '2020-11-01',
+        type: 'joined',
+        title: 'Joined Company',
+        description: 'Started as HR Director'
       }
     ]
   }

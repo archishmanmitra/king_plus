@@ -22,6 +22,7 @@ import Contact from "@/pages/Contact";
 import Invite from "@/pages/Invite";
 import Setup from "@/pages/Setup";
 import TestFlow from "@/pages/TestFlow";
+import Teams from "@/pages/Teams";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const AppRoutes = () => {
         <Route path="/project/:projectId" element={<ProjectDetail />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/teams" element={<Teams />} />
         <Route path="/test" element={<TestFlow />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

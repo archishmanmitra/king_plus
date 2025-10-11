@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { mockEmployees } from "@/data/mockData";
+import { getEmployees } from "@/api/employees";
 import { useNavigate } from "react-router-dom";
 import AddEmployeeModal from "@/components/modals/AddEmployeeModal";
 import {
@@ -42,6 +42,7 @@ import {
   Building2,
   Mail,
   Phone,
+  Loader2,
 } from "lucide-react";
 
 const Employees: React.FC = () => {
@@ -49,9 +50,35 @@ const Employees: React.FC = () => {
   const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
-  const [employees, setEmployees] = useState(mockEmployees || []);
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Fetch employees from backend
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getEmployees();
+        setEmployees(response.employees || []);
+      } catch (err) {
+        console.error('Failed to fetch employees:', err);
+        setError('Failed to load employees. Please try again.');
+        toast({
+          title: "Error",
+          description: "Failed to load employees. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployees();
+  }, [toast]);
 
   const departments = [
     "all",
@@ -68,13 +95,13 @@ const Employees: React.FC = () => {
     
     const matchesSearch =
       (employee.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (employee.email?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (employee.personalInfo?.email?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
       (employee.employeeId?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     const matchesDepartment =
       selectedDepartment === "all" ||
-      employee.department === selectedDepartment;
+      employee.officialInfo?.unit === selectedDepartment;
     const matchesStatus =
-      selectedStatus === "all" || employee.status === selectedStatus;
+      selectedStatus === "all" || (employee.user?.role ? "active" : "inactive") === selectedStatus;
 
     return matchesSearch && matchesDepartment && matchesStatus;
   });
@@ -99,29 +126,74 @@ const Employees: React.FC = () => {
     navigate(`/profile/${employeeId}`);
   };
 
-  const handleAddEmployee = (newEmployee: (typeof mockEmployees)[0]) => {
-    // Ensure the new employee has all required properties
-    const employeeWithDefaults = {
-      ...newEmployee,
-      name: newEmployee.name || 'Unknown Employee',
-      email: newEmployee.email || 'no-email@company.com',
-      employeeId: newEmployee.employeeId || `EMP${Date.now()}`,
-      phone: newEmployee.phone || 'N/A',
-      position: newEmployee.position || 'Employee',
-      department: newEmployee.department || 'General',
-      manager: newEmployee.manager || 'N/A',
-      joinDate: newEmployee.joinDate || new Date().toISOString().split('T')[0],
-      status: newEmployee.status || 'active',
-      avatar: newEmployee.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+  const handleAddEmployee = (newEmployee: any) => {
+    // Refresh the employee list after adding a new employee
+    const fetchEmployees = async () => {
+      try {
+        const response = await getEmployees();
+        setEmployees(response.employees || []);
+      } catch (err) {
+        console.error('Failed to refresh employees:', err);
+      }
     };
     
-    setEmployees((prev) => [...prev, employeeWithDefaults]);
+    fetchEmployees();
     setIsAddEmployeeModalOpen(false);
     toast({
       title: "Success",
-      description: `Employee ${employeeWithDefaults.name} has been added successfully!`,
+      description: `Employee has been added successfully!`,
     });
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 bg-lightblue">
+          <div className="flex-1">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+              Employee Management
+            </h1>
+            <p className="text-sm md:text-base text-muted-foreground mt-1">
+              Manage your organization's workforce
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading employees...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 bg-lightblue">
+          <div className="flex-1">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+              Employee Management
+            </h1>
+            <p className="text-sm md:text-base text-muted-foreground mt-1">
+              Manage your organization's workforce
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -163,9 +235,9 @@ const Employees: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold">
-              {mockEmployees.length}
+              {employees.length}
             </div>
-            <p className="text-xs text-muted-foreground">+2 from last month</p>
+            <p className="text-xs text-muted-foreground">Total workforce</p>
           </CardContent>
         </Card>
 
@@ -178,7 +250,7 @@ const Employees: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold text-success">
-              {mockEmployees.filter((e) => e.status === "active").length}
+              {employees.filter((e) => e.user?.role).length}
             </div>
             <p className="text-xs text-muted-foreground">Currently working</p>
           </CardContent>
@@ -193,7 +265,7 @@ const Employees: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold">
-              {new Set(mockEmployees.map((e) => e.department)).size}
+              {new Set(employees.map((e) => e.officialInfo?.unit).filter(Boolean)).size}
             </div>
             <p className="text-xs text-muted-foreground">
               Different departments
@@ -209,7 +281,15 @@ const Employees: React.FC = () => {
             <UserPlus className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-primary">5</div>
+            <div className="text-xl sm:text-2xl font-bold text-primary">
+              {employees.filter((e) => {
+                const joinDate = e.officialInfo?.dateOfJoining;
+                if (!joinDate) return false;
+                const joinMonth = new Date(joinDate).getMonth();
+                const currentMonth = new Date().getMonth();
+                return joinMonth === currentMonth;
+              }).length}
+            </div>
             <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>
@@ -306,10 +386,10 @@ const Employees: React.FC = () => {
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
-                          {employee.name}
+                          {employee.name || 'Unknown Employee'}
                         </h3>
                         <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                          {employee.position}
+                          {employee.officialInfo?.designation || 'Employee'}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {employee.employeeId}
@@ -317,7 +397,7 @@ const Employees: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex justify-end sm:justify-start">
-                      {getStatusBadge(employee.status)}
+                      {getStatusBadge(employee.user?.role ? "active" : "inactive")}
                     </div>
                   </div>
                 </CardHeader>
@@ -325,19 +405,19 @@ const Employees: React.FC = () => {
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
                     <Building2 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground truncate">
-                      {employee.department}
+                      {employee.officialInfo?.unit || 'N/A'}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
                     <Mail className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground truncate">
-                      {employee.email}
+                      {employee.personalInfo?.email || 'N/A'}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
                     <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground">
-                      {employee.phone}
+                      {employee.personalInfo?.phoneNumber || 'N/A'}
                     </span>
                   </div>
                   <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 pt-2">
@@ -402,10 +482,10 @@ const Employees: React.FC = () => {
                           </Avatar>
                           <div className="min-w-0">
                             <div className="font-medium text-sm truncate">
-                              {employee.name}
+                              {employee.name || 'Unknown Employee'}
                             </div>
                             <div className="text-xs text-muted-foreground truncate">
-                              {employee.email}
+                              {employee.personalInfo?.email || 'N/A'}
                             </div>
                           </div>
                         </div>
@@ -414,15 +494,15 @@ const Employees: React.FC = () => {
                         {employee.employeeId}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {employee.department}
+                        {employee.officialInfo?.unit || 'N/A'}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {employee.position}
+                        {employee.officialInfo?.designation || 'N/A'}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {new Date(employee.joinDate).toLocaleDateString()}
+                        {employee.officialInfo?.dateOfJoining ? new Date(employee.officialInfo.dateOfJoining).toLocaleDateString() : 'N/A'}
                       </TableCell>
-                      <TableCell>{getStatusBadge(employee.status)}</TableCell>
+                      <TableCell>{getStatusBadge(employee.user?.role ? "active" : "inactive")}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end space-x-1">
                           <Button
