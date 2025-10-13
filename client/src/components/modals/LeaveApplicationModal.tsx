@@ -227,11 +227,11 @@ const LeaveApplicationModal: React.FC<LeaveApplicationModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center text-xl">
+          <DialogTitle className="flex items-center text-xl text-white">
             <FileText className="h-6 w-6 mr-2" />
             Leave Application Form
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className='text-white'>
             Please fill out all required information for your leave request. All fields marked with * are mandatory.
           </DialogDescription>
         </DialogHeader>
@@ -239,7 +239,7 @@ const LeaveApplicationModal: React.FC<LeaveApplicationModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Leave Details Section */}
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold border-b pb-2">Leave Details</h3>
+            <h3 className="text-lg font-semibold border-b pb-2 text-white">Leave Details</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -561,14 +561,14 @@ const LeaveApplicationModal: React.FC<LeaveApplicationModalProps> = ({
                 </Select>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-4 pt-6">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="clientNotification"
                     checked={formData.clientNotification}
                     onCheckedChange={(checked) => setFormData({ ...formData, clientNotification: checked as boolean })}
                   />
-                  <Label htmlFor="clientNotification">Client notification required</Label>
+                  <Label htmlFor="clientNotification" className='text-white'>Client notification required</Label>
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -577,7 +577,7 @@ const LeaveApplicationModal: React.FC<LeaveApplicationModalProps> = ({
                     checked={formData.workFromHomeOption}
                     onCheckedChange={(checked) => setFormData({ ...formData, workFromHomeOption: checked as boolean })}
                   />
-                  <Label htmlFor="workFromHome">Available for urgent work from home</Label>
+                  <Label htmlFor="workFromHome" className='text-white'>Available for urgent work from home</Label>
                 </div>
               </div>
             </div>
@@ -616,14 +616,14 @@ const LeaveApplicationModal: React.FC<LeaveApplicationModalProps> = ({
                   checked={formData.medicalCertificate}
                   onCheckedChange={(checked) => setFormData({ ...formData, medicalCertificate: checked as boolean })}
                 />
-                <Label htmlFor="medicalCertificate">Medical certificate attached (if applicable)</Label>
+                <Label htmlFor="medicalCertificate" className='text-white'>Medical certificate attached (if applicable)</Label>
               </div>
 
               <div className="space-y-2">
                 <Label>Supporting Documents</Label>
                 <div className="border-2 border-dashed border-muted rounded-lg p-4 text-center">
                   <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mb-2">
+                  <p className="text-sm text-white mb-2">
                     Upload supporting documents (medical certificates, travel documents, etc.)
                   </p>
                   <input

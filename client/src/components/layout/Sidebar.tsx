@@ -25,6 +25,7 @@ import {
   Settings,
   Building2,
   X,
+  Network,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,12 @@ const navigationItems = [
     title: "Employees",
     url: "/employees",
     icon: Users,
+    roles: ["global_admin", "hr_manager"],
+  },
+  {
+    title: "Teams",
+    url: "/teams",
+    icon: Network,
     roles: ["global_admin", "hr_manager"],
   },
   {
@@ -187,32 +194,34 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {filteredItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      onClick={handleCloseMobile}
-                        className={({ isActive }) =>
-                        `flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 group ${
-                          isActive
+              {filteredItems.map((item) => {
+                const active = isActive(item.url);
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        onClick={handleCloseMobile}
+                        className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 group ${
+                          active
                             ? "bg-gradient-to-r from-primary/15 to-primary/5 text-primary font-semibold shadow-sm"
                             : "hover:bg-sidebar-accent/60 text-sidebar-foreground hover:text-foreground"
-                        }`
-                      }
-                    >
-                      <item.icon className={`h-4 w-4 flex-shrink-0 transition-colors ${
-                        isActive ? "text-primary" : "text-sidebar-foreground group-hover:text-foreground"
-                      }`} />
-                      {!isCollapsed && (
-                        <span className="font-medium transition-colors">
-                          {item.title}
-                        </span>
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                        }`}
+                      >
+                        <item.icon className={`h-4 w-4 flex-shrink-0 transition-colors ${
+                          active ? "text-primary" : "text-sidebar-foreground group-hover:text-foreground"
+                        }`} />
+                        {!isCollapsed && (
+                          <span className="font-medium transition-colors">
+                            {item.title}
+                          </span>
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

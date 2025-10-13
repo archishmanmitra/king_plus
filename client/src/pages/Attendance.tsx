@@ -617,7 +617,7 @@ const Attendance: React.FC = () => {
       <Dialog open={timestampsModal.open} onOpenChange={(open) => (open ? null : closeTimestamps())}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Timestamps</DialogTitle>
+            <DialogTitle className="text-white">Timestamps</DialogTitle>
           </DialogHeader>
           {timestampsModal.attendance && (
             <div className="space-y-2">
@@ -625,12 +625,12 @@ const Attendance: React.FC = () => {
                 (timestampsModal.attendance.timestamps || []).map((t: any) => (
                   <div key={t.id} className="flex items-center justify-between p-2 border rounded">
                     <div className="text-sm">
-                      <div className="font-medium">Start</div>
-                      <div className="text-muted-foreground">{new Date(t.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                      <div className="font-medium text-white/100">Start</div>
+                      <div className="text-white">{new Date(t.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                     </div>
                     <div className="text-sm text-right">
-                      <div className="font-medium">End</div>
-                      <div className="text-muted-foreground">{t.endTime ? new Date(t.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</div>
+                      <div className="font-medium text-white/100">End</div>
+                      <div className="text-white">{t.endTime ? new Date(t.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</div>
                     </div>
                   </div>
                 ))
