@@ -255,23 +255,23 @@ export const getEmployeeByEmployeeId = async (req: Request, res: Response) => {
     const { employeeId } = req.params
     if (!employeeId) return res.status(400).json({ error: 'employeeId is required' })
 
-    // Treat param as users.id (contract): resolve or create linked employee
-    const user = await prisma.user.findUnique({ where: { id: employeeId } })
-    if (!user) return res.status(404).json({ error: 'User not found' })
-
-    let employee = null as any
-    if (user.employeeId) {
-      employee = await prisma.employee.findUnique({ where: { id: user.employeeId }, include: {
-        user: true, official: true, personal: true, bankAccount: true, retiral: true, addresses: true, passport: true, identity: true, documents: true, dependents: true, educations: true, experiences: true,
-      } })
-    }
-    if (!employee) {
-      const created = await prisma.employee.create({ data: { employeeId: user.id } })
-      await prisma.user.update({ where: { id: user.id }, data: { employeeId: created.id } })
-      employee = await prisma.employee.findUnique({ where: { id: created.id }, include: {
-        user: true, official: true, personal: true, bankAccount: true, retiral: true, addresses: true, passport: true, identity: true, documents: true, dependents: true, educations: true, experiences: true,
-      } })
-    }
+    const employee = await prisma.employee.findUnique({
+      where: { employeeId },
+      include: {
+        user: true,
+        official: true,
+        personal: true,
+        bankAccount: true,
+        retiral: true,
+        addresses: true,
+        passport: true,
+        identity: true,
+        documents: true,
+        dependents: true,
+        educations: true,
+        experiences: true,
+      }
+    })
 
     if (!employee) {
       // Return empty-compatible profile so frontend shows blanks
