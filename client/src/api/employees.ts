@@ -100,4 +100,100 @@ export async function rejectAttendance(attendanceId: string) {
   return res.json()
 }
 
+// Leave Assignment APIs
+export async function getAllEmployees() {
+  const res = await fetch(`/api/employees`, { 
+    method: 'GET', 
+    credentials: 'include', 
+    headers: { ...authHeaders() } 
+  })
+  if (!res.ok) throw new Error('Failed to fetch employees')
+  return res.json()
+}
+
+export async function getEmployeeLeaveBalance(employeeId: string) {
+  const res = await fetch(`/api/leave/balance/${employeeId}`, { 
+    method: 'GET', 
+    credentials: 'include', 
+    headers: { ...authHeaders() } 
+  })
+  if (!res.ok) throw new Error('Failed to fetch leave balance')
+  return res.json()
+}
+
+export async function addLeaveDays(employeeId: string, type: string, days: number, reason: string) {
+  const res = await fetch(`/api/leave/balance/${employeeId}/add`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ type, days, reason })
+  })
+  if (!res.ok) throw new Error('Failed to add leave days')
+  return res.json()
+}
+
+export async function updateLeaveBalance(employeeId: string, balanceData: any) {
+  const res = await fetch(`/api/leave/balance/${employeeId}`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(balanceData)
+  })
+  if (!res.ok) throw new Error('Failed to update leave balance')
+  return res.json()
+}
+
+export async function getAllLeaveBalances() {
+  const res = await fetch(`/api/leave/balance`, { 
+    method: 'GET', 
+    credentials: 'include', 
+    headers: { ...authHeaders() } 
+  })
+  if (!res.ok) throw new Error('Failed to fetch leave balances')
+  return res.json()
+}
+
+// Leave Request APIs
+export async function createLeaveRequest(leaveData: any) {
+  const res = await fetch(`/api/leave/requests`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(leaveData)
+  })
+  if (!res.ok) throw new Error('Failed to create leave request')
+  return res.json()
+}
+
+export async function getLeaveRequests(filters?: any) {
+  const queryParams = new URLSearchParams()
+  if (filters) {
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        queryParams.append(key, String(value))
+      }
+    })
+  }
+  
+  const url = `/api/leave/requests${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+  const res = await fetch(url, { 
+    method: 'GET', 
+    credentials: 'include', 
+    headers: { ...authHeaders() } 
+  })
+  if (!res.ok) throw new Error('Failed to fetch leave requests')
+  return res.json()
+}
+
+export async function updateLeaveRequestStatus(requestId: string, status: string, approver: string) {
+  const res = await fetch(`/api/leave/requests/${requestId}/status`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ status, approver })
+  })
+  if (!res.ok) throw new Error('Failed to update leave request status')
+  return res.json()
+}
+
 

@@ -147,8 +147,8 @@ const Dashboard: React.FC = () => {
         </div>
         <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
           <Button className="btn-premium w-full sm:w-auto text-sm font-semibold">
-            <FileText className="h-4 w-4 mr-2 invert" />
-            <span className="hidden sm:inline text-black">Generate Report</span>
+            <FileText className="h-4 w-4 mr-2 " />
+            <span className="hidden sm:inline text-white">Generate Report</span>
             <span className="sm:hidden">Report</span>
           </Button>
           <Button variant="outline" className="w-full sm:w-auto text-sm font-semibold hover:bg-muted/50 transition-colors">

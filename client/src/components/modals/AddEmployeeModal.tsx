@@ -270,11 +270,11 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
     <Dialog open={isOpen} onOpenChange={handleCancel}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center">
+          <DialogTitle className="flex items-center text-white">
             <UserPlus className="h-5 w-5 mr-2" />
             Add New Employee
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-black">
             Create a new employee account and send an invitation to complete
             their profile setup.
           </DialogDescription>
@@ -449,7 +449,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               </Select>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-black">
             The invitation link will be sent to this email and will expire in 24
             hours.
           </p>
