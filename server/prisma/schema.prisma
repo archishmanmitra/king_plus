@@ -145,6 +145,10 @@ model Employee {
   // joinDate   DateTime
   // status     EmployeeStatus @default(active)
   avatar     String?
+  managerId  String?
+
+  manager        Employee?   @relation("EmployeeHierarchy", fields: [managerId], references: [id], onDelete: SetNull)
+  directReports  Employee[]  @relation("EmployeeHierarchy")
 
   // Core relations
   user        User?
