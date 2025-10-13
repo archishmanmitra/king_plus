@@ -1,22 +1,23 @@
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 function authHeaders() {
   const token = localStorage.getItem('hrms_token')
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
 export async function getEmployeeByEmployeeId(employeeId: string) {
-  const res = await fetch(`/api/employees/${employeeId}`, { credentials: 'include', headers: { ...authHeaders() } })
+  const res = await fetch(`${API_URL}/employees/${employeeId}`, { credentials: 'include', headers: { ...authHeaders() } })
   if (!res.ok) throw new Error('Failed to fetch employee')
   return res.json()
 }
 
 export async function getEmployees() {
-  const res = await fetch(`/api/employees`, { credentials: 'include', headers: { ...authHeaders() } })
+  const res = await fetch(`${API_URL}/employees`, { credentials: 'include', headers: { ...authHeaders() } })
   if (!res.ok) throw new Error('Failed to fetch employees')
   return res.json()
 }
 
 export async function updateEmployeeProfile(employeeId: string, payload: any) {
-  const res = await fetch(`/api/employees/${employeeId}`, {
+  const res = await fetch(`${API_URL}/employees/${employeeId}`, {
     method: 'PATCH',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
@@ -29,7 +30,7 @@ export async function updateEmployeeProfile(employeeId: string, payload: any) {
 
 // Attendance APIs
 export async function attendanceClockIn(employeeId: string) {
-  const res = await fetch(`/api/attendance/clock-in`, {
+  const res = await fetch(`${API_URL}/attendance/clock-in`, {
     method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ employeeId })
   })
   if (!res.ok) throw new Error('Clock-in failed')
@@ -37,7 +38,7 @@ export async function attendanceClockIn(employeeId: string) {
 }
 
 export async function attendancePause(employeeId: string) {
-  const res = await fetch(`/api/attendance/pause`, {
+  const res = await fetch(`${API_URL}/attendance/pause`, {
     method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ employeeId })
   })
   if (!res.ok) throw new Error('Pause failed')
@@ -45,7 +46,7 @@ export async function attendancePause(employeeId: string) {
 }
 
 export async function attendanceResume(employeeId: string) {
-  const res = await fetch(`/api/attendance/resume`, {
+  const res = await fetch(`${API_URL}/attendance/resume`, {
     method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ employeeId })
   })
   if (!res.ok) throw new Error('Resume failed')
@@ -53,7 +54,7 @@ export async function attendanceResume(employeeId: string) {
 }
 
 export async function attendanceClockOut(employeeId: string) {
-  const res = await fetch(`/api/attendance/clock-out`, {
+  const res = await fetch(`${API_URL}/attendance/clock-out`, {
     method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ employeeId })
   })
   if (!res.ok) throw new Error('Clock-out failed')
@@ -61,7 +62,7 @@ export async function attendanceClockOut(employeeId: string) {
 }
 
 export async function attendanceSubmit(employeeId: string, approverUserId: string) {
-  const res = await fetch(`/api/attendance/submit`, {
+  const res = await fetch(`${API_URL}/attendance/submit`, {
     method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ employeeId, approverUserId })
   })
   if (!res.ok) throw new Error('Submit failed')
@@ -69,7 +70,7 @@ export async function attendanceSubmit(employeeId: string, approverUserId: strin
 }
 
 export async function getMyAttendance(employeeId: string) {
-  const res = await fetch(`/api/attendance/employee/${employeeId}`, {
+  const res = await fetch(`${API_URL}/attendance/employee/${employeeId}`, {
     method: 'GET', credentials: 'include', headers: { ...authHeaders() }
   })
   if (!res.ok) throw new Error('Failed to fetch attendance')
@@ -77,7 +78,7 @@ export async function getMyAttendance(employeeId: string) {
 }
 
 export async function getPendingApprovals(approverUserId: string) {
-  const res = await fetch(`/api/attendance/approvals/${approverUserId}`, {
+  const res = await fetch(`${API_URL}/attendance/approvals/${approverUserId}`, {
     method: 'GET', credentials: 'include', headers: { ...authHeaders() }
   })
   if (!res.ok) throw new Error('Failed to fetch approvals')
@@ -85,7 +86,7 @@ export async function getPendingApprovals(approverUserId: string) {
 }
 
 export async function approveAttendance(attendanceId: string) {
-  const res = await fetch(`/api/attendance/${attendanceId}/approve`, {
+  const res = await fetch(`${API_URL}/attendance/${attendanceId}/approve`, {
     method: 'POST', credentials: 'include', headers: { ...authHeaders() }
   })
   if (!res.ok) throw new Error('Failed to approve attendance')
@@ -93,7 +94,7 @@ export async function approveAttendance(attendanceId: string) {
 }
 
 export async function rejectAttendance(attendanceId: string) {
-  const res = await fetch(`/api/attendance/${attendanceId}/reject`, {
+  const res = await fetch(`${API_URL}/attendance/${attendanceId}/reject`, {
     method: 'POST', credentials: 'include', headers: { ...authHeaders() }
   })
   if (!res.ok) throw new Error('Failed to reject attendance')
@@ -102,7 +103,7 @@ export async function rejectAttendance(attendanceId: string) {
 
 // Leave Assignment APIs
 export async function getAllEmployees() {
-  const res = await fetch(`/api/employees`, { 
+  const res = await fetch(`${API_URL}/employees`, { 
     method: 'GET', 
     credentials: 'include', 
     headers: { ...authHeaders() } 
@@ -112,7 +113,7 @@ export async function getAllEmployees() {
 }
 
 export async function getEmployeeLeaveBalance(employeeId: string) {
-  const res = await fetch(`/api/leave/balance/${employeeId}`, { 
+  const res = await fetch(`${API_URL}/leave/balance/${employeeId}`, { 
     method: 'GET', 
     credentials: 'include', 
     headers: { ...authHeaders() } 
@@ -122,7 +123,7 @@ export async function getEmployeeLeaveBalance(employeeId: string) {
 }
 
 export async function addLeaveDays(employeeId: string, type: string, days: number, reason: string) {
-  const res = await fetch(`/api/leave/balance/${employeeId}/add`, {
+  const res = await fetch(`${API_URL}/leave/balance/${employeeId}/add`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
@@ -133,7 +134,7 @@ export async function addLeaveDays(employeeId: string, type: string, days: numbe
 }
 
 export async function updateLeaveBalance(employeeId: string, balanceData: any) {
-  const res = await fetch(`/api/leave/balance/${employeeId}`, {
+  const res = await fetch(`${API_URL}/leave/balance/${employeeId}`, {
     method: 'PATCH',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
@@ -144,7 +145,7 @@ export async function updateLeaveBalance(employeeId: string, balanceData: any) {
 }
 
 export async function getAllLeaveBalances() {
-  const res = await fetch(`/api/leave/balance`, { 
+  const res = await fetch(`${API_URL}/leave/balance`, { 
     method: 'GET', 
     credentials: 'include', 
     headers: { ...authHeaders() } 
@@ -155,7 +156,7 @@ export async function getAllLeaveBalances() {
 
 // Leave Request APIs
 export async function createLeaveRequest(leaveData: any) {
-  const res = await fetch(`/api/leave/requests`, {
+  const res = await fetch(`${API_URL}/leave/requests`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
@@ -175,7 +176,7 @@ export async function getLeaveRequests(filters?: any) {
     })
   }
   
-  const url = `/api/leave/requests${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+  const url = `${API_URL}/leave/requests${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
   const res = await fetch(url, { 
     method: 'GET', 
     credentials: 'include', 
@@ -186,7 +187,7 @@ export async function getLeaveRequests(filters?: any) {
 }
 
 export async function updateLeaveRequestStatus(requestId: string, status: string, approver: string) {
-  const res = await fetch(`/api/leave/requests/${requestId}/status`, {
+  const res = await fetch(`${API_URL}/leave/requests/${requestId}/status`, {
     method: 'PATCH',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },

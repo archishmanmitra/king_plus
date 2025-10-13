@@ -58,6 +58,7 @@ interface Employee {
     personal: number;
     maternity: number;
     paternity: number;
+    earned:number
     total: number;
   };
 }

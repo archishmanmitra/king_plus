@@ -25,8 +25,6 @@ enum EmployeeStatus {
   terminated
 }
 
-
-
 enum LeaveType {
   earned
   maternity
@@ -122,33 +120,33 @@ enum TimesheetStatus {
 }
 
 model User {
-  id         String    @id @default(cuid())
+  id         String   @id @default(cuid())
   name       String
-  email      String    @unique
+  email      String   @unique
   password   String?
   role       UserRole
   avatar     String?
-  employeeId String?   @unique
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  employeeId String?  @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  employee   Employee? @relation(fields: [employeeId], references: [id])
+  employee    Employee?        @relation(fields: [employeeId], references: [id])
   invitations UserInvitation[]
+  Attendance  Attendance[]
 
   @@map("users")
-  Attendance Attendance[]
 }
 
 model Employee {
-  id         String         @id @default(cuid())
-  employeeId String         @unique
+  id         String  @id @default(cuid())
+  employeeId String  @unique
   // joinDate   DateTime
   // status     EmployeeStatus @default(active)
   avatar     String?
   managerId  String?
 
-  manager        Employee?   @relation("EmployeeHierarchy", fields: [managerId], references: [id], onDelete: SetNull)
-  directReports  Employee[]  @relation("EmployeeHierarchy")
+  manager       Employee?  @relation("EmployeeHierarchy", fields: [managerId], references: [id], onDelete: SetNull)
+  directReports Employee[] @relation("EmployeeHierarchy")
 
   // Core relations
   user        User?
@@ -185,8 +183,8 @@ model Employee {
 
 // Employee Official Information - captured at creation
 model EmployeeOfficial {
-  id               String   @id @default(cuid())
-  employeeId       String   @unique
+  id               String    @id @default(cuid())
+  employeeId       String    @unique
   firstName        String
   lastName         String
   knownAs          String?
@@ -197,7 +195,7 @@ model EmployeeOfficial {
   currentLocation  String?
   unit             String?
   unitHead         String?
-  jobConfirmation  Boolean  @default(false)
+  jobConfirmation  Boolean   @default(false)
   confirmationDate DateTime?
   approval         String?
   rating           Float?
@@ -209,17 +207,17 @@ model EmployeeOfficial {
 
 // Employee Personal Information - completed via invitation
 model EmployeePersonal {
-  id                  String   @id @default(cuid())
-  employeeId          String   @unique
-  firstName           String?
-  lastName            String?
-  gender              String?
-  dateOfBirth         DateTime?
-  maritalStatus       String?
-  nationality         String?
-  primaryCitizenship  String?
-  phoneNumber         String?
-  personalEmail       String?
+  id                 String    @id @default(cuid())
+  employeeId         String    @unique
+  firstName          String?
+  lastName           String?
+  gender             String?
+  dateOfBirth        DateTime?
+  maritalStatus      String?
+  nationality        String?
+  primaryCitizenship String?
+  phoneNumber        String?
+  personalEmail      String?
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
@@ -233,24 +231,24 @@ enum AddressType {
 }
 
 model Address {
-  id                 String      @id @default(cuid())
-  employeeId         String
-  type               AddressType
-  contactName        String?
-  address1           String?
-  city               String?
-  state              String?
-  country            String?
-  pinCode            String?
-  mobileNumber       String?
-  alternativeMobile  String?
-  area               String?
-  landmark           String?
-  latitude           Float?
-  longitude          Float?
+  id                String      @id @default(cuid())
+  employeeId        String
+  type              AddressType
+  contactName       String?
+  address1          String?
+  city              String?
+  state             String?
+  country           String?
+  pinCode           String?
+  mobileNumber      String?
+  alternativeMobile String?
+  area              String?
+  landmark          String?
+  latitude          Float?
+  longitude         Float?
   // Emergency-specific fields (used when type = emergency)
-  relation           String?
-  emergencyPhone     String?
+  relation          String?
+  emergencyPhone    String?
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
@@ -258,8 +256,8 @@ model Address {
 }
 
 model Passport {
-  id            String   @id @default(cuid())
-  employeeId    String   @unique
+  id             String    @id @default(cuid())
+  employeeId     String    @unique
   passportNumber String?
   expiryDate     DateTime?
   issuingOffice  String?
@@ -286,8 +284,8 @@ model IdentityNumbers {
 }
 
 model BankAccount {
-  id            String  @id @default(cuid())
-  employeeId    String  @unique
+  id            String    @id @default(cuid())
+  employeeId    String    @unique
   bankName      String?
   accountNumber String?
   ifscCode      String?
@@ -300,20 +298,20 @@ model BankAccount {
 }
 
 model EmployeeRetiral {
-  id                  String  @id @default(cuid())
-  employeeId          String  @unique
-  pfTotal             Float?  @default(0)
-  employeePF          Float?  @default(0)
-  employerPF          Float?  @default(0)
-  employeeESI         Float?  @default(0)
-  employerESI         Float?  @default(0)
-  professionalTax     Float?  @default(0)
-  incomeTax           Float?  @default(0)
-  netTakeHome         Float?  @default(0)
-  costToCompany       Float?  @default(0)
-  basicSalary         Float?  @default(0)
-  houseRentAllowance  Float?  @default(0)
-  specialAllowance    Float?  @default(0)
+  id                 String @id @default(cuid())
+  employeeId         String @unique
+  pfTotal            Float? @default(0)
+  employeePF         Float? @default(0)
+  employerPF         Float? @default(0)
+  employeeESI        Float? @default(0)
+  employerESI        Float? @default(0)
+  professionalTax    Float? @default(0)
+  incomeTax          Float? @default(0)
+  netTakeHome        Float? @default(0)
+  costToCompany      Float? @default(0)
+  basicSalary        Float? @default(0)
+  houseRentAllowance Float? @default(0)
+  specialAllowance   Float? @default(0)
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
@@ -327,39 +325,39 @@ enum InvitationStatus {
 }
 
 model UserInvitation {
-  id            String           @id @default(cuid())
-  token         String           @unique
-  email         String
-  role          UserRole
-  employeeId    String?
-  createdById   String
-  status        InvitationStatus @default(pending)
-  expiresAt     DateTime
-  usedAt        DateTime?
-  createdAt     DateTime         @default(now())
+  id          String           @id @default(cuid())
+  token       String           @unique
+  email       String
+  role        UserRole
+  employeeId  String?
+  createdById String
+  status      InvitationStatus @default(pending)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime         @default(now())
 
-  employee Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  employee  Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
   createdBy User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
   @@map("user_invitations")
 }
 
 model Attendance {
-  id             String            @id @default(cuid())
-  employeeId     String
-  workDate       DateTime           // normalized to start of day (00:00)
-  clockIn        DateTime
-  clockOut       DateTime?
-  totalHours     Float             @default(0)
-  status         String            @default("submitted") // submitted | approved | rejected
-  approverId     String?
-  submittedAt    DateTime?
-  approvedAt     DateTime?
+  id          String    @id @default(cuid())
+  employeeId  String
+  workDate    DateTime // normalized to start of day (00:00)
+  clockIn     DateTime
+  clockOut    DateTime?
+  totalHours  Float     @default(0)
+  status      String    @default("submitted") // submitted | approved | rejected
+  approverId  String?
+  submittedAt DateTime?
+  approvedAt  DateTime?
 
   // Relations
-  employee       Employee          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  approver       User?             @relation(fields: [approverId], references: [id], onDelete: SetNull)
-  timestamps     AttendanceTimestamp[]
+  employee   Employee              @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  approver   User?                 @relation(fields: [approverId], references: [id], onDelete: SetNull)
+  timestamps AttendanceTimestamp[]
 
   @@unique([employeeId, workDate])
   @@index([employeeId, workDate])
@@ -367,10 +365,10 @@ model Attendance {
 }
 
 model AttendanceTimestamp {
-  id            String   @id @default(cuid())
-  attendanceId  String
-  startTime     DateTime
-  endTime       DateTime? 
+  id           String    @id @default(cuid())
+  attendanceId String
+  startTime    DateTime
+  endTime      DateTime?
 
   attendance Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
 
@@ -379,7 +377,7 @@ model AttendanceTimestamp {
 }
 
 model LeaveRequest {
-  id           String       @id @default(cuid())
+  id           String      @id @default(cuid())
   employeeId   String
   employeeName String
   type         LeaveType
@@ -387,9 +385,9 @@ model LeaveRequest {
   endDate      DateTime
   days         Int
   reason       String
-  status       LeaveStatus  @default(pending)
+  status       LeaveStatus @default(pending)
   approver     String?
-  appliedDate  DateTime     @default(now())
+  appliedDate  DateTime    @default(now())
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
@@ -398,12 +396,13 @@ model LeaveRequest {
 
 model LeaveBalance {
   employeeId String @id
-  sick       Int   @default(0)
-  vacation   Int   @default(0)
-  personal   Int   @default(0)
-  maternity  Int   @default(0)
-  paternity  Int   @default(0)
-  total      Int   @default(0)
+  sick       Int    @default(0)
+  earned     Int    @default(0)
+  vacation   Int    @default(0)
+  personal   Int    @default(0)
+  maternity  Int    @default(0)
+  paternity  Int    @default(0)
+  total      Int    @default(0)
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
@@ -427,45 +426,45 @@ model PayrollRun {
 }
 
 model Payslip {
-  id           String  @id @default(cuid())
+  id           String @id @default(cuid())
   employeeId   String
   employeeName String
   payrollRunId String
   month        String
   year         Int
   basicSalary  Float
-  allowances   Json    // Array of SalaryComponent
-  deductions   Json    // Array of SalaryComponent
+  allowances   Json // Array of SalaryComponent
+  deductions   Json // Array of SalaryComponent
   grossPay     Float
   netPay       Float
   taxDeducted  Float
 
-  employee    Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  payrollRun  PayrollRun  @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employee   Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  payrollRun PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
 
   @@map("payslips")
 }
 
 model ExpenseClaim {
-  id                    String        @id @default(cuid())
-  employeeId            String
-  employeeName          String
-  category              String
-  amount                Float
-  description           String
-  date                  DateTime
-  status                ExpenseStatus @default(pending)
-  approver              String?
-  receipts              String[]      // Array of URLs
-  reportingManager      String?
-  fromDate              DateTime?
-  toDate                DateTime?
-  location              String?
-  currency              String        @default("INR")
-  billNumber            String?
-  percentageOfOfficialUse Float       @default(100)
-  vendor                String?
-  comment               String?
+  id                      String        @id @default(cuid())
+  employeeId              String
+  employeeName            String
+  category                String
+  amount                  Float
+  description             String
+  date                    DateTime
+  status                  ExpenseStatus @default(pending)
+  approver                String?
+  receipts                String[] // Array of URLs
+  reportingManager        String?
+  fromDate                DateTime?
+  toDate                  DateTime?
+  location                String?
+  currency                String        @default("INR")
+  billNumber              String?
+  percentageOfOfficialUse Float         @default(100)
+  vendor                  String?
+  comment                 String?
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
@@ -481,7 +480,7 @@ model PerformanceReview {
   overallRating Float
   goals         Goal[]
   feedbacks     Feedback[]
-  status        PerformanceStatus      @default(draft)
+  status        PerformanceStatus     @default(draft)
   reviewDate    DateTime
   reviewer      String
 
@@ -504,18 +503,18 @@ model Goal {
   employeeId          String?
 
   performanceReview PerformanceReview? @relation(fields: [performanceReviewId], references: [id], onDelete: Cascade)
-  employee           Employee?          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee          Employee?          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@map("goals")
 }
 
 model Feedback {
-  id            String @id @default(cuid())
-  category      String
-  rating        Float
-  comments      String
-  reviewer      String
-  reviewerRole  String
+  id           String @id @default(cuid())
+  category     String
+  rating       Float
+  comments     String
+  reviewer     String
+  reviewerRole String
 
   performanceReviewId String
 
@@ -525,32 +524,33 @@ model Feedback {
 }
 
 model OKR {
-  id         String     @id @default(cuid())
-  objective  String
-  quarter    String
-  year       Int
-  owner      String
-  status     OKRStatus  @default(draft)
+  id        String    @id @default(cuid())
+  objective String
+  quarter   String
+  year      Int
+  owner     String
+  status    OKRStatus @default(draft)
 
   keyResults KeyResult[]
-  employee   Employee   @relation(fields: [owner], references: [id], onDelete: Cascade)
+  employee   Employee    @relation(fields: [owner], references: [id], onDelete: Cascade)
 
   @@map("okrs")
 }
 
 model KeyResult {
-  id          String  @id @default(cuid())
+  id          String @id @default(cuid())
   description String
   target      Float
-  current     Float   @default(0)
+  current     Float  @default(0)
   unit        String
-  progress    Float   @default(0)
+  progress    Float  @default(0)
 
   okrId String
   okr   OKR    @relation(fields: [okrId], references: [id], onDelete: Cascade)
 
   @@map("key_results")
 }
+
 //manager aar admin e shudhu parbe eta edit korte
 model Project {
   id                   String              @id @default(cuid())
@@ -561,9 +561,9 @@ model Project {
   startDate            DateTime?
   endDate              DateTime?
   budget               Float?              @default(0)
-  billableHours        Float?               @default(0)
-  nonBillableHours     Float?               @default(0)
-  teamMembers          String[]            // Array of employee IDs
+  billableHours        Float?              @default(0)
+  nonBillableHours     Float?              @default(0)
+  teamMembers          String[] // Array of employee IDs
   manager              String?
   progress             Float               @default(0)
   projectCode          String?
@@ -585,7 +585,7 @@ model Task {
   projectId      String
   name           String
   description    String?
-  assignee       String?      // Employee ID
+  assignee       String? // Employee ID
   status         TaskStatus   @default(todo)
   priority       TaskPriority @default(medium)
   estimatedHours Float        @default(0)
@@ -594,22 +594,22 @@ model Task {
   startDate      DateTime?
   dueDate        DateTime?
 
-  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project          Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   timesheetEntries TimesheetEntry[]
 
   @@map("tasks")
 }
 
 model TimesheetEntry {
-  id          String           @id @default(cuid())
+  id          String          @id @default(cuid())
   employeeId  String
   projectId   String
   taskId      String?
   date        DateTime
   hours       Float
   description String?
-  billable    Boolean          @default(true)
-  status      TimesheetStatus  @default(draft)
+  billable    Boolean         @default(true)
+  status      TimesheetStatus @default(draft)
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -620,14 +620,14 @@ model TimesheetEntry {
 }
 
 model Document {
-  id          String   @id @default(cuid())
-  employeeId  String
-  name        String
-  type        String
-  uploadDate  DateTime @default(now())
-  size        String
-  url         String
-  uploadedBy  String   // 'employee' | 'hr' | 'admin'
+  id         String   @id @default(cuid())
+  employeeId String
+  name       String
+  type       String
+  uploadDate DateTime @default(now())
+  size       String
+  url        String
+  uploadedBy String // 'employee' | 'hr' | 'admin'
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
@@ -638,7 +638,7 @@ model TimelineEvent {
   id          String   @id @default(cuid())
   employeeId  String
   date        DateTime
-  type        String   // 'joined' | 'promotion' | 'review' | 'leave' | 'training' | 'note'
+  type        String // 'joined' | 'promotion' | 'review' | 'leave' | 'training' | 'note'
   title       String
   description String
   isPrivate   Boolean  @default(false)
@@ -649,16 +649,16 @@ model TimelineEvent {
 }
 
 model Dependent {
-  id                   String @id @default(cuid())
-  employeeId           String
-  relation             String // 'father' | 'mother' | 'wife' | 'husband' | 'other'
-  name                 String
-  nationality          String
-  dateOfBirth          DateTime
-  occupation           String?
+  id                     String   @id @default(cuid())
+  employeeId             String
+  relation               String // 'father' | 'mother' | 'wife' | 'husband' | 'other'
+  name                   String
+  nationality            String
+  dateOfBirth            DateTime
+  occupation             String?
   relationEmployeeNumber String?
-  passport             String?
-  address              String?
+  passport               String?
+  address                String?
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
@@ -666,14 +666,14 @@ model Dependent {
 }
 
 model Education {
-  id              String @id @default(cuid())
-  employeeId      String
-  branch          String
-  instituteName   String
-  passoutYear     String
-  qualification   String
-  universityName  String
-  level           String // 'secondary' | 'higher' | 'ug' | 'pg'
+  id             String @id @default(cuid())
+  employeeId     String
+  branch         String
+  instituteName  String
+  passoutYear    String
+  qualification  String
+  universityName String
+  level          String // 'secondary' | 'higher' | 'ug' | 'pg'
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
@@ -681,15 +681,15 @@ model Education {
 }
 
 model Experience {
-  id                String   @id @default(cuid())
-  employeeId        String
-  country           String
-  organisationName  String
-  fromDate          DateTime
-  toDate            DateTime?
-  designation       String
-  city              String
-  documentProof     String?
+  id               String    @id @default(cuid())
+  employeeId       String
+  country          String
+  organisationName String
+  fromDate         DateTime
+  toDate           DateTime?
+  designation      String
+  city             String
+  documentProof    String?
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
