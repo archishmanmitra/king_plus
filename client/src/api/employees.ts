@@ -10,6 +10,12 @@ export async function getEmployeeByEmployeeId(employeeId: string) {
   return res.json()
 }
 
+export async function getEmployeeByUserId(userId: string) {
+  const res = await fetch(`${API_URL}/employees/user/${userId}`, { credentials: 'include', headers: { ...authHeaders() } })
+  if (!res.ok) throw new Error('Failed to fetch employee by user ID')
+  return res.json()
+}
+
 export async function getEmployees() {
   const res = await fetch(`${API_URL}/employees`, { credentials: 'include', headers: { ...authHeaders() } })
   if (!res.ok) throw new Error('Failed to fetch employees')
@@ -66,6 +72,12 @@ export async function getAllTeamMembers(id: string) {
 // Users
 export async function listUsers() {
   const res = await fetch(`${API_URL}/users`, { credentials: 'include', headers: { ...authHeaders() } })
+  if (!res.ok) throw new Error('Failed to fetch users')
+  return res.json()
+}
+
+export async function listUsersByEmployeeId(employeeId: string) {
+  const res = await fetch(`${API_URL}/users/${employeeId}`, { credentials: 'include', headers: { ...authHeaders() } })
   if (!res.ok) throw new Error('Failed to fetch users')
   return res.json()
 }

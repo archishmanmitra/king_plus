@@ -419,6 +419,70 @@ export const getAllTeamMembers = async (req: Request, res: Response) => {
   }
 }
 
+// Get employee by user ID - returns employee data if linked, otherwise returns user data only
+export const getEmployeeByUserId = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params
+    if (!userId) return res.status(400).json({ error: 'userId is required' })
+
+    // First, find the user
+    const user = await prisma.user.findUnique({ 
+      where: { id: userId },
+      include: {
+        employee: {
+          include: {
+            official: true,
+            personal: true,
+            bankAccount: true,
+            retiral: true,
+            addresses: true,
+            passport: true,
+            identity: true,
+            documents: true,
+            dependents: true,
+            educations: true,
+            experiences: true,
+          }
+        }
+      }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    // If user has no linked employee, return user data only
+    if (!user.employeeId || !user.employee) {
+      return res.json({ 
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar
+        },
+        employee: null
+      })
+    }
+
+    // If user has linked employee, return full employee profile
+    const profile = mapEmployeeToProfile(user.employee)
+    return res.json({ 
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar
+      },
+      employee: profile
+    })
+  } catch (err: any) {
+    console.error('Get employee by user ID error:', err)
+    return res.status(500).json({ error: 'Failed to fetch employee by user ID', details: err?.message })
+  }
+}
+
 export const updateEmployeeProfile = async (req: Request, res: Response) => {
   try {
     const { employeeId } = req.params

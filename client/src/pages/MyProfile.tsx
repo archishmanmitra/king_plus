@@ -1,138 +1,171 @@
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useAuth } from '@/contexts/AuthContext';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { useParams, useNavigate } from "react-router-dom";
 // Removed mock data; page now supports empty/default profile when data is unavailable
-import { Edit, Plus, MapPin, Phone, Mail, Calendar, User, Building, GraduationCap, Briefcase, CreditCard, PiggyBank, Shield, Crown, ArrowLeft } from 'lucide-react';
-import PersonalInformation from '@/components/profile/PersonalInformation';
-import OfficialInformation from '@/components/profile/OfficialInformation';
-import FinancialInformation from '@/components/profile/FinancialInformation';
-import { getEmployeeByEmployeeId, updateEmployeeProfile } from '@/api/employees';
+import {
+  Edit,
+  Plus,
+  MapPin,
+  Phone,
+  Mail,
+  Calendar,
+  User,
+  Building,
+  GraduationCap,
+  Briefcase,
+  CreditCard,
+  PiggyBank,
+  Shield,
+  Crown,
+  ArrowLeft,
+} from "lucide-react";
+import PersonalInformation from "@/components/profile/PersonalInformation";
+import OfficialInformation from "@/components/profile/OfficialInformation";
+import FinancialInformation from "@/components/profile/FinancialInformation";
+import {
+  getEmployeeByEmployeeId,
+  getEmployeeByUserId,
+  updateEmployeeProfile,
+} from "@/api/employees";
 
 const MyProfile: React.FC = () => {
   const { user } = useAuth();
   const { employeeId } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('personal');
+  const [activeTab, setActiveTab] = useState("personal");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [draftPersonal, setDraftPersonal] = useState<any>(null);
   const [draftOfficial, setDraftOfficial] = useState<any>(null);
   const [draftFinancial, setDraftFinancial] = useState<any>(null);
-  
+  const [userData, setUserData] = useState<any>(null);
+
   // Target key used for profile API: prefer route param (admin/HR viewing by code), else current user's user.id
   const targetKey = employeeId || user?.id;
 
   // Empty/default profile shape to ensure subcomponents render without errors when data is absent
   const emptyProfile = {
-    avatar: '',
-    name: '',
-    position: '',
-    department: '',
-    employeeId: '',
+    avatar: "",
+    name: "",
+    position: "",
+    department: "",
+    employeeId: "",
     personalInfo: {
-      firstName: '',
-      lastName: '',
-      gender: '',
-      dateOfBirth: '',
-      maritalStatus: '',
-      nationality: '',
-      primaryCitizenship: '',
-      phoneNumber: '',
-      email: '',
+      firstName: "",
+      lastName: "",
+      gender: "",
+      dateOfBirth: "",
+      maritalStatus: "",
+      nationality: "",
+      primaryCitizenship: "",
+      phoneNumber: "",
+      email: "",
       addresses: {
         present: {
-          contactName: '',
-          address1: '',
-          city: '',
-          state: '',
-          country: '',
-          pinCode: '',
-          mobileNumber: '',
-          alternativeMobile: '',
-          area: '',
-          landmark: '',
-          latitude: '',
-          longitude: ''
+          contactName: "",
+          address1: "",
+          city: "",
+          state: "",
+          country: "",
+          pinCode: "",
+          mobileNumber: "",
+          alternativeMobile: "",
+          area: "",
+          landmark: "",
+          latitude: "",
+          longitude: "",
         },
         primary: {
-          contactName: '',
-          address1: '',
-          city: '',
-          state: '',
-          country: '',
-          pinCode: '',
-          mobileNumber: '',
-          alternativeMobile: '',
-          area: '',
-          landmark: '',
-          latitude: '',
-          longitude: ''
+          contactName: "",
+          address1: "",
+          city: "",
+          state: "",
+          country: "",
+          pinCode: "",
+          mobileNumber: "",
+          alternativeMobile: "",
+          area: "",
+          landmark: "",
+          latitude: "",
+          longitude: "",
         },
         emergency: {
-          contactName: '',
-          relation: '',
-          phoneNumber: '',
+          contactName: "",
+          relation: "",
+          phoneNumber: "",
           address: {
-            address1: '',
-            city: '',
-            state: '',
-            country: '',
-            pinCode: ''
-          }
-        }
+            address1: "",
+            city: "",
+            state: "",
+            country: "",
+            pinCode: "",
+          },
+        },
       },
       passport: {
-        passportNumber: '',
-        expiryDate: '',
-        issuingOffice: '',
-        issuingCountry: '',
-        contactNumber: '',
-        address: ''
+        passportNumber: "",
+        expiryDate: "",
+        issuingOffice: "",
+        issuingCountry: "",
+        contactNumber: "",
+        address: "",
       },
       identityNumbers: {
-        aadharNumber: '',
-        panNumber: '',
-        nsr: { itpin: '', tin: '' }
+        aadharNumber: "",
+        panNumber: "",
+        nsr: { itpin: "", tin: "" },
       },
       dependents: [],
       education: [],
-      experience: []
+      experience: [],
     },
     officialInfo: {
-      firstName: '',
-      lastName: '',
-      knownAs: '',
-      dateOfJoining: '',
+      firstName: "",
+      lastName: "",
+      knownAs: "",
+      dateOfJoining: "",
       jobConfirmation: false,
-      role: '',
-      designation: '',
-      stream: '',
-      subStream: '',
-      baseLocation: '',
-      currentLocation: '',
-      unit: '',
-      unitHead: '',
+      role: "",
+      designation: "",
+      stream: "",
+      subStream: "",
+      baseLocation: "",
+      currentLocation: "",
+      unit: "",
+      unitHead: "",
       confirmationDetails: {
-        status: '',
-        confirmationDate: '',
-        approval: '',
-        rating: 0
+        status: "",
+        confirmationDate: "",
+        approval: "",
+        rating: 0,
       },
-      documents: []
+      documents: [],
     },
     financialInfo: {
       bankAccount: {
-        bankName: '',
-        accountNumber: '',
-        ifscCode: '',
-        branchName: ''
+        bankName: "",
+        accountNumber: "",
+        ifscCode: "",
+        branchName: "",
       },
       retiral: {
         basicSalary: 0,
@@ -146,9 +179,9 @@ const MyProfile: React.FC = () => {
         incomeTax: 0,
         netTakeHome: 0,
         costToCompany: 0,
-        pfTotal: 0
-      }
-    }
+        pfTotal: 0,
+      },
+    },
   };
 
   // Fetch real data; fall back to emptyProfile while ensuring name from basic user schema
@@ -157,23 +190,48 @@ const MyProfile: React.FC = () => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
-        const id = targetKey || '';
-        const json = await getEmployeeByEmployeeId(id);
+        const id = targetKey || "";
+
+        // Try to get employee by user ID first
+        const json = await getEmployeeByUserId(id);
         const serverProfile = json?.employee || {};
-        const merged = { ...emptyProfile, ...serverProfile };
-        // Ensure name from authenticated user if empty
-        if (!merged.name && user?.name) merged.name = user.name;
-        if (isMounted) {
-          setProfile(merged);
-          setDraftPersonal(merged.personalInfo);
-          setDraftOfficial(merged.officialInfo);
-          setDraftFinancial(merged.financialInfo);
+        const userInfo = json?.user || {};
+
+        // If no employee data, use user data and empty profile
+        if (!serverProfile || Object.keys(serverProfile).length === 0) {
+          const fallback = { ...emptyProfile };
+          if (userInfo.name) fallback.name = userInfo.name;
+          if (isMounted) {
+            setProfile(fallback);
+            setUserData(userInfo);
+            setDraftPersonal(fallback.personalInfo);
+            setDraftOfficial(fallback.officialInfo);
+            setDraftFinancial(fallback.financialInfo);
+          }
+        } else {
+          // Employee data exists, use it
+          const merged = { ...emptyProfile, ...serverProfile };
+          // Ensure name from user data if empty
+          if (!merged.name && userInfo.name) merged.name = userInfo.name;
+          if (isMounted) {
+            setProfile(merged);
+            setUserData(userInfo);
+            setDraftPersonal(merged.personalInfo);
+            setDraftOfficial(merged.officialInfo);
+            setDraftFinancial(merged.financialInfo);
+          }
         }
       } catch (e) {
+        // Fallback to empty profile with user data
         const fallback = { ...emptyProfile };
-        if (!fallback.name && user?.name) fallback.name = user.name;
+        if (user?.name) fallback.name = user.name;
         if (isMounted) {
           setProfile(fallback);
+          setUserData({
+            name: user?.name,
+            role: user?.role,
+            email: user?.email,
+          });
           setDraftPersonal(fallback.personalInfo);
           setDraftOfficial(fallback.officialInfo);
           setDraftFinancial(fallback.financialInfo);
@@ -183,32 +241,50 @@ const MyProfile: React.FC = () => {
       }
     };
     if (targetKey) fetchProfile();
-    return () => { isMounted = false; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetKey]);
-  
+
   // Check if viewing own profile or someone else's
   const isOwnProfile = !employeeId || employeeId === user?.employeeId;
-  
+
   // Permission logic based on user role and profile ownership
   // All users (except HR/Admin) can edit their own personal info + bank account
   // Permission logic:
   // - All users (except HR/Admin): Can edit their own Personal Information and Bank Account
   // - HR/Admin: Can edit their own everything, and others' Official Information and Retiral
   const canEditPersonal = isOwnProfile; // all users can edit their personal info
-  const isHrOrAdmin = user?.role === 'hr_manager' || user?.role === 'global_admin';
+  const isHrOrAdmin =
+    user?.role === "hr_manager" || user?.role === "global_admin";
   const canEditOfficial = isHrOrAdmin; // only HR/Admin
   const canEditBankDetails = isOwnProfile; // employees can edit own bank
   const canEditRetiral = isHrOrAdmin; // only HR/Admin can edit retiral
 
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case 'global_admin':
-        return <Badge variant="destructive" className="flex items-center"><Crown className="h-3 w-3 mr-1" />Global Admin</Badge>;
-      case 'hr_manager':
-        return <Badge variant="default" className="flex items-center"><Shield className="h-3 w-3 mr-1" />HR Manager</Badge>;
-      case 'employee':
-        return <Badge variant="secondary" className="flex items-center"><User className="h-3 w-3 mr-1" />Employee</Badge>;
+      case "global_admin":
+        return (
+          <Badge variant="destructive" className="flex items-center">
+            <Crown className="h-3 w-3 mr-1" />
+            Global Admin
+          </Badge>
+        );
+      case "hr_manager":
+        return (
+          <Badge variant="default" className="flex items-center">
+            <Shield className="h-3 w-3 mr-1" />
+            HR Manager
+          </Badge>
+        );
+      case "employee":
+        return (
+          <Badge variant="secondary" className="flex items-center">
+            <User className="h-3 w-3 mr-1" />
+            Employee
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{role}</Badge>;
     }
@@ -219,10 +295,10 @@ const MyProfile: React.FC = () => {
       {/* Back Button for viewing other employees */}
       {!isOwnProfile && (
         <div className="flex items-center space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => navigate('/employees')}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/employees")}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -236,17 +312,39 @@ const MyProfile: React.FC = () => {
         <CardHeader className="text-center">
           <div className="flex flex-col items-center space-y-4">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={profile?.avatar || ''} alt={profile?.name || ''} />
-              <AvatarFallback className="text-2xl">{((profile?.name || user?.name || '')).split(' ').map(n => n[0]).join('')}</AvatarFallback>
+              <AvatarImage
+                src={profile?.avatar || userData?.avatar || ""}
+                alt={profile?.name || userData?.name || ""}
+              />
+              <AvatarFallback className="text-2xl">
+                {(profile?.name || userData?.name || user?.name || "")
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">{profile?.name || user?.name || ''}</h1>
-              <p className="text-xl text-muted-foreground">{profile?.position || ''}</p>
-              <p className="text-muted-foreground">{profile?.department || ''} • {profile?.employeeId || ''}</p>
+              <h1 className="text-3xl font-bold text-foreground">
+                {profile?.name || userData?.name || user?.name || ""}
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                {profile?.position || ""}
+              </p>
+              <p className="text-muted-foreground">
+                {profile?.department || ""} •{" "}
+                {profile?.employeeId || userData?.id || ""}
+              </p>
               <div className="mt-2">
-                {getRoleBadge(user?.role || 'employee')}
+                {getRoleBadge(userData?.role || user?.role || "employee")}
                 {!isOwnProfile && (
-                  <Badge variant="outline" className="ml-2">Viewing Profile</Badge>
+                  <Badge variant="outline" className="ml-2">
+                    Viewing Profile
+                  </Badge>
+                )}
+                {!profile?.employeeId && (
+                  <Badge variant="outline" className="ml-2">
+                    No Employee Record
+                  </Badge>
                 )}
               </div>
             </div>
@@ -269,67 +367,103 @@ const MyProfile: React.FC = () => {
                         <TabsTrigger value="official">Official</TabsTrigger>
                         <TabsTrigger value="financial">Financial</TabsTrigger>
                       </TabsList>
-                      
+
                       <TabsContent value="personal" className="space-y-4">
-                        <PersonalInformation 
-                          data={draftPersonal || emptyProfile.personalInfo} 
+                        <PersonalInformation
+                          data={draftPersonal || emptyProfile.personalInfo}
                           canEdit={canEditPersonal}
                           isEditMode={true}
                           onChange={(next) => setDraftPersonal(next)}
                         />
                       </TabsContent>
-                      
+
                       <TabsContent value="official" className="space-y-4">
-                        <OfficialInformation 
-                          data={draftOfficial || emptyProfile.officialInfo} 
+                        <OfficialInformation
+                          data={draftOfficial || emptyProfile.officialInfo}
                           canEdit={canEditOfficial}
                           isEditMode={true}
-                          onChange={(field, value) => setDraftOfficial((prev: any) => ({ ...prev, [field]: value }))}
+                          onChange={(field, value) =>
+                            setDraftOfficial((prev: any) => ({
+                              ...prev,
+                              [field]: value,
+                            }))
+                          }
                         />
                       </TabsContent>
-                      
+
                       <TabsContent value="financial" className="space-y-4">
-                          <FinancialInformation 
-                          data={draftFinancial || emptyProfile.financialInfo} 
+                        <FinancialInformation
+                          data={draftFinancial || emptyProfile.financialInfo}
                           canEditBank={canEditBankDetails}
                           canEditRetiral={canEditRetiral}
                           isEditMode={true}
-                          onChange={(field, value) => setDraftFinancial((prev: any) => {
-                            const next = { ...prev }
-                            if (['bankName','accountNumber','ifscCode','branchName'].includes(field)) {
-                              next.bankAccount = { ...(next.bankAccount || {}), [field]: value }
-                            } else {
-                              next.retiral = { ...(next.retiral || {}), [field]: value }
-                            }
-                            return next
-                          })}
+                          onChange={(field, value) =>
+                            setDraftFinancial((prev: any) => {
+                              const next = { ...prev };
+                              if (
+                                [
+                                  "bankName",
+                                  "accountNumber",
+                                  "ifscCode",
+                                  "branchName",
+                                ].includes(field)
+                              ) {
+                                next.bankAccount = {
+                                  ...(next.bankAccount || {}),
+                                  [field]: value,
+                                };
+                              } else {
+                                next.retiral = {
+                                  ...(next.retiral || {}),
+                                  [field]: value,
+                                };
+                              }
+                              return next;
+                            })
+                          }
                         />
                       </TabsContent>
                     </Tabs>
-                    
+
                     <div className="flex justify-end space-x-2 pt-4 border-t">
-                      <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsEditModalOpen(false)}
+                      >
                         Cancel
                       </Button>
-                      <Button onClick={async () => {
-                        try {
-                          const payload: any = {}
-                          if (draftPersonal && canEditPersonal) payload.personalInfo = draftPersonal
-                          if (draftOfficial && canEditOfficial) payload.officialInfo = draftOfficial
-                          if (draftFinancial) {
-                            const fin: any = {}
-                            if (canEditBankDetails && draftFinancial.bankAccount) fin.bankAccount = draftFinancial.bankAccount
-                            if (canEditRetiral && draftFinancial.retiral) fin.retiral = draftFinancial.retiral
-                            if (Object.keys(fin).length > 0) payload.financialInfo = fin
+                      <Button
+                        onClick={async () => {
+                          try {
+                            const payload: any = {};
+                            if (draftPersonal && canEditPersonal)
+                              payload.personalInfo = draftPersonal;
+                            if (draftOfficial && canEditOfficial)
+                              payload.officialInfo = draftOfficial;
+                            if (draftFinancial) {
+                              const fin: any = {};
+                              if (
+                                canEditBankDetails &&
+                                draftFinancial.bankAccount
+                              )
+                                fin.bankAccount = draftFinancial.bankAccount;
+                              if (canEditRetiral && draftFinancial.retiral)
+                                fin.retiral = draftFinancial.retiral;
+                              if (Object.keys(fin).length > 0)
+                                payload.financialInfo = fin;
+                            }
+                            const id = targetKey || "";
+                            const res = await updateEmployeeProfile(
+                              id,
+                              payload
+                            );
+                            setProfile(res.employee);
+                            setIsEditModalOpen(false);
+                          } catch (e) {
+                            console.error(e);
                           }
-                          const id = (user?.id || '') as string
-                          const res = await updateEmployeeProfile(id, payload)
-                          setProfile(res.employee)
-                          setIsEditModalOpen(false)
-                        } catch (e) {
-                          console.error(e)
-                        }
-                      }}>
+                        }}
+                      >
                         Save Changes
                       </Button>
                     </div>
@@ -342,7 +476,11 @@ const MyProfile: React.FC = () => {
       </Card>
 
       {/* Profile Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="personal" className="flex items-center">
             <User className="h-4 w-4 mr-2" />
@@ -363,12 +501,15 @@ const MyProfile: React.FC = () => {
           <div className="mb-4">
             <h2 className="text-2xl font-bold mb-2">Personal Information</h2>
             <p className="text-muted-foreground">
-              Personal details, addresses, documents, education, and experience information.
-              {canEditPersonal ? ' You can edit this information.' : ' You cannot edit this information.'}
+              Personal details, addresses, documents, education, and experience
+              information.
+              {canEditPersonal
+                ? " You can edit this information."
+                : " You cannot edit this information."}
             </p>
           </div>
-          <PersonalInformation 
-            data={profile?.personalInfo || emptyProfile.personalInfo} 
+          <PersonalInformation
+            data={profile?.personalInfo || emptyProfile.personalInfo}
             canEdit={canEditPersonal}
           />
         </TabsContent>
@@ -379,11 +520,13 @@ const MyProfile: React.FC = () => {
             <h2 className="text-2xl font-bold mb-2">Official Information</h2>
             <p className="text-muted-foreground">
               Employment details, confirmation status, and official documents.
-              {canEditOfficial ? ' You can edit this information.' : ' You cannot edit this information.'}
+              {canEditOfficial
+                ? " You can edit this information."
+                : " You cannot edit this information."}
             </p>
           </div>
-          <OfficialInformation 
-            data={profile?.officialInfo || emptyProfile.officialInfo} 
+          <OfficialInformation
+            data={profile?.officialInfo || emptyProfile.officialInfo}
             canEdit={canEditOfficial}
           />
         </TabsContent>
@@ -393,20 +536,22 @@ const MyProfile: React.FC = () => {
           <div className="mb-4">
             <h2 className="text-2xl font-bold mb-2">Financial Information</h2>
             <p className="text-muted-foreground">
-              Bank details and salary breakdown. 
-              {canEditBankDetails ? ' You can edit bank details.' : ' You cannot edit bank details.'} 
-              {canEditRetiral ? ' You can edit retiral information.' : ' You cannot edit retiral information.'}
+              Bank details and salary breakdown.
+              {canEditBankDetails
+                ? " You can edit bank details."
+                : " You cannot edit bank details."}
+              {canEditRetiral
+                ? " You can edit retiral information."
+                : " You cannot edit retiral information."}
             </p>
           </div>
-          <FinancialInformation 
-            data={profile?.financialInfo || emptyProfile.financialInfo} 
+          <FinancialInformation
+            data={profile?.financialInfo || emptyProfile.financialInfo}
             canEditBank={canEditBankDetails}
             canEditRetiral={canEditRetiral}
           />
         </TabsContent>
       </Tabs>
-
-
     </div>
   );
 };

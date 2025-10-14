@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getEmployees } from "@/api/employees";
+import { getEmployees, listUsers } from "@/api/employees";
 import { useNavigate } from "react-router-dom";
 import AddEmployeeModal from "@/components/modals/AddEmployeeModal";
 import {
@@ -62,11 +62,11 @@ const Employees: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await getEmployees();
-        setEmployees(response.employees || []);
+        const response = await listUsers();
+        setEmployees(response.users || []);
       } catch (err) {
-        console.error('Failed to fetch employees:', err);
-        setError('Failed to load employees. Please try again.');
+        console.error("Failed to fetch employees:", err);
+        setError("Failed to load employees. Please try again.");
         toast({
           title: "Error",
           description: "Failed to load employees. Please try again.",
@@ -92,16 +92,22 @@ const Employees: React.FC = () => {
 
   const filteredEmployees = (employees || []).filter((employee) => {
     if (!employee) return false;
-    
+
     const matchesSearch =
-      (employee.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (employee.personalInfo?.email?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (employee.employeeId?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+      employee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      false ||
+      employee.personalInfo?.email
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      false ||
+      employee.employeeId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      false;
     const matchesDepartment =
       selectedDepartment === "all" ||
       employee.officialInfo?.unit === selectedDepartment;
     const matchesStatus =
-      selectedStatus === "all" || (employee.user?.role ? "active" : "inactive") === selectedStatus;
+      selectedStatus === "all" ||
+      (employee.user?.role ? "active" : "inactive") === selectedStatus;
 
     return matchesSearch && matchesDepartment && matchesStatus;
   });
@@ -121,9 +127,9 @@ const Employees: React.FC = () => {
     }
   };
 
-  const viewEmployeeProfile = (employeeId: string) => {
-    // Navigate to profile page with employee ID
-    navigate(`/profile/${employeeId}`);
+  const viewEmployeeProfile = (userId: string) => {
+    // Navigate to profile page with user ID
+    navigate(`/profile/${userId}`);
   };
 
   const handleAddEmployee = (newEmployee: any) => {
@@ -133,10 +139,10 @@ const Employees: React.FC = () => {
         const response = await getEmployees();
         setEmployees(response.employees || []);
       } catch (err) {
-        console.error('Failed to refresh employees:', err);
+        console.error("Failed to refresh employees:", err);
       }
     };
-    
+
     fetchEmployees();
     setIsAddEmployeeModalOpen(false);
     toast({
@@ -186,9 +192,7 @@ const Employees: React.FC = () => {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
           </div>
         </div>
       </div>
@@ -265,7 +269,11 @@ const Employees: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold">
-              {new Set(employees.map((e) => e.officialInfo?.unit).filter(Boolean)).size}
+              {
+                new Set(
+                  employees.map((e) => e.officialInfo?.unit).filter(Boolean)
+                ).size
+              }
             </div>
             <p className="text-xs text-muted-foreground">
               Different departments
@@ -282,13 +290,15 @@ const Employees: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold text-primary">
-              {employees.filter((e) => {
-                const joinDate = e.officialInfo?.dateOfJoining;
-                if (!joinDate) return false;
-                const joinMonth = new Date(joinDate).getMonth();
-                const currentMonth = new Date().getMonth();
-                return joinMonth === currentMonth;
-              }).length}
+              {
+                employees.filter((e) => {
+                  const joinDate = e.officialInfo?.dateOfJoining;
+                  if (!joinDate) return false;
+                  const joinMonth = new Date(joinDate).getMonth();
+                  const currentMonth = new Date().getMonth();
+                  return joinMonth === currentMonth;
+                }).length
+              }
             </div>
             <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
@@ -386,10 +396,10 @@ const Employees: React.FC = () => {
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
-                          {employee.name || 'Unknown Employee'}
+                          {employee.name || "Unknown Employee"}
                         </h3>
                         <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                          {employee.officialInfo?.designation || 'Employee'}
+                          {employee.officialInfo?.designation || "Employee"}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {employee.employeeId}
@@ -397,7 +407,9 @@ const Employees: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex justify-end sm:justify-start">
-                      {getStatusBadge(employee.user?.role ? "active" : "inactive")}
+                      {getStatusBadge(
+                        employee.user?.role ? "active" : "inactive"
+                      )}
                     </div>
                   </div>
                 </CardHeader>
@@ -405,19 +417,19 @@ const Employees: React.FC = () => {
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
                     <Building2 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground truncate">
-                      {employee.officialInfo?.unit || 'N/A'}
+                      {employee.officialInfo?.unit || "N/A"}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
                     <Mail className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground truncate">
-                      {employee.personalInfo?.email || 'N/A'}
+                      {employee.personalInfo?.email || "N/A"}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
                     <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground">
-                      {employee.personalInfo?.phoneNumber || 'N/A'}
+                      {employee.personalInfo?.phoneNumber || "N/A"}
                     </span>
                   </div>
                   <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 pt-2">
@@ -425,20 +437,20 @@ const Employees: React.FC = () => {
                       size="sm"
                       variant="outline"
                       className="flex-1 text-xs"
-                      onClick={() => viewEmployeeProfile(employee.employeeId)}
+                      onClick={() => viewEmployeeProfile(employee.id)}
                     >
                       <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       <span className="hidden sm:inline">View Profile</span>
                       <span className="sm:hidden">View</span>
                     </Button>
-                    <Button
+                    {/* <Button
                       size="sm"
                       variant="outline"
                       className="flex-1 text-xs"
                     >
                       <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       Edit
-                    </Button>
+                    </Button> */}
                   </div>
                 </CardContent>
               </Card>
@@ -482,10 +494,10 @@ const Employees: React.FC = () => {
                           </Avatar>
                           <div className="min-w-0">
                             <div className="font-medium text-sm truncate">
-                              {employee.name || 'Unknown Employee'}
+                              {employee.name || "Unknown Employee"}
                             </div>
                             <div className="text-xs text-muted-foreground truncate">
-                              {employee.personalInfo?.email || 'N/A'}
+                              {employee.personalInfo?.email || "N/A"}
                             </div>
                           </div>
                         </div>
@@ -494,15 +506,23 @@ const Employees: React.FC = () => {
                         {employee.employeeId}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {employee.officialInfo?.unit || 'N/A'}
+                        {employee.officialInfo?.unit || "N/A"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {employee.officialInfo?.designation || 'N/A'}
+                        {employee.officialInfo?.designation || "N/A"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {employee.officialInfo?.dateOfJoining ? new Date(employee.officialInfo.dateOfJoining).toLocaleDateString() : 'N/A'}
+                        {employee.officialInfo?.dateOfJoining
+                          ? new Date(
+                              employee.officialInfo.dateOfJoining
+                            ).toLocaleDateString()
+                          : "N/A"}
                       </TableCell>
-                      <TableCell>{getStatusBadge(employee.user?.role ? "active" : "inactive")}</TableCell>
+                      <TableCell>
+                        {getStatusBadge(
+                          employee.user?.role ? "active" : "inactive"
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end space-x-1">
                           <Button
@@ -510,7 +530,7 @@ const Employees: React.FC = () => {
                             variant="outline"
                             className="h-8 w-8 p-0"
                             onClick={() =>
-                              viewEmployeeProfile(employee.employeeId)
+                              viewEmployeeProfile(employee.user?.id)
                             }
                           >
                             <Eye className="h-3 w-3" />
