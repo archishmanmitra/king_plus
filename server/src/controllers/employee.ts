@@ -103,16 +103,23 @@ export const createEmployee = async (req: Request, res: Response) => {
 const mapEmployeeToProfile = (e: any) => {
   const official = e.official || {}
   const personal = e.personal || {}
+  const user = e.user || {}
   const bank = e.bankAccount || {}
   const retiral = e.retiral || {}
   const passport = e.passport || {}
   const identity = e.identity || {}
 
   return {
+    id: e.id,
     avatar: e.avatar || '',
-    name: [official.firstName, official.lastName].filter(Boolean).join(' ') || '',
+    name: [official.firstName, official.lastName].filter(Boolean).join(' ') || user.name || '',
+    email: user.email || personal.personalEmail || '',
+    phone: personal.phoneNumber || '',
     position: official.designation || '',
-    department: official.unit || '',
+    department: official.unit || '', // unit from EmployeeOfficial
+    manager: '', // Will be set by frontend based on hierarchy
+    joinDate: e.createdAt ? new Date(e.createdAt).toISOString() : new Date().toISOString(),
+    status: 'active',
     employeeId: e.employeeId,
     personalInfo: {
       firstName: personal.firstName || '',
@@ -240,6 +247,7 @@ export const getEmployees = async (req: Request, res: Response) => {
       include: {
         official: true,
         user: true,
+        personal: true,
       }
     })
     const result = employees.map(e => mapEmployeeToProfile(e))
@@ -324,7 +332,7 @@ export const getDirectReports = async (req: Request, res: Response) => {
 
     const reports = await prisma.employee.findMany({
       where: { managerId: id },
-      include: { user: true, official: true },
+      include: { user: true, official: true, personal: true },
     })
     return res.json({ employees: reports })
   } catch (err: any) {
@@ -343,14 +351,24 @@ export const getTeamTree = async (req: Request, res: Response) => {
       where: { id },
       include: {
         official: true,
+        user: true,
+        personal: true,
         directReports: {
           include: {
             official: true,
+            user: true,
+            personal: true,
             directReports: {
               include: {
                 official: true,
+                user: true,
+                personal: true,
                 directReports: {
-                  include: { official: true }
+                  include: { 
+                    official: true,
+                    user: true,
+                    personal: true
+                  }
                 }
               }
             }
@@ -374,13 +392,25 @@ export const getOrgChart = async (_req: Request, res: Response) => {
       where: { managerId: null },
       include: {
         official: true,
+        user: true,
+        personal: true,
         directReports: {
           include: {
             official: true,
+            user: true,
+            personal: true,
             directReports: {
               include: {
                 official: true,
-                directReports: { include: { official: true } }
+                user: true,
+                personal: true,
+                directReports: { 
+                  include: { 
+                    official: true,
+                    user: true,
+                    personal: true
+                  } 
+                }
               }
             }
           }

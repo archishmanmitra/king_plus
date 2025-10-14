@@ -101,9 +101,9 @@ const Teams: React.FC<TeamsPageProps> = () => {
             email: user.email || personal.personalEmail || '',
             phone: personal.phoneNumber || '',
             position: official.designation || 'Employee',
-            department: official.unit || '',
+            department: official.unit || '', // unit from EmployeeOfficial
             manager: managerName || '',
-            joinDate: e.joinDate ? new Date(e.joinDate).toISOString() : new Date().toISOString(),
+            joinDate: e.createdAt ? new Date(e.createdAt).toISOString() : new Date().toISOString(),
             status: 'active',
             avatar: e.avatar || '',
             personalInfo: { firstName: personal.firstName || '', lastName: personal.lastName || '', gender: 'other', dateOfBirth: '', maritalStatus: 'single', nationality: '', primaryCitizenship: '', phoneNumber: personal.phoneNumber || '', email: user.email || personal.personalEmail || '', addresses: { present: { contactName: '', address1: '', city: '', state: '', country: '', pinCode: '', mobileNumber: '' }, primary: { contactName: '', address1: '', city: '', state: '', country: '', pinCode: '', mobileNumber: '' }, emergency: { contactName: '', relation: '', phoneNumber: '', address: { contactName: '', address1: '', city: '', state: '', country: '', pinCode: '', mobileNumber: '' } as any } as any }, passport: { passportNumber: '', expiryDate: '', issuingOffice: '', issuingCountry: '', contactNumber: '', address: '' }, identityNumbers: { aadharNumber: '', panNumber: '', nsr: { itpin: '', tin: '' } }, dependents: [], education: [], experience: [] },
@@ -339,9 +339,9 @@ const Teams: React.FC<TeamsPageProps> = () => {
           email: user.email || personal.personalEmail || '',
           phone: personal.phoneNumber || '',
           position: official.designation || 'Employee',
-          department: official.unit || '',
+          department: official.unit || '', // unit from EmployeeOfficial
           manager: managerName || '',
-          joinDate: e.joinDate ? new Date(e.joinDate).toISOString() : new Date().toISOString(),
+          joinDate: e.createdAt ? new Date(e.createdAt).toISOString() : new Date().toISOString(),
           status: 'active',
           avatar: e.avatar || '',
           personalInfo: employees[0]?.personalInfo as any,
