@@ -34,6 +34,7 @@ import {
 const Leave: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const canSeeTeamTab = user?.role !== "employee";
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isAssignLeavesModalOpen, setIsAssignLeavesModalOpen] = useState(false);
   const [selectedHolidayDate, setSelectedHolidayDate] = useState<Date>();
@@ -212,9 +213,15 @@ const Leave: React.FC = () => {
       </div>
 
       <Tabs defaultValue="requests" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList
+          className={`grid w-full ${
+            canSeeTeamTab ? "grid-cols-3" : "grid-cols-2"
+          }`}
+        >
           <TabsTrigger value="requests">My Requests</TabsTrigger>
-          <TabsTrigger value="team">Team Requests</TabsTrigger>
+          {canSeeTeamTab && (
+            <TabsTrigger value="team">Team Requests</TabsTrigger>
+          )}
           <TabsTrigger value="holidays">Holiday Calendar</TabsTrigger>
         </TabsList>
 
@@ -279,64 +286,66 @@ const Leave: React.FC = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="team">
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Leave Requests</CardTitle>
-              <CardDescription>
-                Pending leave requests requiring your approval
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {mockLeaveRequests
-                  .filter((r) => r.status === "pending")
-                  .map((request) => (
-                    <div
-                      key={request.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                          {request.employeeName
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
+        {canSeeTeamTab && (
+          <TabsContent value="team">
+            <Card>
+              <CardHeader>
+                <CardTitle>Team Leave Requests</CardTitle>
+                <CardDescription>
+                  Pending leave requests requiring your approval
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {mockLeaveRequests
+                    .filter((r) => r.status === "pending")
+                    .map((request) => (
+                      <div
+                        key={request.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                            {request.employeeName
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </div>
+                          <div>
+                            <div className="font-medium">
+                              {request.employeeName}
+                            </div>
+                            <div className="text-sm text-muted-foreground capitalize">
+                              {request.type} Leave - {request.days} days
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {request.startDate} to {request.endDate}
+                            </div>
+                            <div className="text-sm text-foreground mt-1">
+                              {request.reason}
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-medium">
-                            {request.employeeName}
-                          </div>
-                          <div className="text-sm text-muted-foreground capitalize">
-                            {request.type} Leave - {request.days} days
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {request.startDate} to {request.endDate}
-                          </div>
-                          <div className="text-sm text-foreground mt-1">
-                            {request.reason}
-                          </div>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Approve
+                          </Button>
+                          <Button size="sm" variant="destructive">
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Approve
-                        </Button>
-                        <Button size="sm" variant="destructive">
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Reject
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
 
         <TabsContent value="holidays">
           <HolidayCalendar
