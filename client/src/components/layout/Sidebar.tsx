@@ -111,12 +111,12 @@ const navigationItems = [
   //     "manager",
   //   ],
   // },
-  {
-    title: "Projects",
-    url: "/projects",
-    icon: FolderOpen,
-    roles: ["global_admin", "hr_manager", "manager", "employee"],
-  },
+  // {
+  //   title: "Projects",
+  //   url: "/projects",
+  //   icon: FolderOpen,
+  //   roles: ["global_admin", "hr_manager", "manager", "employee"],
+  // },
   // {
   //   title: "Reports",
   //   url: "/reports",

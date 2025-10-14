@@ -36,10 +36,16 @@ import {
   Maximize2,
   Settings,
   UserPlus,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Search,
+  Filter,
+  List,
+  Grid3X3
 } from 'lucide-react';
-import { getOrgChart, assignEmployeeManager, listUsers } from '@/api/employees';
+import { getOrgChart, assignEmployeeManager, listUsers, getEmployees } from '@/api/employees';
 import { Employee } from '@/types/employee';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface HierarchyNode {
   employee: Employee;
@@ -70,12 +76,16 @@ const Teams: React.FC<TeamsPageProps> = () => {
   const [newManagerId, setNewManagerId] = useState<string>('');
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [allUsers, setAllUsers] = useState<Array<{ id: string; name: string; email: string; role: string }>>([]);
+  const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
+  const [viewMode, setViewMode] = useState<'chart' | 'list'>('chart');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterDepartment, setFilterDepartment] = useState('');
 
-  // Load org chart and users
+  // Load org chart, users, and all employees
   useEffect(() => {
     (async () => {
       try {
-        const [orgRes, usersRes] = await Promise.all([getOrgChart(), listUsers()])
+        const [orgRes, usersRes, employeesRes] = await Promise.all([getOrgChart(), listUsers(), getEmployees()])
         // Flatten org chart to list and infer manager names for UI compatibility
         const flattened: Employee[] = []
         const walk = (node: any, managerName: string | '') => {
@@ -109,6 +119,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
         (orgRes.org || []).forEach((top: any) => walk(top, ''))
         setEmployees(flattened)
         setAllUsers(usersRes.users || [])
+        setAllEmployees(employeesRes.employees || [])
       } catch (err) {
         console.error('Failed to load org chart/users', err)
       }
@@ -384,6 +395,18 @@ const Teams: React.FC<TeamsPageProps> = () => {
     return 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
+  // Filter employees for list view
+  const filteredEmployees = allEmployees.filter(emp => {
+    const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         emp.position.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDepartment = !filterDepartment || emp.department === filterDepartment;
+    return matchesSearch && matchesDepartment;
+  });
+
+  // Get unique departments for filter
+  const departments = Array.from(new Set(allEmployees.map(emp => emp.department).filter(Boolean)));
+
   const renderNode = (node: HierarchyNode) => {
     const isExpanded = expandedNodes.has(node.employee.id);
     const hasChildren = node.children.length > 0;
@@ -623,15 +646,15 @@ const Teams: React.FC<TeamsPageProps> = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Team Hierarchy</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Team Management</h1>
           <p className="text-gray-600 mt-1 md:mt-2 text-sm md:text-base">
-            Organizational structure and reporting relationships
+            {viewMode === 'chart' ? 'Organizational structure and reporting relationships' : 'Employee directory and management'}
           </p>
         </div>
         <div className="flex items-center space-x-4">
           <Badge variant="outline" className="text-sm">
             <Users className="h-4 w-4 mr-2" />
-            {employees.length} Total Employees
+            {allEmployees.length} Total Employees
           </Badge>
           {isAdmin && (
             <Badge variant="default" className="text-sm bg-blue-600">
@@ -642,9 +665,171 @@ const Teams: React.FC<TeamsPageProps> = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 md:gap-6">
-        {/* Tree Visualization */}
-        <div className="xl:col-span-3">
+      {/* View Mode Toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+          <Button
+            variant={viewMode === 'chart' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('chart')}
+            className="h-8 px-3"
+          >
+            <Grid3X3 className="h-4 w-4 mr-2" />
+            Chart View
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+            className="h-8 px-3"
+          >
+            <List className="h-4 w-4 mr-2" />
+            List View
+          </Button>
+        </div>
+      </div>
+
+      {viewMode === 'list' ? (
+        /* Employee List View */
+        <div className="space-y-4">
+          {/* Search and Filter Controls */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Users className="h-5 w-5" />
+                <span>Employee Directory</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Search employees by name, email, or position..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <div className="w-full sm:w-48">
+                  <Select value={filterDepartment} onValueChange={setFilterDepartment}>
+                    <SelectTrigger>
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Filter by department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Departments</SelectItem>
+                      {departments.map(dept => (
+                        <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Employee Table */}
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Employee</TableHead>
+                    <TableHead>Position</TableHead>
+                    <TableHead>Department</TableHead>
+                    <TableHead>Manager</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Status</TableHead>
+                    {isAdmin && <TableHead>Actions</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEmployees.map((employee) => (
+                    <TableRow key={employee.id} className="cursor-pointer hover:bg-gray-50">
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={employee.avatar} />
+                            <AvatarFallback className="text-xs">
+                              {employee.name.split(' ').map(n => n[0]).join('')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium">{employee.name}</div>
+                            <div className="text-sm text-gray-500">{employee.employeeId}</div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          {getRoleIcon(employee.position)}
+                          <span className="text-sm">{employee.position}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs">
+                          {employee.department || 'N/A'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">{employee.manager || 'No manager'}</span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-1 text-xs text-gray-500">
+                            <Mail className="h-3 w-3" />
+                            <span className="truncate max-w-32">{employee.email}</span>
+                          </div>
+                          {employee.phone && (
+                            <div className="flex items-center space-x-1 text-xs text-gray-500">
+                              <Phone className="h-3 w-3" />
+                              <span>{employee.phone}</span>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={employee.status === 'active' ? 'default' : 'secondary'}
+                          className="capitalize text-xs"
+                        >
+                          {employee.status}
+                        </Badge>
+                      </TableCell>
+                      {isAdmin && (
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleReassignEmployee(employee)}
+                            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-800"
+                            title="Reassign Employee"
+                          >
+                            <ArrowRightLeft className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {filteredEmployees.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p>No employees found matching your criteria</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        /* Chart View */
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 md:gap-6">
+          {/* Tree Visualization */}
+          <div className="xl:col-span-3">
           <Card>
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -820,6 +1005,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
           </Card>
         </div>
       </div>
+      )}
 
       {/* Reassignment Modal */}
       <Dialog open={showReassignmentModal} onOpenChange={setShowReassignmentModal}>
