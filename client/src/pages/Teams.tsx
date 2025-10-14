@@ -38,7 +38,7 @@ import {
   UserPlus,
   ArrowRightLeft
 } from 'lucide-react';
-import { mockEmployees } from '@/data/mockData';
+import { getOrgChart, assignEmployeeManager, listUsers } from '@/api/employees';
 import { Employee } from '@/types/employee';
 
 interface HierarchyNode {
@@ -68,7 +68,52 @@ const Teams: React.FC<TeamsPageProps> = () => {
   const [showReassignmentModal, setShowReassignmentModal] = useState(false);
   const [employeeToReassign, setEmployeeToReassign] = useState<Employee | null>(null);
   const [newManagerId, setNewManagerId] = useState<string>('');
-  const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [allUsers, setAllUsers] = useState<Array<{ id: string; name: string; email: string; role: string }>>([]);
+
+  // Load org chart and users
+  useEffect(() => {
+    (async () => {
+      try {
+        const [orgRes, usersRes] = await Promise.all([getOrgChart(), listUsers()])
+        // Flatten org chart to list and infer manager names for UI compatibility
+        const flattened: Employee[] = []
+        const walk = (node: any, managerName: string | '') => {
+          const e = node
+          const official = e.official || {}
+          const user = e.user || {}
+          const personal = e.personal || {}
+          const fullName = [official.firstName, official.lastName].filter(Boolean).join(' ') || user.name || 'Unknown'
+          const emp: Employee = {
+            id: e.id,
+            employeeId: e.employeeId,
+            name: fullName,
+            email: user.email || personal.personalEmail || '',
+            phone: personal.phoneNumber || '',
+            position: official.designation || 'Employee',
+            department: official.unit || '',
+            manager: managerName || '',
+            joinDate: e.joinDate ? new Date(e.joinDate).toISOString() : new Date().toISOString(),
+            status: 'active',
+            avatar: e.avatar || '',
+            personalInfo: { firstName: personal.firstName || '', lastName: personal.lastName || '', gender: 'other', dateOfBirth: '', maritalStatus: 'single', nationality: '', primaryCitizenship: '', phoneNumber: personal.phoneNumber || '', email: user.email || personal.personalEmail || '', addresses: { present: { contactName: '', address1: '', city: '', state: '', country: '', pinCode: '', mobileNumber: '' }, primary: { contactName: '', address1: '', city: '', state: '', country: '', pinCode: '', mobileNumber: '' }, emergency: { contactName: '', relation: '', phoneNumber: '', address: { contactName: '', address1: '', city: '', state: '', country: '', pinCode: '', mobileNumber: '' } as any } as any }, passport: { passportNumber: '', expiryDate: '', issuingOffice: '', issuingCountry: '', contactNumber: '', address: '' }, identityNumbers: { aadharNumber: '', panNumber: '', nsr: { itpin: '', tin: '' } }, dependents: [], education: [], experience: [] },
+            officialInfo: { firstName: official.firstName || '', lastName: official.lastName || '', knownAs: official.knownAs || '', dateOfJoining: '', jobConfirmation: !!official.jobConfirmation, role: user.role || 'employee', designation: official.designation || '', stream: official.stream || '', subStream: official.subStream || '', baseLocation: official.baseLocation || '', currentLocation: official.currentLocation || '', unit: official.unit || '', unitHead: official.unitHead || '', confirmationDetails: undefined, documents: [] },
+            financialInfo: { bankAccount: { bankName: '', accountNumber: '', ifscCode: '', modifiedDate: '', country: '' }, retiral: { pfTotal: 0, employeePF: 0, employerPF: 0, employeeESI: 0, employerESI: 0, professionalTax: 0, incomeTax: 0, netTakeHome: 0, costToCompany: 0, basicSalary: 0, houseRentAllowance: 0, specialAllowance: 0 } },
+            personalInfoLegacy: { dateOfBirth: '', address: '', emergencyContact: '', bloodGroup: '' },
+            workInfo: { workLocation: '', employmentType: 'full-time', salary: 0, benefits: [] },
+            timeline: []
+          }
+          flattened.push(emp)
+          ;(e.directReports || []).forEach((dr: any) => walk(dr, fullName))
+        }
+        (orgRes.org || []).forEach((top: any) => walk(top, ''))
+        setEmployees(flattened)
+        setAllUsers(usersRes.users || [])
+      } catch (err) {
+        console.error('Failed to load org chart/users', err)
+      }
+    })()
+  }, [])
 
   // Build hierarchy from employees
   const hierarchy = useMemo(() => {
@@ -263,35 +308,58 @@ const Teams: React.FC<TeamsPageProps> = () => {
     setShowReassignmentModal(true);
   };
 
-  const confirmReassignment = () => {
-    if (!employeeToReassign || !newManagerId) return;
-
-    const newManager = employees.find(emp => emp.id === newManagerId);
-    if (!newManager) return;
-
-    // Update the employee's manager
-    setEmployees(prevEmployees => 
-      prevEmployees.map(emp => 
-        emp.id === employeeToReassign.id 
-          ? { ...emp, manager: newManager.name }
-          : emp
-      )
-    );
-
-    // Close modal and reset state
-    setShowReassignmentModal(false);
-    setEmployeeToReassign(null);
-    setNewManagerId('');
+  const confirmReassignment = async () => {
+    if (!employeeToReassign) return;
+    try {
+      await assignEmployeeManager(employeeToReassign.id, newManagerId || null)
+      // Reload org chart to reflect changes
+      const orgRes = await getOrgChart()
+      const flattened: Employee[] = []
+      const walk = (node: any, managerName: string | '') => {
+        const e = node
+        const official = e.official || {}
+        const user = e.user || {}
+        const personal = e.personal || {}
+        const fullName = [official.firstName, official.lastName].filter(Boolean).join(' ') || user.name || 'Unknown'
+        const emp: Employee = {
+          id: e.id,
+          employeeId: e.employeeId,
+          name: fullName,
+          email: user.email || personal.personalEmail || '',
+          phone: personal.phoneNumber || '',
+          position: official.designation || 'Employee',
+          department: official.unit || '',
+          manager: managerName || '',
+          joinDate: e.joinDate ? new Date(e.joinDate).toISOString() : new Date().toISOString(),
+          status: 'active',
+          avatar: e.avatar || '',
+          personalInfo: employees[0]?.personalInfo as any,
+          officialInfo: employees[0]?.officialInfo as any,
+          financialInfo: employees[0]?.financialInfo as any,
+          personalInfoLegacy: employees[0]?.personalInfoLegacy as any,
+          workInfo: employees[0]?.workInfo as any,
+          timeline: []
+        }
+        flattened.push(emp)
+        ;(e.directReports || []).forEach((dr: any) => walk(dr, fullName))
+      }
+      (orgRes.org || []).forEach((top: any) => walk(top, ''))
+      setEmployees(flattened)
+    } catch (err) {
+      console.error('Failed to reassign manager', err)
+    } finally {
+      setShowReassignmentModal(false)
+      setEmployeeToReassign(null)
+      setNewManagerId('')
+    }
   };
 
   const getAvailableManagers = () => {
     if (!employeeToReassign) return [];
     
     // Return all employees except the one being reassigned and their current direct reports
-    return employees.filter(emp => 
-      emp.id !== employeeToReassign.id && 
-      !emp.manager.includes(employeeToReassign.name)
-    );
+    // Choose from all users as potential managers; exclude self
+    return employees.filter(emp => emp.id !== employeeToReassign.id);
   };
 
   const getRoleIcon = (position: string) => {

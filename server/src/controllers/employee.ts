@@ -286,6 +286,139 @@ export const getEmployeeByEmployeeId = async (req: Request, res: Response) => {
   }
 }
 
+// Assign or change an employee's manager (set managerId or null)
+export const assignManager = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params // employees.id
+    const { managerId } = req.body as { managerId?: string | null }
+
+    if (!id) return res.status(400).json({ error: 'Employee id is required' })
+
+    const employee = await prisma.employee.findUnique({ where: { id } })
+    if (!employee) return res.status(404).json({ error: 'Employee not found' })
+
+    if (managerId) {
+      if (managerId === id) return res.status(400).json({ error: 'Employee cannot be their own manager' })
+      const manager = await prisma.employee.findUnique({ where: { id: managerId } })
+      if (!manager) return res.status(404).json({ error: 'Manager not found' })
+    }
+
+    const updated = await prisma.employee.update({
+      where: { id },
+      data: { managerId: managerId ?? null },
+      include: { official: true, user: true }
+    })
+
+    return res.json({ employee: updated })
+  } catch (err: any) {
+    console.error('Assign manager error:', err)
+    return res.status(500).json({ error: 'Failed to assign manager', details: err?.message })
+  }
+}
+
+// Get direct reports for a given manager (employees where managerId == id)
+export const getDirectReports = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    if (!id) return res.status(400).json({ error: 'Manager id is required' })
+
+    const reports = await prisma.employee.findMany({
+      where: { managerId: id },
+      include: { user: true, official: true },
+    })
+    return res.json({ employees: reports })
+  } catch (err: any) {
+    console.error('Get direct reports error:', err)
+    return res.status(500).json({ error: 'Failed to fetch direct reports', details: err?.message })
+  }
+}
+
+// Get a team tree up to 3 levels deep for a manager
+export const getTeamTree = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    if (!id) return res.status(400).json({ error: 'Manager id is required' })
+
+    const tree = await prisma.employee.findUnique({
+      where: { id },
+      include: {
+        official: true,
+        directReports: {
+          include: {
+            official: true,
+            directReports: {
+              include: {
+                official: true,
+                directReports: {
+                  include: { official: true }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!tree) return res.status(404).json({ error: 'Manager not found' })
+    return res.json({ team: tree })
+  } catch (err: any) {
+    console.error('Get team tree error:', err)
+    return res.status(500).json({ error: 'Failed to fetch team tree', details: err?.message })
+  }
+}
+
+// Get org chart starting from top-level employees (managerId == null)
+export const getOrgChart = async (_req: Request, res: Response) => {
+  try {
+    const org = await prisma.employee.findMany({
+      where: { managerId: null },
+      include: {
+        official: true,
+        directReports: {
+          include: {
+            official: true,
+            directReports: {
+              include: {
+                official: true,
+                directReports: { include: { official: true } }
+              }
+            }
+          }
+        }
+      }
+    })
+    return res.json({ org })
+  } catch (err: any) {
+    console.error('Get org chart error:', err)
+    return res.status(500).json({ error: 'Failed to fetch org chart', details: err?.message })
+  }
+}
+
+// Get all team member IDs under a manager using recursive SQL
+export const getAllTeamMembers = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    if (!id) return res.status(400).json({ error: 'Manager id is required' })
+
+    const result = await prisma.$queryRaw<Array<{ id: string }>>`
+      WITH RECURSIVE team_tree AS (
+        SELECT id, "managerId"
+        FROM employees
+        WHERE "managerId" = ${id}
+        UNION ALL
+        SELECT e.id, e."managerId"
+        FROM employees e
+        INNER JOIN team_tree tt ON e."managerId" = tt.id
+      )
+      SELECT id FROM team_tree;
+    `
+    return res.json({ memberIds: result.map(r => r.id) })
+  } catch (err: any) {
+    console.error('Get all team members error:', err)
+    return res.status(500).json({ error: 'Failed to fetch team members', details: err?.message })
+  }
+}
+
 export const updateEmployeeProfile = async (req: Request, res: Response) => {
   try {
     const { employeeId } = req.params

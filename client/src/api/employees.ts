@@ -27,6 +27,49 @@ export async function updateEmployeeProfile(employeeId: string, payload: any) {
   return res.json()
 }
 
+// Team/Org APIs
+export async function assignEmployeeManager(id: string, managerId: string | null) {
+  const res = await fetch(`${API_URL}/employees/${id}/manager`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ managerId })
+  })
+  if (!res.ok) throw new Error('Failed to assign manager')
+  return res.json()
+}
+
+export async function getDirectReports(id: string) {
+  const res = await fetch(`${API_URL}/employees/${id}/direct-reports`, { credentials: 'include', headers: { ...authHeaders() } })
+  if (!res.ok) throw new Error('Failed to fetch direct reports')
+  return res.json()
+}
+
+export async function getTeamTree(id: string) {
+  const res = await fetch(`${API_URL}/employees/${id}/team-tree`, { credentials: 'include', headers: { ...authHeaders() } })
+  if (!res.ok) throw new Error('Failed to fetch team tree')
+  return res.json()
+}
+
+export async function getOrgChart() {
+  const res = await fetch(`${API_URL}/employees/org/chart`, { credentials: 'include', headers: { ...authHeaders() } })
+  if (!res.ok) throw new Error('Failed to fetch org chart')
+  return res.json()
+}
+
+export async function getAllTeamMembers(id: string) {
+  const res = await fetch(`${API_URL}/employees/${id}/team-members`, { credentials: 'include', headers: { ...authHeaders() } })
+  if (!res.ok) throw new Error('Failed to fetch team members')
+  return res.json()
+}
+
+// Users
+export async function listUsers() {
+  const res = await fetch(`${API_URL}/users`, { credentials: 'include', headers: { ...authHeaders() } })
+  if (!res.ok) throw new Error('Failed to fetch users')
+  return res.json()
+}
+
 
 // Attendance APIs
 export async function attendanceClockIn(employeeId: string) {
