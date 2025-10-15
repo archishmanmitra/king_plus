@@ -43,6 +43,7 @@ interface UserWithEmployee {
     official?: {
       firstName: string;
       lastName: string;
+      designation:string;
     };
   };
   // Additional properties that might be present in the response
