@@ -46,11 +46,11 @@ interface UserWithEmployee {
     };
   };
   // Additional properties that might be present in the response
-  personalInfo?: {
+  personal?: {
     email?: string;
     phoneNumber?: string;
   };
-  officialInfo?: {
+  official?: {
     designation?: string;
     unit?: string;
     dateOfJoining?: string;
@@ -137,7 +137,7 @@ const Employees: React.FC = () => {
     const matchesSearch =
       displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       false ||
-      employee.personalInfo?.email
+      employee.personal?.email
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
       false ||
@@ -145,7 +145,7 @@ const Employees: React.FC = () => {
       false;
     const matchesDepartment =
       selectedDepartment === "all" ||
-      employee.officialInfo?.unit === selectedDepartment;
+      employee.official?.unit === selectedDepartment;
     const matchesStatus =
       selectedStatus === "all" ||
       (employee.user?.role ? "active" : "inactive") === selectedStatus;
@@ -312,7 +312,7 @@ const Employees: React.FC = () => {
             <div className="text-xl sm:text-2xl font-bold">
               {
                 new Set(
-                  employees.map((e) => e.officialInfo?.unit).filter(Boolean)
+                  employees.map((e) => e.official?.unit).filter(Boolean)
                 ).size
               }
             </div>
@@ -333,7 +333,7 @@ const Employees: React.FC = () => {
             <div className="text-xl sm:text-2xl font-bold text-primary">
               {
                 employees.filter((e) => {
-                  const joinDate = e.officialInfo?.dateOfJoining;
+                  const joinDate = e.official?.dateOfJoining;
                   if (!joinDate) return false;
                   const joinMonth = new Date(joinDate).getMonth();
                   const currentMonth = new Date().getMonth();
@@ -440,7 +440,7 @@ const Employees: React.FC = () => {
                           {getDisplayName(employee)}
                         </h3>
                         <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                          {employee.officialInfo?.designation || "Employee"}
+                          {employee.official?.designation || "Employee"}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {employee.employeeId}
@@ -458,19 +458,19 @@ const Employees: React.FC = () => {
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
                     <Building2 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground truncate">
-                      {employee.officialInfo?.unit || "N/A"}
+                      {employee.official?.unit || "N/A"}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
                     <Mail className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground truncate">
-                      {employee.personalInfo?.email || "N/A"}
+                      {employee?.email || "N/A"}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
                     <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground">
-                      {employee.personalInfo?.phoneNumber || "N/A"}
+                      {employee.personal?.phoneNumber || "N/A"}
                     </span>
                   </div>
                   <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 pt-2">
@@ -538,7 +538,7 @@ const Employees: React.FC = () => {
                               {getDisplayName(employee)}
                             </div>
                             <div className="text-xs text-muted-foreground truncate">
-                              {employee.personalInfo?.email || "N/A"}
+                              {employee.personal?.email || "N/A"}
                             </div>
                           </div>
                         </div>
@@ -547,15 +547,15 @@ const Employees: React.FC = () => {
                         {employee.employeeId}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {employee.officialInfo?.unit || "N/A"}
+                        {employee.official?.unit || "N/A"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {employee.officialInfo?.designation || "N/A"}
+                        {employee.official?.designation || "N/A"}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {employee.officialInfo?.dateOfJoining
+                        {employee.official?.dateOfJoining
                           ? new Date(
-                              employee.officialInfo.dateOfJoining
+                              employee.official.dateOfJoining
                             ).toLocaleDateString()
                           : "N/A"}
                       </TableCell>

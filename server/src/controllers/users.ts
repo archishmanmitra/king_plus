@@ -23,6 +23,12 @@ export const listUsers = async (_req: Request, res: Response) => {
                 confirmationDate:true
               }
             },
+            personal:{
+              select:{
+                phoneNumber:true,
+                personalEmail:true
+              }
+            }
           },
           
         },

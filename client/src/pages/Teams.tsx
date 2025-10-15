@@ -656,12 +656,12 @@ const Teams: React.FC<TeamsPageProps> = () => {
             <Users className="h-4 w-4 mr-2" />
             {allEmployees.length} Total Employees
           </Badge>
-          {isAdmin && (
+          {/* {isAdmin && (
             <Badge variant="default" className="text-sm bg-blue-600">
               <Settings className="h-4 w-4 mr-2" />
               Admin Mode
             </Badge>
-          )}
+          )} */}
         </div>
       </div>
 
