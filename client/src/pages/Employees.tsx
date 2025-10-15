@@ -30,6 +30,36 @@ import {
 import { getEmployees, listUsers } from "@/api/employees";
 import { useNavigate } from "react-router-dom";
 import AddEmployeeModal from "@/components/modals/AddEmployeeModal";
+
+// Type for user data from the API
+interface UserWithEmployee {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  employeeId: string;
+  avatar?: string;
+  employee?: {
+    official?: {
+      firstName: string;
+      lastName: string;
+    };
+  };
+  // Additional properties that might be present in the response
+  personalInfo?: {
+    email?: string;
+    phoneNumber?: string;
+  };
+  officialInfo?: {
+    designation?: string;
+    unit?: string;
+    dateOfJoining?: string;
+  };
+  user?: {
+    role?: string;
+    id?: string;
+  };
+}
 import {
   Users,
   Plus,
@@ -50,7 +80,7 @@ const Employees: React.FC = () => {
   const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
-  const [employees, setEmployees] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<UserWithEmployee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -90,11 +120,22 @@ const Employees: React.FC = () => {
   ];
   const statuses = ["all", "active", "inactive", "terminated"];
 
+  // Helper function to get display name from employee data
+  const getDisplayName = (employee: UserWithEmployee) => {
+    if (employee?.employee?.official?.firstName) {
+      return `${employee.employee.official.firstName} ${
+        employee.employee.official.lastName || ""
+      }`.trim();
+    }
+    return employee?.name || "Unknown Employee";
+  };
+
   const filteredEmployees = (employees || []).filter((employee) => {
     if (!employee) return false;
 
+    const displayName = getDisplayName(employee);
     const matchesSearch =
-      employee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       false ||
       employee.personalInfo?.email
         ?.toLowerCase()
@@ -132,7 +173,7 @@ const Employees: React.FC = () => {
     navigate(`/profile/${userId}`);
   };
 
-  const handleAddEmployee = (newEmployee: any) => {
+  const handleAddEmployee = (newEmployee: UserWithEmployee) => {
     // Refresh the employee list after adding a new employee
     const fetchEmployees = async () => {
       try {
@@ -385,10 +426,10 @@ const Employees: React.FC = () => {
                       <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
                         <AvatarImage
                           src={employee.avatar}
-                          alt={employee.name}
+                          alt={getDisplayName(employee)}
                         />
                         <AvatarFallback className="text-xs sm:text-sm">
-                          {employee.name
+                          {getDisplayName(employee)
                             .split(" ")
                             .map((n) => n[0])
                             .join("")}
@@ -396,7 +437,7 @@ const Employees: React.FC = () => {
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
-                          {employee.name || "Unknown Employee"}
+                          {getDisplayName(employee)}
                         </h3>
                         <p className="text-xs sm:text-sm text-muted-foreground truncate">
                           {employee.officialInfo?.designation || "Employee"}
@@ -483,10 +524,10 @@ const Employees: React.FC = () => {
                           <Avatar className="h-8 w-8 flex-shrink-0">
                             <AvatarImage
                               src={employee.avatar}
-                              alt={employee.name}
+                              alt={getDisplayName(employee)}
                             />
                             <AvatarFallback className="text-xs">
-                              {employee.name
+                              {getDisplayName(employee)
                                 .split(" ")
                                 .map((n) => n[0])
                                 .join("")}
@@ -494,7 +535,7 @@ const Employees: React.FC = () => {
                           </Avatar>
                           <div className="min-w-0">
                             <div className="font-medium text-sm truncate">
-                              {employee.name || "Unknown Employee"}
+                              {getDisplayName(employee)}
                             </div>
                             <div className="text-xs text-muted-foreground truncate">
                               {employee.personalInfo?.email || "N/A"}
