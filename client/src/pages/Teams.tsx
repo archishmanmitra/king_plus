@@ -46,6 +46,15 @@ import { getOrgChart, assignEmployeeManager, listUsers, getEmployees } from '@/a
 import { Employee } from '@/types/employee';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { 
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem
+} from '@/components/ui/command';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface HierarchyNode {
   employee: Employee;
@@ -80,6 +89,8 @@ const Teams: React.FC<TeamsPageProps> = () => {
   const [viewMode, setViewMode] = useState<'chart' | 'list'>('chart');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('');
+  const [userNodeQuery, setUserNodeQuery] = useState('');
+  const [selectedUserNodeIds, setSelectedUserNodeIds] = useState<string[]>([]);
 
   // Load org chart, users, and all employees
   useEffect(() => {
@@ -1057,6 +1068,84 @@ const Teams: React.FC<TeamsPageProps> = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                User Nodes
+              </label>
+              {/* Selected chips */}
+              {selectedUserNodeIds.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {selectedUserNodeIds.map(id => {
+                    const emp = allEmployees.find(e => e.id === id);
+                    return (
+                      <Badge key={id} variant="outline" className="text-xs">
+                        {emp?.name || id}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="mt-2 border rounded-md">
+                <Command>
+                  <CommandInput
+                    placeholder="Search employees..."
+                    value={userNodeQuery}
+                    onValueChange={setUserNodeQuery}
+                  />
+                  <CommandList>
+                    <CommandEmpty>No employees found.</CommandEmpty>
+                    <CommandGroup heading="Employees">
+                      {allEmployees
+                        .filter(e =>
+                          (e.name?.toLowerCase().includes(userNodeQuery.toLowerCase()) ||
+                           e.email?.toLowerCase().includes(userNodeQuery.toLowerCase()))
+                        )
+                        .slice(0, 50)
+                        .map(e => {
+                          const checked = selectedUserNodeIds.includes(e.id);
+                          return (
+                            <CommandItem
+                              key={e.id}
+                              value={e.id}
+                              onSelect={() => {
+                                setSelectedUserNodeIds(prev =>
+                                  prev.includes(e.id)
+                                    ? prev.filter(x => x !== e.id)
+                                    : [...prev, e.id]
+                                );
+                              }}
+                            >
+                              <div className="flex items-center gap-2 w-full">
+                                <Checkbox checked={checked} onCheckedChange={() => {
+                                  setSelectedUserNodeIds(prev =>
+                                    prev.includes(e.id)
+                                      ? prev.filter(x => x !== e.id)
+                                      : [...prev, e.id]
+                                  );
+                                }} />
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage src={e.avatar} />
+                                  <AvatarFallback className="text-xs">
+                                    {e.name.split(' ').map(n => n[0]).join('')}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm">{e.name}</div>
+                                  <div className="text-xs text-gray-500 truncate">{e.email}</div>
+                                </div>
+                                {e.position && (
+                                  <Badge variant="outline" className="text-[10px]">{e.position}</Badge>
+                                )}
+                              </div>
+                            </CommandItem>
+                          );
+                        })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </div>
             </div>
           </div>
 

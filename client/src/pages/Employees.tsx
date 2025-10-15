@@ -440,7 +440,18 @@ const Employees: React.FC = () => {
                           {getDisplayName(employee)}
                         </h3>
                         <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                          {employee.official?.designation || "Employee"}
+                          {employee.role.split(' ').map(word => {
+    if (word === 'global_admin') {
+      return 'Admin'; 
+    }
+    if (word === 'hr_manager') {
+      return 'HR Manager'; 
+    }
+    if (word === 'manager') {
+      return 'Manager'; 
+    }
+    return 'Employee';
+  }).join(' ') || "Employee"}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {employee.employeeId}
@@ -449,7 +460,7 @@ const Employees: React.FC = () => {
                     </div>
                     <div className="flex justify-end sm:justify-start">
                       {getStatusBadge(
-                        employee.user?.role ? "active" : "inactive"
+                        employee.role ? "active" : "inactive"
                       )}
                     </div>
                   </div>
@@ -458,7 +469,7 @@ const Employees: React.FC = () => {
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
                     <Building2 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground truncate">
-                      {employee.official?.unit || "N/A"}
+                      {employee.employee?.official?.designation || "N/A"}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
@@ -470,7 +481,7 @@ const Employees: React.FC = () => {
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
                     <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground">
-                      {employee.personal?.phoneNumber || "N/A"}
+                      {employee.employee?.personal?.phoneNumber || "N/A"}
                     </span>
                   </div>
                   <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 pt-2">
