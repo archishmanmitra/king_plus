@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
+import { 
   Select,
   SelectContent,
   SelectItem,
@@ -18,13 +18,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Users,
-  ChevronDown,
-  ChevronRight,
-  Crown,
-  UserCheck,
-  UserCog,
+import { 
+  Users, 
+  ChevronDown, 
+  ChevronRight, 
+  Crown, 
+  UserCheck, 
+  UserCog, 
   User,
   Building2,
   Phone,
@@ -47,6 +47,7 @@ import {
   assignEmployeeManager,
   listUsers,
   getEmployees,
+  reassignTeam,
 } from "@/api/employees";
 import { Employee } from "@/types/employee";
 import { Input } from "@/components/ui/input";
@@ -58,7 +59,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
+import { 
   Command,
   CommandInput,
   CommandList,
@@ -93,7 +94,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
-
+  
   // Admin functionality state
   const [isAdmin, setIsAdmin] = useState(true); // For demo purposes, set to true
   const [showReassignmentModal, setShowReassignmentModal] = useState(false);
@@ -111,11 +112,13 @@ const Teams: React.FC<TeamsPageProps> = () => {
   const [filterDepartment, setFilterDepartment] = useState("");
   const [userNodeQuery, setUserNodeQuery] = useState("");
   const [selectedUserNodeIds, setSelectedUserNodeIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Load org chart, users, and all employees
   useEffect(() => {
     (async () => {
       try {
+        setLoading(true);
         const [orgRes, usersRes, employeesRes] = await Promise.all([
           getOrgChart(),
           listUsers(),
@@ -141,11 +144,21 @@ const Teams: React.FC<TeamsPageProps> = () => {
             position: official.designation || "Employee",
             department: official.unit || "", // unit from EmployeeOfficial
             manager: managerName || "",
+            managerId: e.managerId || null,
             joinDate: e.createdAt
               ? new Date(e.createdAt).toISOString()
               : new Date().toISOString(),
             status: "active",
             avatar: e.avatar || "",
+            directReports: (e.directReports || []).map((dr: any) => ({
+              id: dr.id,
+              employeeId: dr.employeeId,
+              name: [dr.official?.firstName, dr.official?.lastName].filter(Boolean).join(" ") || dr.user?.name || "",
+              email: dr.user?.email || dr.personal?.personalEmail || "",
+              position: dr.official?.designation || "",
+              department: dr.official?.unit || "",
+              avatar: dr.avatar || ""
+            })),
             personalInfo: {
               firstName: personal.firstName || "",
               lastName: personal.lastName || "",
@@ -270,29 +283,31 @@ const Teams: React.FC<TeamsPageProps> = () => {
         setAllEmployees(employeesRes.employees || []);
       } catch (err) {
         console.error("Failed to load org chart/users", err);
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
 
-  // Build hierarchy from employees
+  // Build hierarchy from employees - only start from admins with no managerId
   const hierarchy = useMemo(() => {
     const employeeMap = new Map<string, Employee>();
     employees.forEach((emp) => employeeMap.set(emp.id, emp));
 
-    // Find root (CEO) - employee with no manager or empty manager
-    const rootEmployee = employees.find(
-      (emp) => !emp.manager || emp.manager === "" || emp.manager === emp.name
+    // Find top-level admins - employees with no managerId and admin role
+    const topLevelAdmins = employees.filter(
+      (emp) => !emp.managerId && emp.officialInfo?.role && emp.officialInfo.role !== 'employee'
     );
 
-    if (!rootEmployee) return null;
+    if (topLevelAdmins.length === 0) return null;
 
     const buildHierarchy = (
       employee: Employee,
       level: number = 0
     ): HierarchyNode => {
-      // Find direct reports - employees whose manager is this employee
+      // Find direct reports using managerId - employees whose managerId is this employee's id
       const children = employees.filter(
-        (emp) => emp.manager === employee.name && emp.id !== employee.id
+        (emp) => emp.managerId === employee.id
       );
 
       return {
@@ -306,7 +321,25 @@ const Teams: React.FC<TeamsPageProps> = () => {
       };
     };
 
-    return buildHierarchy(rootEmployee);
+    // Build hierarchy for each top-level admin
+    return {
+      employee: topLevelAdmins[0], // Use first admin as root for single tree
+      children: topLevelAdmins.length > 1 
+        ? topLevelAdmins.slice(1).map(admin => buildHierarchy(admin, 1))
+        : employees.filter(emp => emp.managerId === topLevelAdmins[0].id).map(child => buildHierarchy(child, 1)),
+      level: 0,
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+    };
+  }, [employees]);
+
+  // Get unassigned employees (no managerId and role is 'employee')
+  const unassignedEmployees = useMemo(() => {
+    return employees.filter(
+      (emp) => !emp.managerId && emp.officialInfo?.role === 'employee'
+    );
   }, [employees]);
 
   // Check if mobile
@@ -387,16 +420,16 @@ const Teams: React.FC<TeamsPageProps> = () => {
       const container = containerRef.current;
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
-
+      
       // Calculate the bounds of the hierarchy
       const bounds = calculateHierarchyBounds(positionedHierarchy);
       const chartWidth = bounds.maxX - bounds.minX;
       const chartHeight = bounds.maxY - bounds.minY;
-
+      
       // Center the chart in the container
       const centerX = (containerWidth - chartWidth) / 2 - bounds.minX;
       const centerY = (containerHeight - chartHeight) / 2 - bounds.minY;
-
+      
       setPan({ x: centerX, y: centerY });
     }
   };
@@ -477,14 +510,27 @@ const Teams: React.FC<TeamsPageProps> = () => {
   const handleReassignEmployee = (employee: Employee) => {
     setEmployeeToReassign(employee);
     setNewManagerId("");
+    setSelectedUserNodeIds([]);
     setShowReassignmentModal(true);
   };
 
   const confirmReassignment = async () => {
     if (!employeeToReassign) return;
     try {
-      await assignEmployeeManager(employeeToReassign.id, newManagerId || null);
-      // Reload org chart to reflect changes
+      // Step 1: If a new manager is selected, assign the employee to that manager
+      if (newManagerId) {
+        await reassignTeam(newManagerId, [employeeToReassign.id]);
+      } else if (!newManagerId && !selectedUserNodeIds.length) {
+        // No manager selected and no user nodes - set employee to top level (no manager)
+        await reassignTeam(null, [employeeToReassign.id]);
+      }
+      
+      // Step 2: If user nodes are selected, assign them as direct reports to the employeeToReassign
+      if (selectedUserNodeIds.length > 0) {
+        await reassignTeam(employeeToReassign.id, selectedUserNodeIds);
+      }
+      
+      // Reload org chart to reflect all changes
       const orgRes = await getOrgChart();
       const flattened: Employee[] = [];
       const walk = (node: any, managerName: string | "") => {
@@ -505,11 +551,21 @@ const Teams: React.FC<TeamsPageProps> = () => {
           position: official.designation || "Employee",
           department: official.unit || "", // unit from EmployeeOfficial
           manager: managerName || "",
+          managerId: e.managerId || null,
           joinDate: e.createdAt
             ? new Date(e.createdAt).toISOString()
             : new Date().toISOString(),
           status: "active",
           avatar: e.avatar || "",
+          directReports: (e.directReports || []).map((dr: any) => ({
+            id: dr.id,
+            employeeId: dr.employeeId,
+            name: [dr.official?.firstName, dr.official?.lastName].filter(Boolean).join(" ") || dr.user?.name || "",
+            email: dr.user?.email || dr.personal?.personalEmail || "",
+            position: dr.official?.designation || "",
+            department: dr.official?.unit || "",
+            avatar: dr.avatar || ""
+          })),
           personalInfo: employees[0]?.personalInfo as any,
           officialInfo: employees[0]?.officialInfo as any,
           financialInfo: employees[0]?.financialInfo as any,
@@ -528,12 +584,13 @@ const Teams: React.FC<TeamsPageProps> = () => {
       setShowReassignmentModal(false);
       setEmployeeToReassign(null);
       setNewManagerId("");
+      setSelectedUserNodeIds([]);
     }
   };
 
   const getAvailableManagers = () => {
     if (!employeeToReassign) return [];
-
+    
     // Return all employees except the one being reassigned and their current direct reports
     // Choose from all users as potential managers; exclude self
     return employees.filter((emp) => emp.id !== employeeToReassign.id);
@@ -583,8 +640,8 @@ const Teams: React.FC<TeamsPageProps> = () => {
   const filteredEmployees = allEmployees.filter((emp) => {
     const matchesSearch =
       emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.position.toLowerCase().includes(searchTerm.toLowerCase());
+                         emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         emp.position.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDepartment =
       !filterDepartment || emp.department === filterDepartment;
     return matchesSearch && matchesDepartment;
@@ -604,7 +661,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
         {/* Node Card with Flowchart Styling */}
         <div
           className={`absolute bg-white rounded-lg shadow-lg border-2 hover:shadow-xl transition-all duration-200 cursor-pointer ${
-            selectedEmployee?.id === node.employee.id
+            selectedEmployee?.id === node.employee.id 
               ? "border-blue-500 shadow-blue-200"
               : "border-gray-200"
           }`}
@@ -627,7 +684,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
             {hasChildren && (
               <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-blue-500"></div>
             )}
-
+            
             {/* Header */}
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
@@ -663,19 +720,19 @@ const Teams: React.FC<TeamsPageProps> = () => {
                 )}
                 {isAdmin &&
                   !node.employee.position.toLowerCase().includes("ceo") && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleReassignEmployee(node.employee);
-                      }}
-                      className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
-                      title="Reassign Employee"
-                    >
-                      <ArrowRightLeft className="h-3 w-3" />
-                    </Button>
-                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleReassignEmployee(node.employee);
+                    }}
+                    className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
+                    title="Reassign Employee"
+                  >
+                    <ArrowRightLeft className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -750,7 +807,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
               const deltaY = endY - startY;
               const deltaX = endX - startX;
               const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
+              
               // Control points for smooth curves - improved for better visual flow
               const controlPoint1X = startX;
               const controlPoint1Y = startY + deltaY * 0.4;
@@ -804,7 +861,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
                       />
                     </linearGradient>
                   </defs>
-
+                  
                   {/* Main curved path with dashed line */}
                   <path
                     d={`M ${startX} ${startY} C ${controlPoint1X} ${controlPoint1Y} ${controlPoint2X} ${controlPoint2Y} ${endX} ${endY}`}
@@ -815,7 +872,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-
+                  
                   {/* Arrow head with solid fill for better visibility */}
                   <path
                     d={`M ${endX - 10} ${endY - 10} L ${endX} ${endY} L ${
@@ -826,7 +883,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-
+                  
                   {/* Enhanced shadow effect with dashed pattern */}
                   <path
                     d={`M ${startX} ${startY} C ${controlPoint1X} ${controlPoint1Y} ${controlPoint2X} ${controlPoint2Y} ${endX} ${endY}`}
@@ -839,7 +896,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
                     opacity="0.3"
                     filter="blur(2px)"
                   />
-
+                  
                   {/* Connection flow indicator dots */}
                   <circle
                     cx={startX + (endX - startX) * 0.25}
@@ -869,12 +926,24 @@ const Teams: React.FC<TeamsPageProps> = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading team data...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!positionedHierarchy) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-500">No hierarchy data available</p>
+          <p className="text-sm text-gray-400 mt-2">Add employees with admin roles to build the organization chart</p>
         </div>
       </div>
     );
@@ -935,6 +1004,19 @@ const Teams: React.FC<TeamsPageProps> = () => {
       {viewMode === "list" ? (
         /* Employee List View */
         <div className="space-y-4">
+          {loading ? (
+            <Card>
+              <CardContent className="py-12">
+                <div className="flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-500">Loading employees...</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
           {/* Search and Filter Controls */}
           <Card>
             <CardHeader>
@@ -1052,7 +1134,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge
+                        <Badge 
                           variant={
                             employee.status === "active"
                               ? "default"
@@ -1088,126 +1170,128 @@ const Teams: React.FC<TeamsPageProps> = () => {
               )}
             </CardContent>
           </Card>
+            </>
+          )}
         </div>
       ) : (
         /* Chart View */
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 md:gap-6">
           {/* Tree Visualization */}
           <div className="xl:col-span-3">
-            <Card>
-              <CardHeader className="pb-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <CardTitle className="flex items-center space-x-2">
-                    <Building2 className="h-5 w-5" />
-                    <span>Organizational Chart</span>
-                  </CardTitle>
-
-                  {/* Zoom and Pan Controls */}
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleZoomOut}
-                        className="h-8 w-8 p-0"
-                        disabled={zoom <= 0.5}
-                      >
-                        <ZoomOut className="h-4 w-4" />
-                      </Button>
-                      <span className="text-xs font-medium px-2">
-                        {Math.round(zoom * 100)}%
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleZoomIn}
-                        className="h-8 w-8 p-0"
-                        disabled={zoom >= 2}
-                      >
-                        <ZoomIn className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleReset}
-                        className="h-8 w-8 p-0"
-                      >
-                        <RotateCcw className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={autoCenterChart}
-                        className="h-8 w-8 p-0"
-                        title="Fit to Screen"
-                      >
-                        <Maximize2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <CardTitle className="flex items-center space-x-2">
+                  <Building2 className="h-5 w-5" />
+                  <span>Organizational Chart</span>
+                </CardTitle>
+                
+                {/* Zoom and Pan Controls */}
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleZoomOut}
+                      className="h-8 w-8 p-0"
+                      disabled={zoom <= 0.5}
+                    >
+                      <ZoomOut className="h-4 w-4" />
+                    </Button>
+                    <span className="text-xs font-medium px-2">
+                      {Math.round(zoom * 100)}%
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleZoomIn}
+                      className="h-8 w-8 p-0"
+                      disabled={zoom >= 2}
+                    >
+                      <ZoomIn className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleReset}
+                      className="h-8 w-8 p-0"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={autoCenterChart}
+                      className="h-8 w-8 p-0"
+                      title="Fit to Screen"
+                    >
+                      <Maximize2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div
-                  ref={containerRef}
-                  className="relative overflow-auto bg-gray-50 rounded-lg"
-                  style={{
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div 
+                ref={containerRef}
+                className="relative overflow-auto bg-gray-50 rounded-lg"
+                style={{ 
                     minHeight: isMobile ? "500px" : "800px",
                     height: isMobile ? "500px" : "800px",
-                  }}
-                  onMouseDown={handleMouseDown}
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                >
-                  <div
-                    className="relative transition-transform duration-200 ease-out"
-                    style={{
-                      transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                }}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                <div 
+                  className="relative transition-transform duration-200 ease-out"
+                  style={{
+                    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                       transformOrigin: "top left",
                       width: isMobile ? "1000px" : "1400px", // Increased canvas size
                       height: isMobile ? "700px" : "1000px", // Increased canvas height
                       cursor: isDragging ? "grabbing" : "grab",
-                    }}
-                  >
-                    {renderNode(positionedHierarchy)}
-                  </div>
-
-                  {/* Instructions overlay for mobile */}
-                  {isMobile && (
-                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-                      <p className="text-xs text-gray-600">
-                        Drag to pan • Pinch to zoom • Tap nodes to expand
-                      </p>
-                    </div>
-                  )}
+                  }}
+                >
+                  {renderNode(positionedHierarchy)}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                
+                {/* Instructions overlay for mobile */}
+                {isMobile && (
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+                    <p className="text-xs text-gray-600">
+                      Drag to pan • Pinch to zoom • Tap nodes to expand
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Employee Details Sidebar */}
-          <div className="xl:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Employee Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {selectedEmployee ? (
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <Avatar className="h-16 w-16 mx-auto mb-3">
-                        <AvatarImage src={selectedEmployee.avatar} />
-                        <AvatarFallback className="text-lg">
+        {/* Employee Details Sidebar */}
+        <div className="xl:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Employee Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {selectedEmployee ? (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <Avatar className="h-16 w-16 mx-auto mb-3">
+                      <AvatarImage src={selectedEmployee.avatar} />
+                      <AvatarFallback className="text-lg">
                           {selectedEmployee.name
                             .split(" ")
                             .map((n) => n[0])
                             .join("")}
-                        </AvatarFallback>
-                      </Avatar>
+                      </AvatarFallback>
+                    </Avatar>
                       <h3 className="font-semibold text-lg">
                         {selectedEmployee.name}
                       </h3>
@@ -1216,90 +1300,143 @@ const Teams: React.FC<TeamsPageProps> = () => {
                           selectedEmployee.position
                         )}`}
                       >
-                        {selectedEmployee.position}
-                      </Badge>
-                    </div>
+                      {selectedEmployee.position}
+                    </Badge>
+                  </div>
 
-                    <div className="space-y-3">
-                      <div>
+                  <div className="space-y-3">
+                    <div>
                         <label className="text-sm font-medium text-gray-500">
                           Department
                         </label>
-                        <p className="text-sm">{selectedEmployee.department}</p>
-                      </div>
+                      <p className="text-sm">{selectedEmployee.department}</p>
+                    </div>
 
-                      <div>
+                    <div>
                         <label className="text-sm font-medium text-gray-500">
                           Manager
                         </label>
-                        <p className="text-sm">{selectedEmployee.manager}</p>
-                      </div>
+                      <p className="text-sm">{selectedEmployee.manager}</p>
+                    </div>
 
-                      <div>
+                    <div>
                         <label className="text-sm font-medium text-gray-500">
                           Employee ID
                         </label>
                         <p className="text-sm font-mono">
                           {selectedEmployee.employeeId}
                         </p>
-                      </div>
+                    </div>
 
-                      <div>
+                    <div>
                         <label className="text-sm font-medium text-gray-500">
                           Join Date
                         </label>
-                        <p className="text-sm">
+                      <p className="text-sm">
                           {new Date(
                             selectedEmployee.joinDate
                           ).toLocaleDateString()}
-                        </p>
-                      </div>
+                      </p>
+                    </div>
 
                       {/* <div>
                         <label className="text-sm font-medium text-gray-500">
                           Status
                         </label>
-                        <Badge
+                      <Badge 
                           variant={
                             selectedEmployee.status === "active"
                               ? "default"
                               : "secondary"
                           }
-                          className="capitalize"
-                        >
-                          {selectedEmployee.status}
-                        </Badge>
+                        className="capitalize"
+                      >
+                        {selectedEmployee.status}
+                      </Badge>
                       </div> */}
 
-                      <div className="pt-3 border-t">
+                    <div className="pt-3 border-t">
                         <label className="text-sm font-medium text-gray-500">
                           Contact
                         </label>
-                        <div className="space-y-2 mt-2">
-                          <div className="flex items-center space-x-2 text-sm">
-                            <Mail className="h-4 w-4 text-gray-400" />
+                      <div className="space-y-2 mt-2">
+                        <div className="flex items-center space-x-2 text-sm">
+                          <Mail className="h-4 w-4 text-gray-400" />
                             <span className="truncate">
                               {selectedEmployee.email}
                             </span>
-                          </div>
-                          <div className="flex items-center space-x-2 text-sm">
-                            <Phone className="h-4 w-4 text-gray-400" />
-                            <span>{selectedEmployee.phone}</span>
-                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2 text-sm">
+                          <Phone className="h-4 w-4 text-gray-400" />
+                          <span>{selectedEmployee.phone}</span>
                         </div>
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-center text-gray-500 py-8">
-                    <User className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                    <p>Select an employee to view details</p>
-                  </div>
-                )}
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 py-8">
+                  <User className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p>Select an employee to view details</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Not Selected Employees Section */}
+          {unassignedEmployees.length > 0 && viewMode === 'chart' && (
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center space-x-2">
+                  <Users className="h-5 w-5" />
+                  <span>Not Selected Employees ({unassignedEmployees.length})</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {unassignedEmployees.map((emp) => (
+                    <Card 
+                      key={emp.id} 
+                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => setSelectedEmployee(emp)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={emp.avatar} />
+                            <AvatarFallback>
+                              {emp.name.split(' ').map(n => n[0]).join('')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{emp.name}</p>
+                            <p className="text-xs text-gray-500 truncate">{emp.position}</p>
+                            <p className="text-xs text-gray-400 truncate">{emp.email}</p>
+                          </div>
+                        </div>
+                        {isAdmin && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full mt-3"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReassignEmployee(emp);
+                            }}
+                          >
+                            <UserPlus className="h-3 w-3 mr-1" />
+                            Assign Manager
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </CardContent>
             </Card>
-          </div>
+          )}
         </div>
+      </div>
       )}
 
       {/* Reassignment Modal */}
@@ -1317,7 +1454,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
               Change the manager assignment for {employeeToReassign?.name}
             </DialogDescription>
           </DialogHeader>
-
+          
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium text-gray-700">
@@ -1327,7 +1464,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
                 {employeeToReassign?.manager || "No manager assigned"}
               </p>
             </div>
-
+            
             <div>
               <label className="text-sm font-medium text-gray-700">
                 New Manager
@@ -1370,15 +1507,22 @@ const Teams: React.FC<TeamsPageProps> = () => {
                   {selectedUserNodeIds.map((id) => {
                     const emp = allEmployees.find((e) => e.id === id);
                     return (
-                      <Badge key={id} variant="outline" className="text-xs">
-                        {emp?.name || id}
+                      <Badge 
+                        key={id} 
+                        variant="outline" 
+                        className="text-xs cursor-pointer hover:bg-gray-100"
+                        onClick={() => {
+                          setSelectedUserNodeIds((prev) => prev.filter((x) => x !== id));
+                        }}
+                      >
+                        {emp?.name || id} ×
                       </Badge>
                     );
                   })}
                 </div>
               )}
               <div className="mt-2 border rounded-md">
-                <Command>
+                <Command shouldFilter={false}>
                   <CommandInput
                     placeholder="Search employees..."
                     value={userNodeQuery}
@@ -1390,6 +1534,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
                       {allEmployees
                         .filter(
                           (e) =>
+                            !userNodeQuery ||
                             e.name
                               ?.toLowerCase()
                               .includes(userNodeQuery.toLowerCase()) ||
@@ -1412,14 +1557,25 @@ const Teams: React.FC<TeamsPageProps> = () => {
                                 );
                               }}
                             >
-                              <div className="flex items-center gap-2 w-full">
+                              <div 
+                                className="flex items-center gap-2 w-full cursor-pointer"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setSelectedUserNodeIds((prev) =>
+                                    prev.includes(e.id)
+                                      ? prev.filter((x) => x !== e.id)
+                                      : [...prev, e.id]
+                                  );
+                                }}
+                              >
                                 <Checkbox
                                   checked={checked}
-                                  onCheckedChange={() => {
+                                  onClick={(event) => event.stopPropagation()}
+                                  onCheckedChange={(checked) => {
                                     setSelectedUserNodeIds((prev) =>
-                                      prev.includes(e.id)
-                                        ? prev.filter((x) => x !== e.id)
-                                        : [...prev, e.id]
+                                      checked
+                                        ? [...prev, e.id]
+                                        : prev.filter((x) => x !== e.id)
                                     );
                                   }}
                                 />
@@ -1458,13 +1614,13 @@ const Teams: React.FC<TeamsPageProps> = () => {
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
+            <Button 
+              variant="outline" 
               onClick={() => setShowReassignmentModal(false)}
             >
               Cancel
             </Button>
-            <Button onClick={confirmReassignment} disabled={!newManagerId}>
+            <Button onClick={confirmReassignment}>
               Confirm Reassignment
             </Button>
           </DialogFooter>

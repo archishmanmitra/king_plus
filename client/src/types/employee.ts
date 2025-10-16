@@ -7,9 +7,11 @@ export interface Employee {
   position: string;
   department: string;
   manager: string;
+  managerId: string | null;
   joinDate: string;
   status: 'active' | 'inactive' | 'terminated';
   avatar?: string;
+  directReports: DirectReport[];
   
   // Personal Information
   personalInfo: {
@@ -204,4 +206,14 @@ export interface Document {
   size: string;
   url: string;
   uploadedBy: 'employee' | 'hr' | 'admin';
+}
+
+export interface DirectReport {
+  id: string;
+  employeeId: string;
+  name: string;
+  email: string;
+  position: string;
+  department: string;
+  avatar: string;
 }

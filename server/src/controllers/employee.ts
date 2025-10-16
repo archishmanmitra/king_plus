@@ -108,6 +108,8 @@ const mapEmployeeToProfile = (e: any) => {
   const retiral = e.retiral || {}
   const passport = e.passport || {}
   const identity = e.identity || {}
+  const manager = e.manager || {}
+  const directReports = e.directReports || []
 
   return {
     id: e.id,
@@ -117,10 +119,20 @@ const mapEmployeeToProfile = (e: any) => {
     phone: personal.phoneNumber || '',
     position: official.designation || '',
     department: official.unit || '', // unit from EmployeeOfficial
-    manager: '', // Will be set by frontend based on hierarchy
+    manager: manager.official ? [manager.official.firstName, manager.official.lastName].filter(Boolean).join(' ') : '',
+    managerId: e.managerId || null,
     joinDate: e.createdAt ? new Date(e.createdAt).toISOString() : new Date().toISOString(),
     status: 'active',
     employeeId: e.employeeId,
+    directReports: directReports.map((report: any) => ({
+      id: report.id,
+      employeeId: report.employeeId,
+      name: [report.official?.firstName, report.official?.lastName].filter(Boolean).join(' ') || report.user?.name || '',
+      email: report.user?.email || report.personal?.personalEmail || '',
+      position: report.official?.designation || '',
+      department: report.official?.unit || '',
+      avatar: report.avatar || ''
+    })),
     personalInfo: {
       firstName: personal.firstName || '',
       lastName: personal.lastName || '',
@@ -248,6 +260,19 @@ export const getEmployees = async (req: Request, res: Response) => {
         official: true,
         user: true,
         personal: true,
+        manager: {
+          include: {
+            official: true,
+            user: true
+          }
+        },
+        directReports: {
+          include: {
+            official: true,
+            user: true,
+            personal: true
+          }
+        }
       }
     })
     const result = employees.map(e => mapEmployeeToProfile(e))
@@ -314,13 +339,141 @@ export const assignManager = async (req: Request, res: Response) => {
     const updated = await prisma.employee.update({
       where: { id },
       data: { managerId: managerId ?? null },
-      include: { official: true, user: true }
+      include: { 
+        official: true, 
+        user: true,
+        manager: {
+          include: {
+            official: true,
+            user: true
+          }
+        },
+        directReports: {
+          include: {
+            official: true,
+            user: true,
+            personal: true
+          }
+        }
+      }
     })
 
-    return res.json({ employee: updated })
+    const profile = mapEmployeeToProfile(updated)
+    return res.json({ employee: profile })
   } catch (err: any) {
     console.error('Assign manager error:', err)
     return res.status(500).json({ error: 'Failed to assign manager', details: err?.message })
+  }
+}
+
+// Team reassignment - assign multiple direct reports to a manager
+export const reassignTeam = async (req: Request, res: Response) => {
+  try {
+    const { managerId, directReportIds } = req.body as { 
+      managerId: string | null, 
+      directReportIds: string[] 
+    }
+
+    if (!directReportIds || !Array.isArray(directReportIds)) {
+      return res.status(400).json({ error: 'directReportIds array is required' })
+    }
+
+    // Validate manager exists if provided
+    let manager = null
+    if (managerId) {
+      manager = await prisma.employee.findUnique({ 
+        where: { id: managerId },
+        include: {
+          official: true,
+          user: true
+        }
+      })
+      if (!manager) return res.status(404).json({ error: 'Manager not found' })
+    }
+
+    // Validate all direct reports exist
+    const directReports = await prisma.employee.findMany({
+      where: { id: { in: directReportIds } },
+      include: {
+        official: true,
+        user: true,
+        personal: true
+      }
+    })
+
+    if (directReports.length !== directReportIds.length) {
+      return res.status(404).json({ error: 'One or more direct reports not found' })
+    }
+
+    // Check for circular references
+    if (managerId && directReportIds.includes(managerId)) {
+      return res.status(400).json({ error: 'Manager cannot be assigned as their own direct report' })
+    }
+
+    // Update all direct reports to have the new manager
+    // This sets the managerId field to point to the manager's employee ID
+    await prisma.employee.updateMany({
+      where: { id: { in: directReportIds } },
+      data: { managerId: managerId ?? null }
+    })
+
+    // Return updated manager with their complete team
+    let result = null
+    if (managerId) {
+      result = await prisma.employee.findUnique({
+        where: { id: managerId },
+        include: {
+          official: true,
+          user: true,
+          personal: true,
+          manager: {
+            include: {
+              official: true,
+              user: true
+            }
+          },
+          directReports: {
+            include: {
+              official: true,
+              user: true,
+              personal: true
+            }
+          }
+        }
+      })
+    }
+
+    // Also return the updated direct reports with their new manager information
+    const updatedDirectReports = await prisma.employee.findMany({
+      where: { id: { in: directReportIds } },
+      include: {
+        official: true,
+        user: true,
+        personal: true,
+        manager: {
+          include: {
+            official: true,
+            user: true
+          }
+        },
+        directReports: {
+          include: {
+            official: true,
+            user: true,
+            personal: true
+          }
+        }
+      }
+    })
+
+    return res.json({ 
+      manager: result ? mapEmployeeToProfile(result) : null,
+      directReports: updatedDirectReports.map(emp => mapEmployeeToProfile(emp)),
+      message: `Successfully reassigned ${directReportIds.length} employees`
+    })
+  } catch (err: any) {
+    console.error('Team reassignment error:', err)
+    return res.status(500).json({ error: 'Failed to reassign team', details: err?.message })
   }
 }
 

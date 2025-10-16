@@ -69,6 +69,18 @@ export async function getAllTeamMembers(id: string) {
   return res.json()
 }
 
+// New team reassignment API
+export async function reassignTeam(managerId: string | null, directReportIds: string[]) {
+  const res = await fetch(`${API_URL}/employees/reassign-team`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ managerId, directReportIds })
+  })
+  if (!res.ok) throw new Error('Failed to reassign team')
+  return res.json()
+}
+
 // Users
 export async function listUsers() {
   const res = await fetch(`${API_URL}/users`, { credentials: 'include', headers: { ...authHeaders() } })

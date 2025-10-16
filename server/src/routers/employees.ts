@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createEmployee, getEmployees, getEmployeeByEmployeeId, getEmployeeByUserId, updateEmployeeProfile, assignManager, getDirectReports, getTeamTree, getOrgChart, getAllTeamMembers } from '../controllers/employee'
+import { createEmployee, getEmployees, getEmployeeByEmployeeId, getEmployeeByUserId, updateEmployeeProfile, assignManager, reassignTeam, getDirectReports, getTeamTree, getOrgChart, getAllTeamMembers } from '../controllers/employee'
 import { authenticateToken, requireAdmin } from '../middleware/auth'
 
 const router = Router()
@@ -21,6 +21,7 @@ router.patch('/:employeeId', authenticateToken, updateEmployeeProfile)
 
 // Manager assignment and team/org endpoints
 router.patch('/:id/manager', authenticateToken, requireAdmin, assignManager)
+router.post('/reassign-team', authenticateToken, requireAdmin, reassignTeam)
 router.get('/:id/direct-reports', authenticateToken, getDirectReports)
 router.get('/:id/team-tree', authenticateToken, getTeamTree)
 router.get('/org/chart', authenticateToken, getOrgChart)
