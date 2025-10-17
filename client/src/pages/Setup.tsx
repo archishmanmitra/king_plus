@@ -1,38 +1,40 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { Shield, UserPlus, Lock, Mail, User } from 'lucide-react';
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Shield, UserPlus, Lock, Mail, User } from "lucide-react";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 const Setup: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: 'Password Mismatch',
-        description: 'Passwords do not match',
-        variant: 'destructive'
+        title: "Password Mismatch",
+        description: "Passwords do not match",
+        variant: "destructive",
       });
       return;
     }
 
     if (formData.password.length < 8) {
       toast({
-        title: 'Password Too Short',
-        description: 'Password must be at least 8 characters long',
-        variant: 'destructive'
+        title: "Password Too Short",
+        description: "Password must be at least 8 characters long",
+        variant: "destructive",
       });
       return;
     }
@@ -40,44 +42,44 @@ const Setup: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/setup', {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/auth/setup`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          password: formData.password
+          password: formData.password,
         }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Setup failed');
+        throw new Error(error.error || "Setup failed");
       }
 
       const { token, user } = await response.json();
-      
+
       // Store token and user data
-      localStorage.setItem('hrms_token', token);
-      localStorage.setItem('hrms_user', JSON.stringify(user));
-      
+      localStorage.setItem("hrms_token", token);
+      localStorage.setItem("hrms_user", JSON.stringify(user));
+
       toast({
-        title: 'Setup Complete!',
-        description: 'Initial admin created successfully. Redirecting to dashboard...'
+        title: "Setup Complete!",
+        description:
+          "Initial admin created successfully. Redirecting to dashboard...",
       });
 
       // Redirect to dashboard
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = "/";
       }, 2000);
-
     } catch (error: any) {
       toast({
-        title: 'Setup Failed',
-        description: error.message || 'Failed to create initial admin',
-        variant: 'destructive'
+        title: "Setup Failed",
+        description: error.message || "Failed to create initial admin",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -85,9 +87,9 @@ const Setup: React.FC = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -98,7 +100,13 @@ const Setup: React.FC = () => {
           <CardHeader className="text-center space-y-2">
             <div className="flex justify-center mb-4">
               <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg ring-4 ring-primary/10">
-                <img src="/kinglogo.svg" height={40} width={40} className="rounded-lg invert" alt="KIN-G + Logo" />
+                <img
+                  src="/kinglogo.svg"
+                  height={40}
+                  width={40}
+                  className="rounded-lg invert"
+                  alt="KIN-G + Logo"
+                />
               </div>
             </div>
             <CardTitle className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
@@ -179,11 +187,7 @@ const Setup: React.FC = () => {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <div className="flex items-center space-x-2">
                     <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />

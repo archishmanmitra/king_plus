@@ -5,7 +5,9 @@ import {
   getLeaveRequestById, 
   updateLeaveRequestStatus, 
   updateLeaveRequest, 
-  deleteLeaveRequest 
+  deleteLeaveRequest,
+  getPendingApprovals,
+  getTeamLeaveRequests
 } from '../controllers/leave'
 import { 
   getLeaveBalance, 
@@ -24,6 +26,12 @@ router.post('/requests', authenticateToken, createLeaveRequest)
 
 // Get all leave requests with optional filtering
 router.get('/requests', authenticateToken, getLeaveRequests)
+
+// Get pending approvals for managers (requests from their direct reports)
+router.get('/requests/pending-approvals', authenticateToken, requireManager, getPendingApprovals)
+
+// Get team members' leave requests (for managers to view their direct reports)
+router.get('/requests/team', authenticateToken, requireManager, getTeamLeaveRequests)
 
 // Get a specific leave request
 router.get('/requests/:id', authenticateToken, getLeaveRequestById)

@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+
 const InvitePage: React.FC = () => {
   const [params] = useSearchParams();
   const token = params.get("token") || "";
@@ -19,7 +21,7 @@ const InvitePage: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`/api/invitations/${token}`);
+        const res = await fetch(`${API_URL}/invitations/${token}`);
         if (!res.ok) throw new Error("Invalid or expired invitation");
         const data = await res.json();
         setEmail(data.email);
@@ -55,7 +57,7 @@ const InvitePage: React.FC = () => {
       return;
     }
     try {
-      const res = await fetch("/api/invitations/accept", {
+      const res = await fetch(`${API_URL}/invitations/accept`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password }),
