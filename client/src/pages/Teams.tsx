@@ -41,6 +41,8 @@ import {
   Filter,
   List,
   Grid3X3,
+  Plus,
+  TreePine,
 } from "lucide-react";
 import {
   getOrgChart,
@@ -68,6 +70,7 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HierarchyNode {
   employee: Employee;
@@ -82,6 +85,7 @@ interface HierarchyNode {
 interface TeamsPageProps {}
 
 const Teams: React.FC<TeamsPageProps> = () => {
+  const { user } = useAuth();
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(
     new Set(["1"])
   ); // Start with CEO expanded
@@ -96,7 +100,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
   const [isMobile, setIsMobile] = useState(false);
   
   // Admin functionality state
-  const [isAdmin, setIsAdmin] = useState(true); // For demo purposes, set to true
+  const isAdmin = user?.role === 'global_admin' || user?.role === 'hr_manager';
   const [showReassignmentModal, setShowReassignmentModal] = useState(false);
   const [employeeToReassign, setEmployeeToReassign] = useState<Employee | null>(
     null
@@ -113,6 +117,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
   const [userNodeQuery, setUserNodeQuery] = useState("");
   const [selectedUserNodeIds, setSelectedUserNodeIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCreateHierarchyModal, setShowCreateHierarchyModal] = useState(false);
 
   // Load org chart, users, and all employees
   useEffect(() => {
@@ -294,6 +299,153 @@ const Teams: React.FC<TeamsPageProps> = () => {
     const employeeMap = new Map<string, Employee>();
     employees.forEach((emp) => employeeMap.set(emp.id, emp));
 
+    // Check if any employee has a managerId (indicating hierarchy exists)
+    const hasAnyManagerId = employees.some(emp => emp.managerId);
+
+    // If no hierarchy exists (no managerIds), show only the current user
+    if (!hasAnyManagerId && user) {
+      // Create a mock employee object for the current user
+      const currentUserEmployee: Employee = {
+        id: user.id,
+        employeeId: user.employeeId || 'USER001',
+        name: user.name || 'Current User',
+        email: user.email,
+        phone: '',
+        position: user.position || 'Employee',
+        department: user.department || 'General',
+        manager: '',
+        managerId: null,
+        joinDate: new Date().toISOString(),
+        status: 'active',
+        avatar: '',
+        directReports: [],
+        personalInfo: {
+          firstName: user.name?.split(' ')[0] || '',
+          lastName: user.name?.split(' ').slice(1).join(' ') || '',
+          gender: 'other',
+          dateOfBirth: '',
+          maritalStatus: 'single',
+          nationality: '',
+          primaryCitizenship: '',
+          phoneNumber: '',
+          email: user.email,
+          addresses: {
+            present: {
+              contactName: '',
+              address1: '',
+              city: '',
+              state: '',
+              country: '',
+              pinCode: '',
+              mobileNumber: '',
+            },
+            primary: {
+              contactName: '',
+              address1: '',
+              city: '',
+              state: '',
+              country: '',
+              pinCode: '',
+              mobileNumber: '',
+            },
+            emergency: {
+              contactName: '',
+              relation: '',
+              phoneNumber: '',
+              address: {
+                contactName: '',
+                address1: '',
+                city: '',
+                state: '',
+                country: '',
+                pinCode: '',
+                mobileNumber: '',
+              } as any,
+            } as any,
+          },
+          passport: {
+            passportNumber: '',
+            expiryDate: '',
+            issuingOffice: '',
+            issuingCountry: '',
+            contactNumber: '',
+            address: '',
+          },
+          identityNumbers: {
+            aadharNumber: '',
+            panNumber: '',
+            nsr: { itpin: '', tin: '' },
+          },
+          dependents: [],
+          education: [],
+          experience: [],
+        },
+        officialInfo: {
+          firstName: user.name?.split(' ')[0] || '',
+          lastName: user.name?.split(' ').slice(1).join(' ') || '',
+          knownAs: '',
+          dateOfJoining: '',
+          jobConfirmation: true,
+          role: user.role,
+          designation: user.position || 'Employee',
+          stream: '',
+          subStream: '',
+          baseLocation: '',
+          currentLocation: '',
+          unit: user.department || 'General',
+          unitHead: '',
+          confirmationDetails: undefined,
+          documents: [],
+        },
+        financialInfo: {
+          bankAccount: {
+            bankName: '',
+            accountNumber: '',
+            ifscCode: '',
+            modifiedDate: '',
+            country: '',
+          },
+          retiral: {
+            pfTotal: 0,
+            employeePF: 0,
+            employerPF: 0,
+            employeeESI: 0,
+            employerESI: 0,
+            professionalTax: 0,
+            incomeTax: 0,
+            netTakeHome: 0,
+            costToCompany: 0,
+            basicSalary: 0,
+            houseRentAllowance: 0,
+            specialAllowance: 0,
+          },
+        },
+        personalInfoLegacy: {
+          dateOfBirth: '',
+          address: '',
+          emergencyContact: '',
+          bloodGroup: '',
+        },
+        workInfo: {
+          workLocation: '',
+          employmentType: 'full-time',
+          salary: 0,
+          benefits: [],
+        },
+        timeline: [],
+      };
+
+      return {
+        employee: currentUserEmployee,
+        children: [],
+        level: 0,
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      };
+    }
+
     // Find top-level admins - employees with no managerId and admin role
     const topLevelAdmins = employees.filter(
       (emp) => !emp.managerId && emp.officialInfo?.role && emp.officialInfo.role !== 'employee'
@@ -333,7 +485,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
       width: 0,
       height: 0,
     };
-  }, [employees]);
+  }, [employees, user]);
 
   // Get unassigned employees (no managerId and role is 'employee')
   const unassignedEmployees = useMemo(() => {
@@ -655,6 +807,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
   const renderNode = (node: HierarchyNode) => {
     const isExpanded = expandedNodes.has(node.employee.id);
     const hasChildren = node.children.length > 0;
+    const isCurrentUserOnlyNode = node.children.length === 0 && node.employee.id === user?.id;
 
     return (
       <div key={node.employee.id} className="relative">
@@ -663,6 +816,8 @@ const Teams: React.FC<TeamsPageProps> = () => {
           className={`absolute bg-white rounded-lg shadow-lg border-2 hover:shadow-xl transition-all duration-200 cursor-pointer ${
             selectedEmployee?.id === node.employee.id 
               ? "border-blue-500 shadow-blue-200"
+              : isCurrentUserOnlyNode
+              ? "border-amber-300 bg-amber-50"
               : "border-gray-200"
           }`}
           style={{
@@ -698,6 +853,11 @@ const Teams: React.FC<TeamsPageProps> = () => {
                 </span>
                 {node.employee.position.toLowerCase().includes("ceo") && (
                   <Crown className="h-4 w-4 text-yellow-500" />
+                )}
+                {isCurrentUserOnlyNode && (
+                  <Badge variant="outline" className="text-xs bg-amber-100 text-amber-800 border-amber-300">
+                    Current User
+                  </Badge>
                 )}
               </div>
               <div className="flex items-center space-x-1">
@@ -937,13 +1097,14 @@ const Teams: React.FC<TeamsPageProps> = () => {
     );
   }
 
-  if (!positionedHierarchy) {
+  // If no hierarchy exists and no user data, show a message
+  if (!positionedHierarchy && !user) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">No hierarchy data available</p>
-          <p className="text-sm text-gray-400 mt-2">Add employees with admin roles to build the organization chart</p>
+          <p className="text-gray-500">No organizational chart available</p>
+          <p className="text-sm text-gray-400 mt-2">Please log in to view the organizational structure</p>
         </div>
       </div>
     );
@@ -968,12 +1129,17 @@ const Teams: React.FC<TeamsPageProps> = () => {
             <Users className="h-4 w-4 mr-2" />
             {allEmployees.length} Total Employees
           </Badge>
-          {/* {isAdmin && (
-            <Badge variant="default" className="text-sm bg-blue-600">
-              <Settings className="h-4 w-4 mr-2" />
-              Admin Mode
-            </Badge>
-          )} */}
+          {isAdmin && positionedHierarchy && positionedHierarchy.children.length === 0 && (
+            <Button 
+              onClick={() => setShowCreateHierarchyModal(true)}
+              variant="outline"
+              size="sm"
+              className="text-blue-600 border-blue-600 hover:bg-blue-50"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Team Members
+            </Button>
+          )}
         </div>
       </div>
 
@@ -1622,6 +1788,72 @@ const Teams: React.FC<TeamsPageProps> = () => {
             </Button>
             <Button onClick={confirmReassignment}>
               Confirm Reassignment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Hierarchy Modal */}
+      <Dialog
+        open={showCreateHierarchyModal}
+        onOpenChange={setShowCreateHierarchyModal}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <TreePine className="h-5 w-5" />
+              <span>Add Team Members</span>
+            </DialogTitle>
+            <DialogDescription>
+              Add employees to your organizational structure and assign reporting relationships.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="text-center py-6">
+              <div className="bg-blue-50 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <UserPlus className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Build Your Team
+              </h3>
+              <p className="text-gray-600 text-sm mb-4">
+                To expand your organizational chart, you can:
+              </p>
+              <ul className="text-left text-sm text-gray-600 space-y-2 mb-6">
+                <li className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span>Add new employees to the system</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span>Assign them as your direct reports</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span>Set up department structures</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowCreateHierarchyModal(false)}
+            >
+              Close
+            </Button>
+            <Button 
+              onClick={() => {
+                setShowCreateHierarchyModal(false);
+                // Navigate to employees page or open add employee modal
+                window.location.href = '/employees';
+              }}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add Employees
             </Button>
           </DialogFooter>
         </DialogContent>
