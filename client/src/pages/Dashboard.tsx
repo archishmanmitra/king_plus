@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -21,57 +21,86 @@ import {
   AlertCircle,
   CheckCircle,
   User,
+  Loader2,
 } from "lucide-react";
+import { getDashboardStats, DashboardStats } from "@/api/dashboard";
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const dashboardStats = await getDashboardStats(user?.employeeId);
+        setStats(dashboardStats);
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        // Set default values on error
+        setStats({
+          totalEmployees: 0,
+          presentToday: 0,
+          pendingLeaves: 0,
+          monthlyPayroll: 0,
+          myLeaveBalance: 0,
+          hoursThisWeek: 0
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [user?.employeeId]);
 
   const dashboardStats = [
     {
       title: "Total Employees",
-      value: "247",
-      change: "+12",
-      changeType: "positive",
+      value: loading ? "..." : (stats?.totalEmployees || 0).toString(),
+      change: stats?.totalEmployees ? "Active" : "N/A",
+      changeType: stats?.totalEmployees ? "positive" : "neutral",
       icon: Users,
       roles: ["global_admin", "hr_manager"],
     },
     {
       title: "Present Today",
-      value: "231",
-      change: "93.5%",
-      changeType: "positive",
+      value: loading ? "..." : (stats?.presentToday || 0).toString(),
+      change: stats?.presentToday ? `${Math.round((stats.presentToday / (stats.totalEmployees || 1)) * 100)}%` : "N/A",
+      changeType: stats?.presentToday ? "positive" : "neutral",
       icon: CheckCircle,
       roles: ["global_admin", "hr_manager"],
     },
     {
       title: "Pending Leaves",
-      value: "8",
-      change: "-2",
-      changeType: "positive",
+      value: loading ? "..." : (stats?.pendingLeaves || 0).toString(),
+      change: stats?.pendingLeaves ? "Awaiting approval" : "None",
+      changeType: stats?.pendingLeaves ? "neutral" : "positive",
       icon: Calendar,
       roles: ["global_admin", "hr_manager"],
     },
     {
       title: "This Month Payroll",
-      value: "$1.2M",
-      change: "+5.2%",
-      changeType: "positive",
+      value: loading ? "..." : (stats?.monthlyPayroll ? `$${(stats.monthlyPayroll / 1000000).toFixed(1)}M` : "N/A"),
+      change: stats?.monthlyPayroll ? "Processed" : "Not available",
+      changeType: stats?.monthlyPayroll ? "positive" : "neutral",
       icon: DollarSign,
       roles: ["global_admin", "hr_manager", "manager"],
     },
     {
       title: "My Leave Balance",
-      value: "18 days",
-      change: "Available",
-      changeType: "neutral",
+      value: loading ? "..." : (stats?.myLeaveBalance ? `${stats.myLeaveBalance} days` : "N/A"),
+      change: stats?.myLeaveBalance ? "Available" : "Not available",
+      changeType: stats?.myLeaveBalance ? "neutral" : "neutral",
       icon: Calendar,
       roles: ["employee", "manager"],
     },
     {
       title: "Hours This Week",
-      value: "38.5h",
-      change: "2.5h remaining",
-      changeType: "neutral",
+      value: loading ? "..." : (stats?.hoursThisWeek ? `${stats.hoursThisWeek}h` : "N/A"),
+      change: stats?.hoursThisWeek ? `${40 - stats.hoursThisWeek}h remaining` : "Not tracked",
+      changeType: stats?.hoursThisWeek ? "neutral" : "neutral",
       icon: Clock,
       roles: ["employee", "manager"],
     },
@@ -80,51 +109,18 @@ const Dashboard: React.FC = () => {
   const recentActivities = [
     {
       id: 1,
-      type: "leave",
-      message: "Soumodip Dey applied for vacation leave",
-      time: "2 hours ago",
-      status: "pending",
-    },
-    {
-      id: 2,
-      type: "attendance",
-      message: "Indrajit Das clocked in at 9:15 AM",
-      time: "3 hours ago",
+      type: "info",
+      message: "No recent activities available",
+      time: "N/A",
       status: "info",
-    },
-    {
-      id: 3,
-      type: "payroll",
-      message: "January payroll processed successfully",
-      time: "1 day ago",
-      status: "success",
-    },
-    {
-      id: 4,
-      type: "performance",
-      message: "Q4 performance reviews due next week",
-      time: "2 days ago",
-      status: "warning",
     },
   ];
 
   const upcomingTasks = [
     {
       id: 1,
-      title: "Complete performance review",
-      dueDate: "Due in 3 days",
-      priority: "high",
-    },
-    {
-      id: 2,
-      title: "Submit expense reports",
-      dueDate: "Due tomorrow",
-      priority: "medium",
-    },
-    {
-      id: 3,
-      title: "Team meeting preparation",
-      dueDate: "Due today",
+      title: "No upcoming tasks",
+      dueDate: "N/A",
       priority: "low",
     },
   ];
@@ -176,7 +172,10 @@ const Dashboard: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
-              <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+              <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight flex items-center">
+                {loading && stat.value === "..." ? (
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                ) : null}
                 {stat.value}
               </div>
               <p

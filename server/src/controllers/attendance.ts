@@ -218,6 +218,25 @@ export const getMyAttendance = async (req: Request, res: Response) => {
   }
 }
 
+export const getTodayAttendance = async (req: Request, res: Response) => {
+  try {
+    const today = startOfDay(new Date());
+    const presentCount = await (prisma as any).attendance.count({
+      where: {
+        workDate: today,
+        clockIn: { not: null }
+      }
+    });
+    return res.json({ presentCount });
+  } catch (error) {
+    logger.error("Error:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+};
+
 export const getApprovalsForManager = async (req: Request, res: Response) => {
   try {
     const { approverId } = req.params as any
