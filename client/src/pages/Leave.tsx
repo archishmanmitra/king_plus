@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockLeaveRequests, indianHolidays2025 } from "@/data/mockData";
+import { indianHolidays2025 } from "@/data/mockData";
 import {
   Calendar as CalendarIcon,
   Plus,
@@ -25,11 +25,17 @@ import AssignLeavesModal from "@/components/modals/AssignLeavesModal";
 import { HolidayCalendar } from "@/components/leave/HolidayCalendar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { getAllEmployees } from "@/api/employees";
 import {
-  getAllEmployees,
+  getMyLeaveBalance,
+  getLeaveBalance,
   addLeaveDays,
-  getEmployeeLeaveBalance,
-} from "@/api/employees";
+  createLeaveRequest,
+  getLeaveRequests,
+  updateLeaveRequestStatus,
+  getPendingApprovals,
+  getTeamLeaveRequests,
+} from "@/api/leave";
 
 const Leave: React.FC = () => {
   const { user } = useAuth();
@@ -42,19 +48,44 @@ const Leave: React.FC = () => {
   const [employeesWithLeaveBalance, setEmployeesWithLeaveBalance] = useState<
     any[]
   >([]);
+  const [myLeaveRequests, setMyLeaveRequests] = useState<any[]>([]);
+  const [teamLeaveRequests, setTeamLeaveRequests] = useState<any[]>([]);
+  const [leaveBalance, setLeaveBalance] = useState({
+    sick: 0,
+    earned: 0,
+    vacation: 0,
+    personal: 0,
+    maternity: 0,
+    paternity: 0,
+    total: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  const leaveBalance = {
-    sick: 12,
-    vacation: 18,
-    personal: 8,
-    maternity: 90,
-    paternity: 15,
-    total: 38,
-  };
-
-  const handleLeaveApplication = (leaveData: any) => {
-    console.log("Leave application submitted:", leaveData);
-    setIsLeaveModalOpen(false);
+  const handleLeaveApplication = async (leaveData: any) => {
+    try {
+      // Map frontend field names to backend field names
+      await createLeaveRequest({
+        type: leaveData.type, // Use the correct field name
+        startDate: leaveData.startDate,
+        endDate: leaveData.endDate,
+        days: leaveData.days, // Add days field
+        reason: leaveData.reason,
+      });
+      toast({
+        title: "Success",
+        description: "Leave request submitted successfully",
+      });
+      setIsLeaveModalOpen(false);
+      // Reload leave requests and balance
+      loadMyLeaveRequests();
+      loadMyLeaveBalance();
+    } catch (e: any) {
+      toast({
+        title: "Error",
+        description: e.message || "Failed to submit leave request",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAssignLeaves = async (leaveData: any) => {
@@ -69,6 +100,9 @@ const Leave: React.FC = () => {
         title: "Success",
         description: `Successfully assigned ${leaveData.days} ${leaveData.leaveType} days.`,
       });
+      setIsAssignLeavesModalOpen(false);
+      // Reload employees with updated balance
+      loadEmployees();
     } catch (e: any) {
       toast({
         title: "Error",
@@ -78,38 +112,129 @@ const Leave: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const loadEmployees = async () => {
-      if (!user || user.role !== "global_admin") return;
-      try {
-        const res = await getAllEmployees();
-        const employeesList = res.employees || [];
-        setEmployees(employeesList);
+  const handleApprove = async (requestId: string) => {
+    try {
+      await updateLeaveRequestStatus(requestId, "approved", user?.id);
+      toast({
+        title: "Success",
+        description: "Leave request approved",
+      });
+      // Reload both team requests and my requests
+      loadTeamLeaveRequests();
+      loadMyLeaveRequests();
+    } catch (e: any) {
+      toast({
+        title: "Error",
+        description: "Failed to approve leave request",
+        variant: "destructive",
+      });
+    }
+  };
 
-        // Load leave balance for each employee
-        const employeesWithBalance = await Promise.all(
-          employeesList.map(async (emp: any) => {
-            try {
-              const balanceRes = await getEmployeeLeaveBalance(emp.employeeId);
-              return {
-                ...emp,
-                leaveBalance: balanceRes.leaveBalance,
-              };
-            } catch (e) {
-              console.error(
-                `Failed to load leave balance for ${emp.employeeId}:`,
-                e
-              );
-              return emp;
-            }
-          })
-        );
-        setEmployeesWithLeaveBalance(employeesWithBalance);
-      } catch (e) {
-        console.error(e);
+  const handleReject = async (requestId: string) => {
+    try {
+      await updateLeaveRequestStatus(requestId, "rejected", user?.id);
+      toast({
+        title: "Success",
+        description: "Leave request rejected",
+      });
+      // Reload both team requests and my requests
+      loadTeamLeaveRequests();
+      loadMyLeaveRequests();
+    } catch (e: any) {
+      toast({
+        title: "Error",
+        description: "Failed to reject leave request",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const loadMyLeaveBalance = async () => {
+    try {
+      const res = await getMyLeaveBalance();
+      const balance = res.leaveBalance;
+      setLeaveBalance({
+        sick: balance?.sick || 0,
+        earned: balance?.earned || 0,
+        vacation: balance?.vacation || 0,
+        personal: balance?.personal || 0,
+        maternity: balance?.maternity || 0,
+        paternity: balance?.paternity || 0,
+        total: balance?.total || 0,
+      });
+    } catch (e) {
+      console.error("Failed to load leave balance:", e);
+    }
+  };
+
+  const loadMyLeaveRequests = async () => {
+    try {
+      // Only load the current user's own requests, not employee requests
+      const res = await getLeaveRequests({ viewType: "my" });
+      setMyLeaveRequests(res.leaveRequests || []);
+    } catch (e) {
+      console.error("Failed to load leave requests:", e);
+    }
+  };
+
+  const loadTeamLeaveRequests = async () => {
+    if (!canSeeTeamTab) return;
+    try {
+      if (user?.role === "global_admin" || user?.role === "hr_manager") {
+        // For admins, load all leave requests (they will see all in team tab)
+        const res = await getLeaveRequests();
+        setTeamLeaveRequests(res.leaveRequests || []);
+      } else {
+        // For managers, load only direct reports' leave requests
+        const res = await getTeamLeaveRequests();
+        setTeamLeaveRequests(res.teamLeaveRequests || []);
       }
+    } catch (e) {
+      console.error("Failed to load team leave requests:", e);
+    }
+  };
+
+  const loadEmployees = async () => {
+    if (!user || user.role !== "global_admin") return;
+    try {
+      const res = await getAllEmployees();
+      const employeesList = res.employees || [];
+      setEmployees(employeesList);
+
+      // Load leave balance for each employee
+      const employeesWithBalance = await Promise.all(
+        employeesList.map(async (emp: any) => {
+          try {
+            const balanceRes = await getLeaveBalance(emp.id);
+            return {
+              ...emp,
+              leaveBalance: balanceRes.leaveBalance,
+            };
+          } catch (e) {
+            console.error(`Failed to load leave balance for ${emp.id}:`, e);
+            return emp;
+          }
+        })
+      );
+      setEmployeesWithLeaveBalance(employeesWithBalance);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([
+        loadMyLeaveBalance(),
+        loadMyLeaveRequests(),
+        loadTeamLeaveRequests(),
+        loadEmployees(),
+      ]);
+      setLoading(false);
     };
-    loadEmployees();
+    loadData();
   }, [user]);
 
   return (
@@ -163,12 +288,12 @@ const Leave: React.FC = () => {
         <Card className="relative overflow-hidden">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Vacation
+              Earned Leave
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {leaveBalance.vacation}
+              {leaveBalance.earned}
             </div>
             <p className="text-sm text-muted-foreground">days left</p>
           </CardContent>
@@ -180,29 +305,29 @@ const Leave: React.FC = () => {
         <Card className="relative overflow-hidden">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Sick Leave
+              Maternity Leave
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {leaveBalance.sick}
+            <div className="text-2xl font-bold text-pink-600">
+              {leaveBalance.maternity}
             </div>
             <p className="text-sm text-muted-foreground">days left</p>
           </CardContent>
           <div className="absolute top-2 right-2">
-            <Plus className="h-6 w-6 text-yellow-600/30" />
+            <Plus className="h-6 w-6 text-pink-600/30" />
           </div>
         </Card>
 
         <Card className="relative overflow-hidden">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Personal
+              Paternity Leave
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              {leaveBalance.personal}
+              {leaveBalance.paternity}
             </div>
             <p className="text-sm text-muted-foreground">days left</p>
           </CardContent>
@@ -230,58 +355,86 @@ const Leave: React.FC = () => {
             <CardHeader>
               <CardTitle>My Leave Requests</CardTitle>
               <CardDescription>
-                Track the status of your leave applications
+                Track the status of your own leave applications
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {mockLeaveRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className={`w-3 h-3 rounded-full ${
-                          request.status === "approved"
-                            ? "bg-success"
-                            : request.status === "rejected"
-                            ? "bg-destructive"
-                            : "bg-warning"
-                        }`}
-                      />
-                      <div>
-                        <div className="font-medium capitalize">
-                          {request.type} Leave
+              {loading ? (
+                <div className="text-center py-8">Loading...</div>
+              ) : myLeaveRequests.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No leave requests found
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {myLeaveRequests.map((request: any) => (
+                    <div
+                      key={request.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                          {request.employee?.official?.firstName?.[0] || ""}
+                          {request.employee?.official?.lastName?.[0] || ""}
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {request.startDate} to {request.endDate} (
-                          {request.days} days)
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {request.reason}
+                        <div>
+                          <div className="font-medium">
+                            {request.employee?.official?.firstName}{" "}
+                            {request.employee?.official?.lastName}
+                          </div>
+                          <div className="text-sm text-muted-foreground capitalize">
+                            {request.type} Leave - {request.days} days
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {new Date(request.startDate).toLocaleDateString()}{" "}
+                            to {new Date(request.endDate).toLocaleDateString()}
+                          </div>
+                          <div className="text-sm text-foreground mt-1">
+                            {request.reason}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <Badge
-                        variant={
-                          request.status === "approved"
-                            ? "default"
-                            : request.status === "rejected"
-                            ? "destructive"
-                            : "secondary"
-                        }
-                      >
-                        {request.status}
-                      </Badge>
-                      <div className="text-right text-sm text-muted-foreground">
-                        Applied: {request.appliedDate}
+                      <div className="flex items-center space-x-4">
+                        <Badge
+                          variant={
+                            request.status === "approved"
+                              ? "default"
+                              : request.status === "rejected"
+                              ? "destructive"
+                              : "secondary"
+                          }
+                        >
+                          {request.status}
+                        </Badge>
+                        <div className="text-right text-sm text-muted-foreground">
+                          Applied:{" "}
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </div>
+                        {request.status === "pending" && canSeeTeamTab && (
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700"
+                              onClick={() => handleApprove(request.id)}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleReject(request.id)}
+                            >
+                              <XCircle className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -292,56 +445,89 @@ const Leave: React.FC = () => {
               <CardHeader>
                 <CardTitle>Team Leave Requests</CardTitle>
                 <CardDescription>
-                  Pending leave requests requiring your approval
+                  {user?.role === "global_admin" || user?.role === "hr_manager"
+                    ? "All leave requests from employees requiring your approval"
+                    : "Leave requests from your direct reports requiring your approval"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {mockLeaveRequests
-                    .filter((r) => r.status === "pending")
-                    .map((request) => (
+                {loading ? (
+                  <div className="text-center py-8">Loading...</div>
+                ) : teamLeaveRequests.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No leave requests found
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {teamLeaveRequests.map((request: any) => (
                       <div
                         key={request.id}
                         className="flex items-center justify-between p-4 border rounded-lg"
                       >
                         <div className="flex items-center space-x-4">
                           <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                            {request.employeeName
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                            {request.employee?.official?.firstName?.[0] || ""}
+                            {request.employee?.official?.lastName?.[0] || ""}
                           </div>
                           <div>
                             <div className="font-medium">
-                              {request.employeeName}
+                              {request.employee?.official?.firstName}{" "}
+                              {request.employee?.official?.lastName}
                             </div>
                             <div className="text-sm text-muted-foreground capitalize">
                               {request.type} Leave - {request.days} days
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              {request.startDate} to {request.endDate}
+                              {new Date(request.startDate).toLocaleDateString()}{" "}
+                              to{" "}
+                              {new Date(request.endDate).toLocaleDateString()}
                             </div>
                             <div className="text-sm text-foreground mt-1">
                               {request.reason}
                             </div>
                           </div>
                         </div>
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700"
+                        <div className="flex items-center space-x-4">
+                          <Badge
+                            variant={
+                              request.status === "approved"
+                                ? "default"
+                                : request.status === "rejected"
+                                ? "destructive"
+                                : "secondary"
+                            }
                           >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button size="sm" variant="destructive">
-                            <XCircle className="h-4 w-4 mr-1" />
-                            Reject
-                          </Button>
+                            {request.status}
+                          </Badge>
+                          <div className="text-right text-sm text-muted-foreground">
+                            Applied:{" "}
+                            {new Date(request.createdAt).toLocaleDateString()}
+                          </div>
+                          {request.status === "pending" && (
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() => handleApprove(request.id)}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleReject(request.id)}
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

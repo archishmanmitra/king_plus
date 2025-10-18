@@ -396,13 +396,11 @@ model LeaveRequest {
 
 model LeaveBalance {
   employeeId String @id
-  sick       Int    @default(0)
   earned     Int    @default(0)
-  vacation   Int    @default(0)
-  personal   Int    @default(0)
+  compoff    Int    @default(0)
   maternity  Int    @default(0)
   paternity  Int    @default(0)
-  total      Int    @default(0)
+  total      Int    @default(0) 
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 

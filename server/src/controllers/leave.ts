@@ -6,14 +6,25 @@ const prisma = new PrismaClient()
 // Create a new leave request
 export const createLeaveRequest = async (req: Request, res: Response) => {
   try {
-    const { employeeId, type, startDate, endDate, reason } = req.body
+    const { type, startDate, endDate, reason } = req.body
     const requestingUser = req.user
 
-    if (!employeeId || !type || !startDate || !endDate || !reason) {
+    if (!type || !startDate || !endDate || !reason) {
       return res.status(400).json({ 
-        error: 'employeeId, type, startDate, endDate, and reason are required' 
+        error: 'type, startDate, endDate, and reason are required' 
       })
     }
+
+    // Get employee ID from the authenticated user
+    const employee = await prisma.employee.findFirst({
+      where: { user: { id: requestingUser?.id } }
+    })
+
+    if (!employee) {
+      return res.status(404).json({ error: 'Employee record not found for this user' })
+    }
+
+    const employeeId = employee.id
 
     // Validate leave type
     const validLeaveTypes = ['earned', 'maternity', 'paternity', 'compoff']
@@ -23,8 +34,8 @@ export const createLeaveRequest = async (req: Request, res: Response) => {
       })
     }
 
-    // Check if employee exists and get manager info
-    const employee = await prisma.employee.findUnique({
+    // Get employee with manager info
+    const employeeWithManager = await prisma.employee.findUnique({
       where: { id: employeeId },
       include: { 
         official: true,
@@ -38,12 +49,12 @@ export const createLeaveRequest = async (req: Request, res: Response) => {
       }
     })
 
-    if (!employee) {
+    if (!employeeWithManager) {
       return res.status(404).json({ error: 'Employee not found' })
     }
 
     // Check if employee has a manager assigned
-    if (!employee.managerId) {
+    if (!employeeWithManager.managerId) {
       return res.status(400).json({ 
         error: 'No manager assigned. Please contact HR to assign a manager before submitting leave requests.' 
       })
@@ -53,7 +64,7 @@ export const createLeaveRequest = async (req: Request, res: Response) => {
     const isAdmin = requestingUser?.role === 'global_admin' || requestingUser?.role === 'hr_manager'
     const isManager = requestingUser?.role === 'manager'
     
-    if (!isAdmin && !isManager && requestingUser?.id !== employee.user?.id) {
+    if (!isAdmin && !isManager && requestingUser?.id !== employeeWithManager.user?.id) {
       return res.status(403).json({ error: 'You can only create leave requests for yourself' })
     }
 
@@ -85,8 +96,8 @@ export const createLeaveRequest = async (req: Request, res: Response) => {
     }
 
     // Get employee name from official info
-    const employeeName = employee.official 
-      ? `${employee.official.firstName} ${employee.official.lastName}`.trim()
+    const employeeName = employeeWithManager.official 
+      ? `${employeeWithManager.official.firstName} ${employeeWithManager.official.lastName}`.trim()
       : 'Unknown Employee'
 
     const leaveRequest = await prisma.leaveRequest.create({
@@ -102,8 +113,8 @@ export const createLeaveRequest = async (req: Request, res: Response) => {
       }
     })
 
-    const managerName = employee.manager?.official 
-      ? `${employee.manager.official.firstName} ${employee.manager.official.lastName}`.trim()
+    const managerName = employeeWithManager.manager?.official 
+      ? `${employeeWithManager.manager.official.firstName} ${employeeWithManager.manager.official.lastName}`.trim()
       : 'your manager'
 
     // TODO: Send notification to manager
@@ -152,7 +163,20 @@ export const getLeaveRequests = async (req: Request, res: Response) => {
     const isManager = requestingUser?.role === 'manager'
     
     if (isAdmin) {
-      // Admins can see all requests - no additional filtering
+      // Find the admin's employee record
+      const adminEmployee = await prisma.employee.findFirst({
+        where: { user: { id: requestingUser?.id } }
+      })
+      
+      if (!adminEmployee) {
+        return res.status(403).json({ error: 'Admin employee record not found' })
+      }
+      
+      if (viewType === 'my') {
+        // View only admin's own requests
+        where.employeeId = adminEmployee.id
+      }
+      // For other viewTypes, admins can see all requests (no filtering)
     } else if (isManager) {
       // Find the manager's employee record and their direct reports
       const managerEmployee = await prisma.employee.findFirst({

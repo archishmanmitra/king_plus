@@ -53,12 +53,10 @@ interface Employee {
   department?: string;
   avatar?: string;
   leaveBalance?: {
-    sick: number;
-    vacation: number;
-    personal: number;
+    earned: number;
+    compoff: number;
     maternity: number;
     paternity: number;
-    earned:number
     total: number;
   };
 }
@@ -366,31 +364,21 @@ const AssignLeavesModal: React.FC<AssignLeavesModalProps> = ({
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <Card>
                   <CardContent className="p-3 text-center">
-                    <div className="text-lg font-bold text-red-600">
-                      {selectedEmployee.leaveBalance.sick}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Sick Days
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-3 text-center">
                     <div className="text-lg font-bold text-blue-600">
-                      {selectedEmployee.leaveBalance.vacation}
+                      {selectedEmployee.leaveBalance.earned}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Vacation Days
+                      Earned Days
                     </div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-3 text-center">
                     <div className="text-lg font-bold text-green-600">
-                      {selectedEmployee.leaveBalance.personal}
+                      {selectedEmployee.leaveBalance.compoff}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Personal Days
+                      Comp Off Days
                     </div>
                   </CardContent>
                 </Card>

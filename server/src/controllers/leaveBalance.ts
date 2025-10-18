@@ -3,7 +3,44 @@ import { PrismaClient } from '../generated/prisma'
 
 const prisma = new PrismaClient()
 
-// Get leave balance for an employee
+// Get leave balance for current user
+export const getMyLeaveBalance = async (req: Request, res: Response) => {
+  try {
+    const requestingUser = req.user
+
+    // Get employee record for the current user
+    const employee = await prisma.employee.findFirst({
+      where: { user: { id: requestingUser?.id } }
+    })
+
+    if (!employee) {
+      return res.status(404).json({ error: 'Employee record not found for this user' })
+    }
+
+    const leaveBalance = await prisma.leaveBalance.findUnique({
+      where: { employeeId: employee.id },
+      include: {
+        employee: {
+          include: {
+            official: true,
+            user: true
+          }
+        }
+      }
+    })
+
+    if (!leaveBalance) {
+      return res.status(404).json({ error: 'Leave balance not found. Please contact HR to set up your leave balance.' })
+    }
+
+    return res.json({ leaveBalance })
+  } catch (err: any) {
+    console.error('Get my leave balance error:', err)
+    return res.status(500).json({ error: 'Failed to fetch leave balance', details: err?.message })
+  }
+}
+
+// Get leave balance for an employee (admin/manager only)
 export const getLeaveBalance = async (req: Request, res: Response) => {
   try {
     const { employeeId } = req.params
@@ -25,7 +62,7 @@ export const getLeaveBalance = async (req: Request, res: Response) => {
     }
 
     const leaveBalance = await prisma.leaveBalance.findUnique({
-      where: { employeeId },
+      where: { employeeId: employeeId },
       include: {
         employee: {
           include: {
@@ -37,27 +74,7 @@ export const getLeaveBalance = async (req: Request, res: Response) => {
     })
 
     if (!leaveBalance) {
-      // Create default leave balance if it doesn't exist
-      const defaultBalance = await prisma.leaveBalance.create({
-        data: {
-          employeeId,
-          sick: 12, // Default 12 sick days per year
-          vacation: 21, // Default 21 vacation days per year
-          personal: 5, // Default 5 personal days per year
-          maternity: 90, // Default 90 maternity days
-          paternity: 15, // Default 15 paternity days
-          total: 133 // Total of all leave types
-        },
-        include: {
-          employee: {
-            include: {
-              official: true,
-              user: true
-            }
-          }
-        }
-      })
-      return res.json({ leaveBalance: defaultBalance })
+      return res.status(404).json({ error: 'Leave balance not found. Please contact HR to set up leave balance.' })
     }
 
     return res.json({ leaveBalance })
@@ -71,7 +88,7 @@ export const getLeaveBalance = async (req: Request, res: Response) => {
 export const updateLeaveBalance = async (req: Request, res: Response) => {
   try {
     const { employeeId } = req.params
-    const { sick, vacation, personal, maternity, paternity } = req.body
+    const { earned, compoff, maternity, paternity } = req.body
     const requestingUser = req.user
 
     // Only admins and HR managers can update leave balances
@@ -92,9 +109,8 @@ export const updateLeaveBalance = async (req: Request, res: Response) => {
 
     const updateData: any = {}
     
-    if (sick !== undefined) updateData.sick = sick
-    if (vacation !== undefined) updateData.vacation = vacation
-    if (personal !== undefined) updateData.personal = personal
+    if (earned !== undefined) updateData.earned = earned
+    if (compoff !== undefined) updateData.compoff = compoff
     if (maternity !== undefined) updateData.maternity = maternity
     if (paternity !== undefined) updateData.paternity = paternity
 
@@ -104,13 +120,12 @@ export const updateLeaveBalance = async (req: Request, res: Response) => {
         where: { employeeId }
       })
 
-      const newSick = sick !== undefined ? sick : (currentBalance?.sick || 0)
-      const newVacation = vacation !== undefined ? vacation : (currentBalance?.vacation || 0)
-      const newPersonal = personal !== undefined ? personal : (currentBalance?.personal || 0)
+      const newEarned = earned !== undefined ? earned : (currentBalance?.earned || 0)
+      const newCompoff = compoff !== undefined ? compoff : (currentBalance?.compoff || 0)
       const newMaternity = maternity !== undefined ? maternity : (currentBalance?.maternity || 0)
       const newPaternity = paternity !== undefined ? paternity : (currentBalance?.paternity || 0)
       
-      updateData.total = newSick + newVacation + newPersonal + newMaternity + newPaternity
+      updateData.total = newEarned + newCompoff + newMaternity + newPaternity
     }
 
     const updatedBalance = await prisma.leaveBalance.upsert({
@@ -118,12 +133,11 @@ export const updateLeaveBalance = async (req: Request, res: Response) => {
       update: updateData,
       create: {
         employeeId,
-        sick: sick || 12,
-        vacation: vacation || 21,
-        personal: personal || 5,
-        maternity: maternity || 90,
-        paternity: paternity || 15,
-        total: (sick || 12) + (vacation || 21) + (personal || 5) + (maternity || 90) + (paternity || 15)
+        earned: earned || 0,
+        compoff: compoff || 0,
+        maternity: maternity || 0,
+        paternity: paternity || 0,
+        total: (earned || 0) + (compoff || 0) + (maternity || 0) + (paternity || 0)
       },
       include: {
         employee: {
@@ -206,21 +220,19 @@ export const resetLeaveBalance = async (req: Request, res: Response) => {
     const resetBalance = await prisma.leaveBalance.upsert({
       where: { employeeId },
       update: {
-        sick: 12,
-        vacation: 21,
-        personal: 5,
-        maternity: 90,
-        paternity: 15,
-        total: 143 // 12 + 21 + 5 + 90 + 15
+        earned: 0,
+        compoff: 0,
+        maternity: 0,
+        paternity: 0,
+        total: 0
       },
       create: {
         employeeId,
-        sick: 12,
-        vacation: 21,
-        personal: 5,
-        maternity: 90,
-        paternity: 15,
-        total: 143
+        earned: 0,
+        compoff: 0,
+        maternity: 0,
+        paternity: 0,
+        total: 0
       },
       include: {
         employee: {
@@ -260,17 +272,24 @@ export const addLeaveDays = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'type and positive days are required' })
     }
 
-    const validTypes = ['sick', 'vacation', 'personal', 'maternity', 'paternity']
+    const validTypes = ['earned', 'maternity', 'paternity', 'compoff']
     if (!validTypes.includes(type)) {
       return res.status(400).json({ 
-        error: 'Invalid leave type. Must be one of: sick, vacation, personal, maternity, paternity' 
+        error: 'Invalid leave type. Must be one of: earned, maternity, paternity, compoff' 
       })
     }
 
-    // Check if employee exists
-    const employee = await prisma.employee.findUnique({
+    // Check if employee exists - try both id and employeeId fields
+    let employee = await prisma.employee.findUnique({
       where: { id: employeeId }
     })
+    
+    if (!employee) {
+      // Try with employeeId field as fallback
+      employee = await prisma.employee.findUnique({
+        where: { employeeId: employeeId }
+      })
+    }
 
     if (!employee) {
       return res.status(404).json({ error: 'Employee not found' })
@@ -278,7 +297,7 @@ export const addLeaveDays = async (req: Request, res: Response) => {
 
     // Get current balance or create default
     const currentBalance = await prisma.leaveBalance.findUnique({
-      where: { employeeId }
+      where: { employeeId: employee.id }
     })
 
     const updateData: any = {}
@@ -286,18 +305,15 @@ export const addLeaveDays = async (req: Request, res: Response) => {
     updateData.total = (currentBalance?.total || 0) + days
 
     const updatedBalance = await prisma.leaveBalance.upsert({
-      where: { employeeId },
+      where: { employeeId: employee.id },
       update: updateData,
       create: {
-        employeeId,
-        sick: type === 'sick' ? days : 12,
-        vacation: type === 'vacation' ? days : 21,
-        personal: type === 'personal' ? days : 5,
-        maternity: type === 'maternity' ? days : 90,
-        paternity: type === 'paternity' ? days : 15,
-        total: days + (type === 'sick' ? 0 : 12) + (type === 'vacation' ? 0 : 21) + 
-               (type === 'personal' ? 0 : 5) + (type === 'maternity' ? 0 : 90) + 
-               (type === 'paternity' ? 0 : 15)
+        employeeId: employee.id,
+        earned: type === 'earned' ? days : 0,
+        compoff: type === 'compoff' ? days : 0,
+        maternity: type === 'maternity' ? days : 0,
+        paternity: type === 'paternity' ? days : 0,
+        total: days
       },
       include: {
         employee: {

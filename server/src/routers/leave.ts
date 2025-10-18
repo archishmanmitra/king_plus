@@ -11,6 +11,7 @@ import {
 } from '../controllers/leave'
 import { 
   getLeaveBalance, 
+  getMyLeaveBalance,
   updateLeaveBalance, 
   getAllLeaveBalances, 
   resetLeaveBalance, 
@@ -46,6 +47,9 @@ router.patch('/requests/:id', authenticateToken, updateLeaveRequest)
 router.delete('/requests/:id', authenticateToken, deleteLeaveRequest)
 
 // Leave Balance Routes
+// Get current user's leave balance
+router.get('/balance/me', authenticateToken, getMyLeaveBalance)
+
 // Get leave balance for a specific employee
 router.get('/balance/:employeeId', authenticateToken, getLeaveBalance)
 

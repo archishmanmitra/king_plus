@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
         const dashboardStats = await getDashboardStats(user?.employeeId);
         setStats(dashboardStats);
       } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
+        console.error("Error fetching dashboard stats:", error);
         // Set default values on error
         setStats({
           totalEmployees: 0,
@@ -45,7 +45,7 @@ const Dashboard: React.FC = () => {
           pendingLeaves: 0,
           monthlyPayroll: 0,
           myLeaveBalance: 0,
-          hoursThisWeek: 0
+          hoursThisWeek: 0,
         });
       } finally {
         setLoading(false);
@@ -67,7 +67,11 @@ const Dashboard: React.FC = () => {
     {
       title: "Present Today",
       value: loading ? "..." : (stats?.presentToday || 0).toString(),
-      change: stats?.presentToday ? `${Math.round((stats.presentToday / (stats.totalEmployees || 1)) * 100)}%` : "N/A",
+      change: stats?.presentToday
+        ? `${Math.round(
+            (stats.presentToday / (stats.totalEmployees || 1)) * 100
+          )}%`
+        : "N/A",
       changeType: stats?.presentToday ? "positive" : "neutral",
       icon: CheckCircle,
       roles: ["global_admin", "hr_manager"],
@@ -82,7 +86,11 @@ const Dashboard: React.FC = () => {
     },
     {
       title: "This Month Payroll",
-      value: loading ? "..." : (stats?.monthlyPayroll ? `$${(stats.monthlyPayroll / 1000000).toFixed(1)}M` : "N/A"),
+      value: loading
+        ? "..."
+        : stats?.monthlyPayroll
+        ? `$${(stats.monthlyPayroll / 1000000).toFixed(1)}M`
+        : "N/A",
       change: stats?.monthlyPayroll ? "Processed" : "Not available",
       changeType: stats?.monthlyPayroll ? "positive" : "neutral",
       icon: DollarSign,
@@ -90,7 +98,11 @@ const Dashboard: React.FC = () => {
     },
     {
       title: "My Leave Balance",
-      value: loading ? "..." : (stats?.myLeaveBalance ? `${stats.myLeaveBalance} days` : "N/A"),
+      value: loading
+        ? "..."
+        : stats?.myLeaveBalance
+        ? `${stats.myLeaveBalance} days`
+        : "N/A",
       change: stats?.myLeaveBalance ? "Available" : "Not available",
       changeType: stats?.myLeaveBalance ? "neutral" : "neutral",
       icon: Calendar,
@@ -98,8 +110,14 @@ const Dashboard: React.FC = () => {
     },
     {
       title: "Hours This Week",
-      value: loading ? "..." : (stats?.hoursThisWeek ? `${stats.hoursThisWeek}h` : "N/A"),
-      change: stats?.hoursThisWeek ? `${40 - stats.hoursThisWeek}h remaining` : "Not tracked",
+      value: loading
+        ? "..."
+        : stats?.hoursThisWeek
+        ? `${stats.hoursThisWeek}h`
+        : "N/A",
+      change: stats?.hoursThisWeek
+        ? `${40 - stats.hoursThisWeek}h remaining`
+        : "Not tracked",
       changeType: stats?.hoursThisWeek ? "neutral" : "neutral",
       icon: Clock,
       roles: ["employee", "manager"],
@@ -135,7 +153,11 @@ const Dashboard: React.FC = () => {
       <div className="flex flex-col space-y-6 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div className="flex-1">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
-            Welcome back, <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">{user?.name}</span>!
+            Welcome back,{" "}
+            <span className="bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+              {user?.name}
+            </span>
+            !
           </h1>
           <p className="text-base md:text-lg text-muted-foreground mt-2 font-medium">
             Here's what's happening in your organization today.
@@ -147,7 +169,10 @@ const Dashboard: React.FC = () => {
             <span className="hidden sm:inline text-white">Generate Report</span>
             <span className="sm:hidden">Report</span>
           </Button>
-          <Button variant="outline" className="w-full sm:w-auto text-sm font-semibold hover:bg-muted/50 transition-colors">
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto text-sm font-semibold hover:bg-muted/50 transition-colors"
+          >
             <TrendingUp className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">View Analytics</span>
             <span className="sm:hidden">Analytics</span>
@@ -196,7 +221,10 @@ const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
         {/* Recent Activities */}
-        <Card className="card-premium animate-slide-up" style={{ animationDelay: '400ms' }}>
+        <Card
+          className="card-premium animate-slide-up"
+          style={{ animationDelay: "400ms" }}
+        >
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center text-lg font-semibold">
               <div className="p-2 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 mr-3">
@@ -253,7 +281,10 @@ const Dashboard: React.FC = () => {
         </Card>
 
         {/* Upcoming Tasks */}
-        <Card className="card-premium animate-slide-up" style={{ animationDelay: '500ms' }}>
+        <Card
+          className="card-premium animate-slide-up"
+          style={{ animationDelay: "500ms" }}
+        >
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center text-lg font-semibold">
               <div className="p-2 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 mr-3">
@@ -299,7 +330,10 @@ const Dashboard: React.FC = () => {
 
       {/* Quick Actions for Employees and Managers */}
       {(user?.role === "employee" || user?.role === "manager") && (
-        <Card className="card-premium animate-slide-up" style={{ animationDelay: '600ms' }}>
+        <Card
+          className="card-premium animate-slide-up"
+          style={{ animationDelay: "600ms" }}
+        >
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center text-lg font-semibold">
               <div className="p-2 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 mr-3">
