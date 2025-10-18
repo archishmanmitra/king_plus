@@ -28,7 +28,7 @@ import { AttendanceCalendar } from "@/components/attendance/AttendanceCalendar";
 import { AttendanceReports } from "@/components/attendance/AttendanceReports";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { approveAttendance, getMyAttendance, getPendingApprovals, rejectAttendance, attendanceClockIn, attendanceClockOut, attendancePause, attendanceResume, attendanceSubmit } from "@/api/employees";
+import { approveAttendance, getMyAttendance, getPendingApprovals, rejectAttendance, attendanceClockIn, attendanceClockOut, attendancePause, attendanceResume, attendanceSubmit, getApprovedAttendances } from "@/api/employees";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Attendance: React.FC = () => {
@@ -36,6 +36,8 @@ const Attendance: React.FC = () => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [myAttendances, setMyAttendances] = useState<Array<{ id: string; employeeId: string; workDate?: string; date?: string; clockIn: string | null; clockOut: string | null; totalHours: number; status: string; approverId?: string | null; submittedAt?: string | null; approvedAt?: string | null; timestamps?: Array<{ id: string; attendanceId: string; startTime: string; endTime: string | null; }>; }>>([]);
+  const [approvedAttendances, setApprovedAttendances] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
   const [approvals, setApprovals] = useState<any[]>([]);
   const [timestampsModal, setTimestampsModal] = useState<{ open: boolean; attendance: any | null }>({ open: false, attendance: null });
   const [isClockOutModalOpen, setIsClockOutModalOpen] = useState(false);
@@ -71,9 +73,19 @@ const Attendance: React.FC = () => {
   const handleClockOut = () => {
     if (!user?.employeeId) return;
     attendanceClockOut(user.employeeId)
-      .then(() => {
-    clockOut();
-    setIsClockOutModalOpen(true);
+      .then((response) => {
+        clockOut();
+        // Only show modal if user doesn't have a manager
+        if (!response.hasManager) {
+          setIsClockOutModalOpen(true);
+        } else {
+          // User has manager, attendance is automatically submitted
+          resetTimer(); // Reset the clock
+          toast({ 
+            title: "Clock Out Submitted", 
+            description: "Your attendance has been automatically submitted to your manager for approval." 
+          });
+        }
         return getMyAttendance(user.employeeId);
       })
       .then((res) => setMyAttendances(res.attendances || []))
@@ -153,8 +165,78 @@ const Attendance: React.FC = () => {
     loadApprovals();
   }, [user]);
 
+  useEffect(() => {
+    const loadApprovedAttendances = async () => {
+      if (!user) return;
+      try {
+        const res = await getApprovedAttendances();
+        setApprovedAttendances(res.attendances || []);
+        
+        // Extract unique employees from approved attendances for reports
+        const uniqueEmployees = new Map();
+        (res.attendances || []).forEach((attendance: any) => {
+          if (attendance.employee) {
+            const empId = attendance.employee.id;
+            if (!uniqueEmployees.has(empId)) {
+              uniqueEmployees.set(empId, {
+                id: empId,
+                employeeId: attendance.employee.employeeId,
+                name: attendance.employee.official?.firstName && attendance.employee.official?.lastName 
+                  ? `${attendance.employee.official.firstName} ${attendance.employee.official.lastName}`.trim()
+                  : attendance.employee.user?.name || 'Unknown Employee',
+                department: attendance.employee.official?.unit || 'Unknown Department'
+              });
+            }
+          }
+        });
+        setEmployees(Array.from(uniqueEmployees.values()));
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    loadApprovedAttendances();
+  }, [user]);
+
+  // Calculate today's attendance data from approved attendances
+  const todayAttendanceData = useMemo(() => {
+    if (!approvedAttendances.length) {
+      return {
+        presentCount: 0,
+        totalCount: 0,
+        absentCount: 0,
+        attendances: []
+      };
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayString = today.toISOString().split('T')[0];
+
+    // Filter approved attendances for today
+    const todayAttendances = approvedAttendances.filter((attendance: any) => {
+      const attendanceDate = new Date(attendance.workDate || attendance.date);
+      attendanceDate.setHours(0, 0, 0, 0);
+      return attendanceDate.getTime() === today.getTime();
+    });
+
+    // Calculate counts
+    const presentCount = todayAttendances.filter((a: any) => a.clockIn).length;
+    const totalCount = todayAttendances.length;
+    const absentCount = totalCount - presentCount;
+
+    return {
+      presentCount,
+      totalCount,
+      absentCount,
+      attendances: todayAttendances
+    };
+  }, [approvedAttendances]);
+
   const calendarData = useMemo(() => {
-    return myAttendances
+    // For employees, use their own attendances; for admins/managers, use approved attendances
+    const dataSource = user?.role === 'employee' ? myAttendances : approvedAttendances;
+    
+    return dataSource
       .filter((a) => String(a.status).toLowerCase() === 'approved')
       .map((a) => ({
       date: new Date(a.workDate || a.date as string).toISOString().split('T')[0],
@@ -165,9 +247,12 @@ const Attendance: React.FC = () => {
       method: 'manual' as 'manual',
       location: undefined as undefined,
       notes: undefined as undefined,
-      employeeId: user?.employeeId,
+      employeeId: a.employeeId || user?.employeeId,
+      employeeName: a.employee?.official?.firstName && a.employee?.official?.lastName 
+        ? `${a.employee.official.firstName} ${a.employee.official.lastName}`.trim()
+        : a.employee?.user?.name || 'Unknown Employee',
     }));
-  }, [myAttendances, user?.employeeId]);
+  }, [myAttendances, approvedAttendances, user?.employeeId, user?.role]);
 
   const todaysAttendance = useMemo(() => {
     const todayKey = new Date();
@@ -439,14 +524,21 @@ const Attendance: React.FC = () => {
         </Card> */}
       </div>
 
-      <Tabs defaultValue="today" className="space-y-3 md:space-y-4">
+      <Tabs defaultValue={user?.role === 'employee' ? 'pending' : 'today'} className="space-y-3 md:space-y-4">
         <TabsList className={`grid w-full ${user?.role === 'employee' ? 'grid-cols-2' : 'grid-cols-4'} md:w-auto`}>
-          <TabsTrigger value="today" className="text-xs md:text-sm">
-            Today's Attendance
-          </TabsTrigger>
+          {user?.role !== 'employee' && (
+            <TabsTrigger value="today" className="text-xs md:text-sm">
+              Today's Attendance
+            </TabsTrigger>
+          )}
           <TabsTrigger value="history" className="text-xs md:text-sm">
             Attendance History
           </TabsTrigger>
+          {user?.role === 'employee' && (
+            <TabsTrigger value="pending" className="text-xs md:text-sm">
+              Pending Approvals
+            </TabsTrigger>
+          )}
           {user?.role !== 'employee' && (
             <TabsTrigger value="approvals" className="text-xs md:text-sm">
               Approvals
@@ -466,7 +558,12 @@ const Attendance: React.FC = () => {
                 Today's Attendance Summary
               </CardTitle>
               <CardDescription className="text-xs md:text-sm">
-                Real-time attendance status for all employees
+                {user?.role === 'global_admin' || user?.role === 'hr_manager' 
+                  ? "Real-time attendance status for all employees"
+                  : user?.role === 'manager'
+                  ? "Real-time attendance status for your direct reports"
+                  : "Your attendance status for today"
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -474,7 +571,7 @@ const Attendance: React.FC = () => {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
                 <div className="text-center p-3 md:p-4 bg-success/10 rounded-lg">
                   <div className="text-lg md:text-2xl font-bold text-success">
-                    231
+                    {todayAttendanceData?.presentCount || 0}
                   </div>
                   <div className="text-xs md:text-sm text-muted-foreground">
                     Present
@@ -482,7 +579,7 @@ const Attendance: React.FC = () => {
                 </div>
                 <div className="text-center p-3 md:p-4 bg-destructive/10 rounded-lg">
                   <div className="text-lg md:text-2xl font-bold text-destructive">
-                    8
+                    {todayAttendanceData?.absentCount || 0}
                   </div>
                   <div className="text-xs md:text-sm text-muted-foreground">
                     Absent
@@ -490,62 +587,70 @@ const Attendance: React.FC = () => {
                 </div>
                 <div className="text-center p-3 md:p-4 bg-primary/10 rounded-lg">
                   <div className="text-lg md:text-2xl font-bold text-primary">
-                    3
+                    {todayAttendanceData?.totalCount || 0}
                   </div>
                   <div className="text-xs md:text-sm text-muted-foreground">
-                    On Leave
+                    Total {user?.role === 'employee' ? 'Employee' : 'Employees'}
                   </div>
                 </div>
                 <div className="text-center p-3 md:p-4 bg-warning/10 rounded-lg">
                   <div className="text-lg md:text-2xl font-bold text-warning">
-                    95%
+                    {todayAttendanceData?.totalCount > 0 
+                      ? Math.round((todayAttendanceData.presentCount / todayAttendanceData.totalCount) * 100)
+                      : 0}%
                   </div>
                   <div className="text-xs md:text-sm text-muted-foreground">
-                    Rate
+                    Attendance Rate
                   </div>
                 </div>
               </div>
 
-              {todaysAttendance ? (
-              <div className="space-y-3 md:space-y-4">
-                  <div className="flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0 p-3 md:p-4 border rounded-lg">
-                        <div className="min-w-0">
-                          <div className="font-medium text-sm md:text-base truncate">
-                        {user?.name}
-                          </div>
-                          <div className="text-xs md:text-sm text-muted-foreground truncate">
-                        {user?.employeeId}
-                      </div>
-                    </div>
-                      <div className="flex items-center justify-between md:space-x-4">
-                        <div className="flex space-x-4 md:space-x-4">
-                          <div className="text-center md:text-right">
-                            <div className="font-medium text-xs md:text-sm">
-                            {todaysAttendance.clockIn ? new Date(todaysAttendance.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
+              {todayAttendanceData?.attendances?.length ? (
+                <div className="space-y-3">
+                  {todayAttendanceData.attendances.map((attendance: any) => {
+                    const employeeName = attendance.employee?.official?.firstName && attendance.employee?.official?.lastName 
+                      ? `${attendance.employee.official.firstName} ${attendance.employee.official.lastName}`.trim()
+                      : attendance.employee?.user?.name || 'Unknown Employee';
+                    
+                    return (
+                      <div key={attendance.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                        <div className="flex items-center space-x-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-sm">{employeeName}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {attendance.employee?.official?.designation || 'Employee'}
+                              </Badge>
                             </div>
-                          <div className="text-xs text-muted-foreground">Clock In</div>
+                            <div className="text-xs text-muted-foreground">
+                              Clock In: {attendance.clockIn ? new Date(attendance.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'} • 
+                              Clock Out: {attendance.clockOut ? new Date(attendance.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'} • 
+                              Hours: {attendance.totalHours || 0}h
+                            </div>
                           </div>
-                          <div className="text-center md:text-right">
-                            <div className="font-medium text-xs md:text-sm">
-                            {todaysAttendance.clockOut ? new Date(todaysAttendance.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
-                          </div>
-                          <div className="text-xs text-muted-foreground">Clock Out</div>
                         </div>
-                      </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center gap-2">
                           <Badge
-                          variant={todaysAttendance.clockIn ? "default" : "destructive"}
+                            variant={attendance.clockIn ? "default" : "destructive"}
                             className="text-xs"
                           >
-                          {todaysAttendance.clockIn ? 'present' : 'absent'}
+                            {attendance.clockIn ? 'Present' : 'Absent'}
                           </Badge>
-                        <Button variant="outline" size="sm" onClick={() => openTimestamps(todaysAttendance)}>View Timestamps</Button>
+                          {attendance.timestamps && attendance.timestamps.length > 0 && (
+                            <Button variant="outline" size="sm" onClick={() => openTimestamps(attendance)}>
+                              View Timestamps
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-              </div>
+                    );
+                  })}
+                </div>
               ) : (
-                <div className="text-sm text-muted-foreground">No attendance for today.</div>
+                <div className="text-center py-8 text-muted-foreground">
+                  <Clock className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
+                  <p className="text-sm">No attendance records for today.</p>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -561,46 +666,116 @@ const Attendance: React.FC = () => {
         </TabsContent>
 
         {user?.role !== 'employee' && (
-          <TabsContent value="approvals">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base md:text-lg">Pending Approvals</CardTitle>
-                <CardDescription className="text-xs md:text-sm">Approve or reject submitted attendances</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {approvals.length ? (
-                  <div className="space-y-3">
-                    {approvals.map((a) => (
-                      <div key={a.id} className="flex items-center justify-between p-3 border rounded-lg">
+        <TabsContent value="approvals">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base md:text-lg">Pending Approvals</CardTitle>
+              <CardDescription className="text-xs md:text-sm">Approve or reject submitted attendances from your direct reports</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {approvals.length ? (
+                <div className="space-y-3">
+                  {approvals.map((a) => {
+                    const employeeName = a.employee?.official?.firstName && a.employee?.official?.lastName 
+                      ? `${a.employee.official.firstName} ${a.employee.official.lastName}`.trim()
+                      : a.employee?.user?.name || 'Unknown Employee';
+                    
+                    return (
+                      <div key={a.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
                         <div className="flex items-center space-x-4">
-                          <div>
-                            <div className="font-medium">{new Date(a.workDate || a.date as string).toLocaleDateString()}</div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-sm">{employeeName}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {a.employee?.official?.designation || 'Employee'}
+                              </Badge>
+                            </div>
+                            <div className="text-sm text-muted-foreground mb-1">
+                              {new Date(a.workDate || a.date as string).toLocaleDateString()}
+                            </div>
                             <div className="text-xs text-muted-foreground">
-                              In {a.clockIn ? new Date(a.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'} • Out {a.clockOut ? new Date(a.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                              Clock In: {a.clockIn ? new Date(a.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'} • 
+                              Clock Out: {a.clockOut ? new Date(a.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'} • 
+                              Hours: {a.totalHours || 0}h
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button size="sm" onClick={() => handleApprove(a.id)}>Approve</Button>
-                          <Button size="sm" variant="destructive" onClick={() => handleReject(a.id)}>Reject</Button>
+                          <Button size="sm" onClick={() => handleApprove(a.id)} className="bg-green-600 hover:bg-green-700">
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Approve
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleReject(a.id)}>
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-sm text-muted-foreground">No pending approvals.</div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <CheckCircle className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
+                  <p className="text-sm">No pending attendance approvals from your direct reports.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
         )}
 
         {user?.role !== 'employee' && (
         <TabsContent value="reports">
           <AttendanceReports
               attendanceData={calendarData as any}
-              employees={[]}
+              employees={employees}
           />
+        </TabsContent>
+        )}
+
+        {user?.role === 'employee' && (
+        <TabsContent value="pending">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base md:text-lg">Pending Approvals</CardTitle>
+              <CardDescription className="text-xs md:text-sm">Your submitted attendances awaiting approval</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {myAttendances.filter((a) => String(a.status).toLowerCase() === 'submitted').length ? (
+                <div className="space-y-3">
+                  {myAttendances
+                    .filter((a) => String(a.status).toLowerCase() === 'submitted')
+                    .map((a) => (
+                      <div key={a.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                        <div className="flex items-center space-x-4">
+                          <div className="flex-1">
+                            <div className="text-sm text-muted-foreground mb-1">
+                              {new Date(a.workDate || a.date as string).toLocaleDateString()}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Clock In: {a.clockIn ? new Date(a.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'} • 
+                              Clock Out: {a.clockOut ? new Date(a.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'} • 
+                              Hours: {a.totalHours || 0}h
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs">
+                            Pending Approval
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <CheckCircle className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
+                  <p className="text-sm">No pending attendance approvals.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
         )}
       </Tabs>

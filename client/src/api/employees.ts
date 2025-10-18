@@ -152,6 +152,14 @@ export async function getPendingApprovals(approverUserId: string) {
   return res.json()
 }
 
+export async function getApprovedAttendances() {
+  const res = await fetch(`${API_URL}/attendance/approved`, {
+    method: 'GET', credentials: 'include', headers: { ...authHeaders() }
+  })
+  if (!res.ok) throw new Error('Failed to fetch approved attendances')
+  return res.json()
+}
+
 export async function approveAttendance(attendanceId: string) {
   const res = await fetch(`${API_URL}/attendance/${attendanceId}/approve`, {
     method: 'POST', credentials: 'include', headers: { ...authHeaders() }

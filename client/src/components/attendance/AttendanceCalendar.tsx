@@ -15,6 +15,7 @@ interface AttendanceDay {
   location?: string;
   notes?: string;
   employeeId?: string; // Employee.id
+  employeeName?: string; // Employee name for display
   timestamps?: Array<{ startTime: string; endTime?: string | null }>;
 }
 
@@ -53,7 +54,14 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
   const getAttendanceStatus = (date: Date): 'present' | 'absent' | null => {
     const dateString = date.toISOString().split('T')[0];
     const attendanceRecords = attendanceMap.get(dateString);
-    if (!attendanceRecords || attendanceRecords.length === 0) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const isPastDate = date < today;
+    
+    if (!attendanceRecords || attendanceRecords.length === 0) {
+      // Only show absent for past dates with no attendance records
+      return isPastDate ? 'absent' : null;
+    }
     
     // If all records have the same status, return that status
     const statuses = attendanceRecords.map(r => r.status);
@@ -473,7 +481,7 @@ export const AttendanceCalendar: React.FC<AttendanceCalendarProps> = ({
                       <div key={index} className="p-3 border rounded-lg bg-muted/30">
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-medium">
-                            {getEmployeeName(record.employeeId)}
+                            {record.employeeName || getEmployeeName(record.employeeId)}
                           </span>
                           <Badge variant={
                             record.status === 'present' ? 'default' :
