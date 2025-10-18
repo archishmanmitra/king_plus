@@ -175,10 +175,10 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
 
   const handleSave = async () => {
     // Basic validation for required fields (user-only invitation)
-    if (!employeeData.userDetails.email || !employeeData.userDetails.role) {
+    if (!employeeData.userDetails.username || !employeeData.userDetails.email || !employeeData.userDetails.role) {
       toast({
         title: "Validation Error",
-        description: "Please fill email and role.",
+        description: "Please fill name, email and role.",
         variant: "destructive",
       });
       return;
@@ -201,6 +201,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: employeeData.userDetails.email,
+          name: employeeData.userDetails.username,
           role: employeeData.userDetails.role,
           createdByUserId: user.id,
         }),
@@ -300,6 +301,19 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
             <TabsContent value="user" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
+                  <Label htmlFor="user-name">Full Name</Label>
+                  <Input
+                    id="user-name"
+                    type="text"
+                    value={employeeData.userDetails.username}
+                    onChange={(e) => setEmployeeData(prev => ({
+                      ...prev,
+                      userDetails: { ...prev.userDetails, username: e.target.value }
+                    }))}
+                    placeholder="John Doe"
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="user-email">Email</Label>
                   <Input
                     id="user-email"
@@ -312,6 +326,8 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                     placeholder="employee@company.com"
                   />
                 </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="user-role">Role</Label>
                   <Select

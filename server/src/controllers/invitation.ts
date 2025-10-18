@@ -28,9 +28,8 @@ export const getInvitation = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invitation expired' })
     }
 
-    const user = await prisma.user.findUnique({ where: { email: invitation.email }, select: { name: true } })
     return res.json({
-      name:user?.name,
+      name: invitation.name,
       email: invitation.email,
       role: invitation.role,
     })
@@ -42,7 +41,7 @@ export const getInvitation = async (req: Request, res: Response) => {
 
 export const acceptInvitation = async (req: Request, res: Response) => {
   try {
-    const { token, password, name } = req.body || {}
+    const { token, password } = req.body || {}
     // Original payload (commented out to preserve for future use):
     // const { token, password, personalInfo, bankAccount } = req.body || {}
     if (!token || !password) {
@@ -59,12 +58,12 @@ export const acceptInvitation = async (req: Request, res: Response) => {
     // Upsert user by email - Only user details (name, email, role, password)
     const user = await prisma.user.upsert({
       where: { email: invitation.email },
-      update: { password: hashed, role: invitation.role, name: name ?? undefined },
+      update: { password: hashed, role: invitation.role, name: invitation.name ?? undefined },
       create: {
         email: invitation.email,
         password: hashed,
         role: invitation.role,
-        name: name ?? 'New User',
+        name: invitation.name ?? 'New User',
       },
     })
 
@@ -146,7 +145,7 @@ export const acceptInvitation = async (req: Request, res: Response) => {
 
 export const createInvitation = async (req: Request, res: Response) => {
   try {
-    const { email, role, createdByUserId } = req.body || {}
+    const { email, name, role, createdByUserId } = req.body || {}
     if (!email || !role || !createdByUserId) {
       return res.status(400).json({ error: 'email, role, createdByUserId are required' })
     }
@@ -170,6 +169,7 @@ export const createInvitation = async (req: Request, res: Response) => {
       data: {
         token,
         email,
+        name,
         role,
         createdById: createdByUserId,
         expiresAt,

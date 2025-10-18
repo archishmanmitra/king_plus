@@ -13,6 +13,7 @@ const InvitePage: React.FC = () => {
   const token = params.get("token") || "";
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [password, setPassword] = useState("");
@@ -24,6 +25,7 @@ const InvitePage: React.FC = () => {
         const res = await fetch(`${API_URL}/invitations/${token}`);
         if (!res.ok) throw new Error("Invalid or expired invitation");
         const data = await res.json();
+        setName(data.name || "");
         setEmail(data.email);
         setRole(data.role);
       } catch (e: any) {
@@ -89,6 +91,10 @@ const InvitePage: React.FC = () => {
           <CardTitle>Complete Your Registration</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Name</Label>
+            <Input value={name} readOnly className="bg-muted/40" />
+          </div>
           <div className="space-y-2">
             <Label>Email</Label>
             <Input value={email} readOnly className="bg-muted/40" />

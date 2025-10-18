@@ -328,6 +328,7 @@ model UserInvitation {
   id          String           @id @default(cuid())
   token       String           @unique
   email       String
+  name        String?
   role        UserRole
   employeeId  String?
   createdById String
