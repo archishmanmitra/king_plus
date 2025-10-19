@@ -259,11 +259,17 @@ export function AppSidebar() {
           <div className="mt-auto p-4">
             <div className="rounded-xl bg-card/60 backdrop-blur-sm border border-border/40 shadow-sm p-3">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary to-primary-dark text-primary-foreground flex items-center justify-center text-sm font-bold shadow-md">
-                  {user?.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary to-primary-dark text-primary-foreground flex items-center justify-center text-sm font-bold shadow-md">
+                    {user?.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </div>
+                  {/* Active pill */}
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full shadow-sm">
+                    <div className="w-full h-full bg-green-400 rounded-full animate-pulse"></div>
+                  </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">
@@ -272,6 +278,10 @@ export function AppSidebar() {
                   <p className="text-xs text-muted-foreground truncate">
                     {user.position}
                   </p>
+                  <div className="flex items-center space-x-1 mt-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-green-600 font-medium">Active</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -281,11 +291,17 @@ export function AppSidebar() {
         {/* Collapsed user avatar */}
         {isCollapsed && user && (
           <div className="mt-auto p-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary to-primary-dark text-primary-foreground flex items-center justify-center text-sm font-bold shadow-md mx-auto">
-              {user?.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
+            <div className="relative mx-auto w-fit">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary to-primary-dark text-primary-foreground flex items-center justify-center text-sm font-bold shadow-md">
+                {user?.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </div>
+              {/* Active pill for collapsed state */}
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-background rounded-full shadow-sm">
+                <div className="w-full h-full bg-green-400 rounded-full animate-pulse"></div>
+              </div>
             </div>
           </div>
         )}
