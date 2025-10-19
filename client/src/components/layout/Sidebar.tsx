@@ -170,9 +170,9 @@ export function AppSidebar() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary to-primary-dark shadow-md shadow-primary/20 flex items-center justify-center">
                   <img src="/kinglogo.svg" height={24} width={24} className="rounded-lg filter brightness-0 invert" />
                 </div>
-                <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                {/* <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
                   <Sparkles className="w-2 h-2 text-white" />
-                </div>
+                </div> */}
               </div>
               {!isCollapsed && (
                 <div className="space-y-0.5">
