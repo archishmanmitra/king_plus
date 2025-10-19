@@ -26,6 +26,8 @@ import {
   Building2,
   X,
   Network,
+  ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -152,17 +154,28 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className={`${isCollapsed ? "w-14" : "w-64"} bg-transparent border-none shadow-none text-sidebar-foreground`} collapsible="icon">
-      <SidebarContent className="scrollbar-premium">
-        {/* Logo/Brand with Mobile Close Button */}
+    <Sidebar 
+      className={`
+        ${isCollapsed ? "w-16" : "w-64"} 
+        bg-transparent border-none shadow-none
+      `} 
+      collapsible="icon"
+    >
+      <SidebarContent className="h-full bg-gradient-to-b from-background/90 via-background/80 to-background/90 backdrop-blur-xl backdrop-saturate-150 border-r border-border/20 scrollbar-thin">
+        {/* Premium Logo/Brand Section */}
         <div className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-                <span className=" font-extrabold">
-                  <img src="/kinglogo.svg" height={50} width={50} className='rounded-lg'/>
-                </span>
+              <div className="relative">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary to-primary-dark shadow-md shadow-primary/20 flex items-center justify-center">
+                  <img src="/kinglogo.svg" height={24} width={24} className="rounded-lg filter brightness-0 invert" />
+                </div>
+                <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                  <Sparkles className="w-2 h-2 text-white" />
+                </div>
+              </div>
               {!isCollapsed && (
-                <div>
+                <div className="space-y-0.5">
                   <h1 className="text-foreground font-bold text-lg tracking-tight">
                     KIN-G +
                   </h1>
@@ -178,23 +191,25 @@ export function AppSidebar() {
                 variant="ghost"
                 size="icon"
                 onClick={handleCloseMobile}
-                className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent/50"
+                className="h-8 w-8 text-foreground/70 hover:bg-foreground/10 hover:text-foreground transition-all duration-200 rounded-lg"
               >
-                <X className="h-4 w-4 text-sidebar-foreground" />
+                <X className="h-4 w-4" />
                 <span className="sr-only">Close sidebar</span>
               </Button>
             )}
           </div>
         </div>
 
-        {/* Navigation */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">
-            Navigation
-          </SidebarGroupLabel>
+        {/* Navigation Section */}
+        <SidebarGroup className="px-4">
+          {!isCollapsed && (
+            <SidebarGroupLabel className="text-muted-foreground font-semibold text-xs uppercase tracking-wider mb-3 px-3">
+              Navigation
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {filteredItems.map((item) => {
+            <SidebarMenu className="space-y-2">
+              {filteredItems.map((item, index) => {
                 const active = isActive(item.url);
 
                 return (
@@ -203,17 +218,30 @@ export function AppSidebar() {
                       <NavLink
                         to={item.url}
                         onClick={handleCloseMobile}
-                        className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 group ${
-                          active
-                            ? "bg-gradient-to-r from-primary/15 to-primary/5 text-primary font-semibold shadow-sm"
-                            : "hover:bg-sidebar-accent/60 text-sidebar-foreground hover:text-foreground"
-                        }`}
+                        className={`
+                          group relative flex items-center space-x-3 p-3 rounded-xl 
+                          transition-all duration-200 ease-out
+                          ${active
+                            ? "bg-primary/15 text-primary font-semibold shadow-sm border border-primary/20"
+                            : "hover:bg-foreground/8 text-foreground/70 hover:text-foreground"
+                          }
+                          ${!isCollapsed ? "justify-start" : "justify-center"}
+                        `}
                       >
-                        <item.icon className={`h-4 w-4 flex-shrink-0 transition-colors ${
-                          active ? "text-primary" : "text-sidebar-foreground group-hover:text-foreground"
-                        }`} />
+                        {/* Active indicator */}
+                        {active && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                        )}
+                        
+                        {/* Icon */}
+                        <item.icon className={`
+                          h-5 w-5 flex-shrink-0 transition-colors
+                          ${active ? "text-primary" : "text-foreground/60 group-hover:text-foreground"}
+                        `} />
+                        
+                        {/* Text */}
                         {!isCollapsed && (
-                          <span className="font-medium transition-colors">
+                          <span className="font-medium text-sm transition-colors">
                             {item.title}
                           </span>
                         )}
@@ -226,24 +254,38 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* User Info */}
+        {/* User Profile Section */}
         {!isCollapsed && user && (
           <div className="mt-auto p-4">
-            <div className="flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-muted/40 to-muted/20 border border-border/60">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                {user?.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
+            <div className="rounded-xl bg-card/60 backdrop-blur-sm border border-border/40 shadow-sm p-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary to-primary-dark text-primary-foreground flex items-center justify-center text-sm font-bold shadow-md">
+                  {user?.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {user.position}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">
-                  {user.name}
-                </p>
-                <p className="text-xs text-muted-foreground truncate font-medium">
-                  {user.position}
-                </p>
-              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Collapsed user avatar */}
+        {isCollapsed && user && (
+          <div className="mt-auto p-4">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary to-primary-dark text-primary-foreground flex items-center justify-center text-sm font-bold shadow-md mx-auto">
+              {user?.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
             </div>
           </div>
         )}

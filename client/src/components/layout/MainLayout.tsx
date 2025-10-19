@@ -15,7 +15,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <AppSidebar />
 
         {/* Main content */}
-        <div className="flex-1 flex flex-col bg-lightblue">
+        <div className="flex-1 flex flex-col bg-background min-h-screen">
           <Header />
 
           <main className="flex-1 p-4 md:p-8 overflow-auto">
@@ -25,7 +25,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 relative overflow-hidden 
                 rounded-3xl p-4 md:p-8 
                 border border-border/60
-                bg-lightblue 
+                bg-background/50
                 shadow-lg 
                 supports-[backdrop-filter]:backdrop-blur-md supports-[backdrop-filter]:backdrop-saturate-150
               "
