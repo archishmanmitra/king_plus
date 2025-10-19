@@ -269,13 +269,13 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto scrollbar-thin">
         <DialogHeader>
-          <DialogTitle className="flex items-center text-white">
+          <DialogTitle className="flex items-center text-foreground">
             <UserPlus className="h-5 w-5 mr-2" />
             Add New Employee
           </DialogTitle>
-          <DialogDescription className="text-black">
+          <DialogDescription className="text-muted-foreground">
             Create a new employee account and send an invitation to complete
             their profile setup.
           </DialogDescription>
@@ -465,31 +465,31 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
               </Select>
             </div>
           </div>
-          <p className="text-xs text-black">
+          <p className="text-xs text-muted-foreground">
             The invitation link will be sent to this email and will expire in 24
             hours.
           </p>
           {showInvite && inviteUrl && (
-            <div className="space-y-4 p-6 border-2 border-green-200 rounded-lg bg-green-50">
+            <div className="space-y-4 p-6 border-2 border-success/30 rounded-lg bg-success-light">
               <div className="flex items-center space-x-2">
-                <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                <Label className="text-green-800 font-semibold">
+                <div className="h-2 w-2 bg-success rounded-full"></div>
+                <Label className="text-success font-semibold">
                   Employee Created Successfully!
                 </Label>
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-green-700">
+                <Label className="text-sm font-medium text-success">
                   Invitation URL (expires in 24 hours from now)
                 </Label>
                 <div className="flex items-center space-x-2">
                   <Input
                     readOnly
                     value={inviteUrl}
-                    className="flex-1 font-mono text-sm bg-white border-green-300"
+                    className="flex-1 font-mono text-sm bg-background border-success/30"
                   />
                   <Button
                     type="button"
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                    className="bg-success hover:bg-success/90 text-success-foreground"
                     onClick={async () => {
                       try {
                         await navigator.clipboard.writeText(inviteUrl);
@@ -510,7 +510,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
                     Copy Link
                   </Button>
                 </div>
-                <p className="text-xs text-green-600">
+                <p className="text-xs text-success">
                   <strong>Important:</strong> Share this link with the employee.
                   They must use it within 24 hours to complete their account
                   setup.

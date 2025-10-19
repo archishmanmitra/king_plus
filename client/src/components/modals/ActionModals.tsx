@@ -191,16 +191,16 @@ export const ExpenseClaimModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto scrollbar-thin">
         <DialogHeader>
-          <DialogTitle>Submit Expense Claim</DialogTitle>
-          <DialogDescription>Create a new expense reimbursement request with complete details</DialogDescription>
+          <DialogTitle className="text-foreground">Submit Expense Claim</DialogTitle>
+          <DialogDescription className="text-muted-foreground">Create a new expense reimbursement request with complete details</DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Basic Information</h3>
+            <h3 className="text-lg font-semibold text-foreground">Basic Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Amount *</Label>
@@ -244,7 +244,7 @@ export const ExpenseClaimModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose
 
           {/* Claim Details */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Claim Details</h3>
+            <h3 className="text-lg font-semibold text-foreground">Claim Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Reporting Manager *</Label>

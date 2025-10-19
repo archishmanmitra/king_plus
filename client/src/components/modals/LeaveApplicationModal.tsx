@@ -243,13 +243,13 @@ const LeaveApplicationModal: React.FC<LeaveApplicationModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto scrollbar-thin">
         <DialogHeader>
-          <DialogTitle className="flex items-center text-xl text-white">
+          <DialogTitle className="flex items-center text-xl text-foreground">
             <FileText className="h-6 w-6 mr-2" />
             Leave Application Form
           </DialogTitle>
-          <DialogDescription className="text-white">
+          <DialogDescription className="text-muted-foreground">
             Please fill out all required information for your leave request. All
             fields marked with * are mandatory.
           </DialogDescription>
@@ -258,7 +258,7 @@ const LeaveApplicationModal: React.FC<LeaveApplicationModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Leave Details Section */}
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold border-b pb-2 text-white">
+            <h3 className="text-lg font-semibold border-b pb-2 text-foreground">
               Leave Details
             </h3>
 
@@ -356,13 +356,13 @@ const LeaveApplicationModal: React.FC<LeaveApplicationModalProps> = ({
               </div>
             </div>
 
-            <Card className="bg-blue-50 border-blue-200">
+            <Card className="bg-primary-light border-primary/20">
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
-                  <Info className="h-5 w-5 text-blue-600" />
+                  <Info className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="font-medium text-blue-900">Leave Summary</p>
-                    <p className="text-sm text-blue-700">
+                    <p className="font-medium text-primary">Leave Summary</p>
+                    <p className="text-sm text-primary/80">
                       Total Days: <strong>{formData.days}</strong>
                       {formData.startDate && formData.endDate && (
                         <span className="ml-4">
@@ -622,7 +622,7 @@ const LeaveApplicationModal: React.FC<LeaveApplicationModalProps> = ({
 
           {/* Reason & Documentation */}
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold border-b pb-2">
+            <h3 className="text-lg font-semibold border-b pb-2 text-foreground">
               Reason & Documentation
             </h3>
 

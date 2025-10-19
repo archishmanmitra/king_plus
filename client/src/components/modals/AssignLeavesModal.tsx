@@ -178,7 +178,7 @@ const AssignLeavesModal: React.FC<AssignLeavesModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto scrollbar-thin">
         <DialogHeader>
           <DialogTitle className="flex items-center text-xl">
             <Users className="h-6 w-6 mr-2" />

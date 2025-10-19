@@ -130,7 +130,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onSa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto scrollbar-thin">
         <DialogHeader>
           <DialogTitle className="flex items-center text-white">
             <FolderOpen className="h-5 w-5 mr-2" />

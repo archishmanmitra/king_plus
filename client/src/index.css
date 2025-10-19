@@ -330,4 +330,37 @@
   .scrollbar-premium::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.5);
   }
+
+  /* Hidden Scrollbar - maintains functionality but hides visual scrollbar */
+  .scrollbar-hidden {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;  /* Safari and Chrome */
+  }
+
+  /* Thin Scrollbar - minimal visible scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) hsl(var(--muted));
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 2px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
 }

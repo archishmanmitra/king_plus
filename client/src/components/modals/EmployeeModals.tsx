@@ -77,7 +77,7 @@ export const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onCl
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto scrollbar-thin">
         <DialogHeader>
           <DialogTitle>Add New Employee</DialogTitle>
           <DialogDescription>
@@ -262,7 +262,7 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({ employ
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto scrollbar-thin">
         <DialogHeader>
           <DialogTitle>Employee Details</DialogTitle>
           <DialogDescription>
