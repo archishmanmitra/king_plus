@@ -20,7 +20,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
           <main className="flex-1 px-4 pt-4 pb-2 md:px-8 md:pt-8 md:pb-4 overflow-auto">
             {/* Banner between header and dashboard content */}
-            <div
+            {/* <div
               className="
                 mx-auto max-w-7xl
                 relative overflow-hidden
@@ -50,7 +50,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   are people who feel valued.
                 </h1>
               </div>
-            </div>
+            </div> */}
             <div
               className="
                 mx-auto max-w-7xl 
