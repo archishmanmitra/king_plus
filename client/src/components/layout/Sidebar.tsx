@@ -156,12 +156,12 @@ export function AppSidebar() {
   return (
     <Sidebar 
       className={`
-        ${isCollapsed ? "w-16" : "w-64"} 
+        ${isCollapsed ? "w-16" : "w-72"} 
         bg-transparent border-none shadow-none
       `} 
       collapsible="icon"
     >
-      <SidebarContent className="h-full bg-gradient-to-b from-background/90 via-background/80 to-background/90 backdrop-blur-xl backdrop-saturate-150 border-r border-border/20 scrollbar-thin">
+      <SidebarContent className="h-full md:m-4 md:rounded-3xl md:bg-black/5 md:backdrop-blur-xl md:backdrop-saturate-150 md:border md:border-white/10 md:shadow-2xl md:shadow-black/20 scrollbar-thin">
         {/* Premium Logo/Brand Section */}
         <div className="p-4">
           <div className="flex items-center justify-between">
