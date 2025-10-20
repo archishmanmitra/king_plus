@@ -268,24 +268,24 @@ const Leave: React.FC = () => {
 
       {/* Enhanced Leave Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="relative overflow-hidden">
+        <Card className="relative overflow-hidden h-40 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 border-blue-600/30 shadow-lg shadow-blue-500/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-blue-100">
               Total Balance
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-primary">
+            <div className="text-3xl font-bold text-white">
               {leaveBalance.total}
             </div>
-            <p className="text-sm text-muted-foreground">days available</p>
+            <p className="text-sm text-blue-200">days available</p>
           </CardContent>
           <div className="absolute top-2 right-2">
-            <Clock className="h-6 w-6 text-primary/30" />
+            <Clock className="h-6 w-6 text-white/70" />
           </div>
         </Card>
 
-        <Card className="relative overflow-hidden">
+        <Card className="relative overflow-hidden h-40">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Earned Leave
@@ -302,7 +302,7 @@ const Leave: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="relative overflow-hidden">
+        <Card className="relative overflow-hidden h-40">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Maternity Leave
@@ -319,7 +319,7 @@ const Leave: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="relative overflow-hidden">
+        <Card className="relative overflow-hidden h-40">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Paternity Leave
@@ -535,7 +535,7 @@ const Leave: React.FC = () => {
 
         <TabsContent value="holidays">
           <HolidayCalendar
-            holidays={indianHolidays2025}
+            holidays={indianHolidays2025 as any}
             selectedDate={selectedHolidayDate}
             onDateSelect={setSelectedHolidayDate}
           />

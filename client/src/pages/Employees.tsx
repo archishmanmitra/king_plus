@@ -272,22 +272,22 @@ const Employees: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <Card>
+        <Card className="h-40 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 border-blue-600/30 shadow-lg shadow-blue-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium">
+            <CardTitle className="text-xs sm:text-sm font-medium text-blue-100">
               Total Employees
             </CardTitle>
-            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-white/80" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold text-white">
               {employees.length}
             </div>
-            <p className="text-xs text-muted-foreground">Total workforce</p>
+            <p className="text-xs text-blue-200">Total workforce</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="h-40 card-premium">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs sm:text-sm font-medium">
               Active
@@ -302,7 +302,7 @@ const Employees: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="h-40 card-premium">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs sm:text-sm font-medium">
               Departments
@@ -323,7 +323,7 @@ const Employees: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="h-40 card-premium">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs sm:text-sm font-medium">
               New Hires
@@ -482,7 +482,7 @@ const Employees: React.FC = () => {
                   <div className="flex items-center space-x-2 text-xs sm:text-sm">
                     <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground">
-                      {employee.employee?.personal?.phoneNumber || "N/A"}
+                      {employee.personal?.phoneNumber || "N/A"}
                     </span>
                   </div>
                   <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 pt-2">

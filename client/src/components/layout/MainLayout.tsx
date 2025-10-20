@@ -18,10 +18,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <div className="flex-1 flex flex-col bg-background min-h-screen">
           <Header />
 
-          <main className="flex-1 p-4 md:p-8 overflow-auto">
+          <main className="flex-1 px-4 pt-4 pb-2 md:px-8 md:pt-8 md:pb-4 overflow-auto">
             <div
               className="
-                mx-auto max-w-[1400px] 
+                mx-auto max-w-7xl 
                 relative overflow-hidden 
                 rounded-3xl p-4 md:p-8 
                 border border-border/60

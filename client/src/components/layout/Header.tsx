@@ -53,7 +53,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full p-4">
+    <header className="sticky top-0 z-50 w-full px-2 pt-2 pb-0.5 md:pt-4 md:pb-0.5">
       <div className="
         relative mx-auto max-w-7xl
         md:rounded-3xl md:border md:border-white/10

@@ -148,7 +148,7 @@ const Dashboard: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6 md:space-y-8 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
       {/* Welcome Section */}
       <div className="flex flex-col space-y-6 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div className="flex-1">
@@ -182,41 +182,73 @@ const Dashboard: React.FC = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-        {filteredStats.map((stat, index) => (
-          <Card
-            key={index}
-            className="card-premium group animate-slide-up"
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-muted-foreground tracking-wide">
-                {stat.title}
-              </CardTitle>
-              <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-200">
-                <stat.icon className="h-4 w-4 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight flex items-center">
-                {loading && stat.value === "..." ? (
-                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                ) : null}
-                {stat.value}
-              </div>
-              <p
-                className={`text-sm font-medium ${
-                  stat.changeType === "positive"
-                    ? "text-success"
-                    : stat.changeType === "negative"
-                    ? "text-destructive"
+        {filteredStats.map((stat, index) => {
+          // Special styling
+          const isTotalEmployees = stat.title === "Total Employees";
+          const isEmployeeOrManager = user?.role === "employee" || user?.role === "manager";
+          const isFirstVisible = index === 0;
+          const isGradientCard = isTotalEmployees || (isEmployeeOrManager && isFirstVisible);
+          
+          return (
+            <Card
+              key={index}
+              className={`group animate-slide-up h-40 ${
+                isGradientCard 
+                  ? "bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 border-blue-600/30 shadow-lg shadow-blue-500/20" 
+                  : "card-premium"
+              }`}
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className={`text-sm font-semibold tracking-wide ${
+                  isGradientCard 
+                    ? "text-blue-100" 
                     : "text-muted-foreground"
-                }`}
-              >
-                {stat.change}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+                }`}>
+                  {stat.title}
+                </CardTitle>
+                <div className={`p-2.5 rounded-xl transition-all duration-200 ${
+                  isGradientCard
+                    ? "bg-white/20 group-hover:bg-white/30"
+                    : "bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10"
+                }`}>
+                  <stat.icon className={`h-4 w-4 ${
+                    isGradientCard 
+                      ? "text-white" 
+                      : "text-primary"
+                  }`} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className={`text-2xl sm:text-3xl font-bold tracking-tight flex items-center ${
+                  isGradientCard 
+                    ? "text-white" 
+                    : "text-foreground"
+                }`}>
+                  {loading && stat.value === "..." ? (
+                    <Loader2 className={`h-6 w-6 animate-spin mr-2 ${
+                      isGradientCard ? "text-white" : ""
+                    }`} />
+                  ) : null}
+                  {stat.value}
+                </div>
+                <p
+                  className={`text-sm font-medium ${
+                    isGradientCard
+                      ? "text-blue-200"
+                      : stat.changeType === "positive"
+                      ? "text-success"
+                      : stat.changeType === "negative"
+                      ? "text-destructive"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {stat.change}
+                </p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
