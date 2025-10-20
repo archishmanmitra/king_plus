@@ -64,7 +64,7 @@ const Header: React.FC = () => {
         {/* Glass effect overlay removed to match sidebar styling */}
         
         {/* Main content */}
-        <div className="relative flex h-14 md:h-16 items-center justify-between px-4 md:px-6">
+        <div className="relative flex h-14 md:h-16 items-center justify-between px-4 md:px-6 gap-2 md:gap-0">
           {/* Left side - Search and Sidebar */}
           <div className="flex items-center space-x-4 flex-1">
             <SidebarTrigger className="block lg:hidden h-8 w-8 md:h-9 md:w-9 hover:bg-muted/50 transition-all duration-200 rounded-xl hover:scale-105" />
