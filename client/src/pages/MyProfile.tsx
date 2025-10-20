@@ -18,7 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 // Removed mock data; page now supports empty/default profile when data is unavailable
 import {
   Edit,
@@ -50,7 +50,10 @@ const MyProfile: React.FC = () => {
   const { user } = useAuth();
   const { employeeId } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("personal");
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const urlTab = params.get('tab');
+  const [activeTab, setActiveTab] = useState(urlTab || "personal");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -247,6 +250,15 @@ const MyProfile: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetKey]);
 
+  // Keep active tab in sync with URL changes (e.g., when navigating from sidebar)
+  useEffect(() => {
+    const nextTab = urlTab || "personal";
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
+
   // Check if viewing own profile or someone else's
   const isOwnProfile = !employeeId || employeeId === user?.employeeId;
 
@@ -288,6 +300,13 @@ const MyProfile: React.FC = () => {
       default:
         return <Badge variant="outline">{role}</Badge>;
     }
+  };
+
+  const onTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const next = new URLSearchParams(location.search);
+    next.set('tab', tab);
+    navigate({ pathname: location.pathname, search: next.toString() }, { replace: true });
   };
 
   return (
@@ -478,7 +497,7 @@ const MyProfile: React.FC = () => {
       {/* Profile Tabs */}
       <Tabs
         value={activeTab}
-        onValueChange={setActiveTab}
+        onValueChange={onTabChange}
         className="space-y-6"
       >
         <TabsList className="grid w-full grid-cols-3">

@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getEmployees, listUsers } from "@/api/employees";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AddEmployeeModal from "@/components/modals/AddEmployeeModal";
 
 // Type for user data from the API
@@ -85,6 +85,16 @@ const Employees: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const urlTab = params.get('tab');
+  const [activeTab, setActiveTab] = useState(urlTab || 'grid');
+  const onTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const next = new URLSearchParams(location.search);
+    next.set('tab', tab);
+    navigate({ pathname: location.pathname, search: next.toString() }, { replace: true });
+  };
   const { toast } = useToast();
 
   // Fetch employees from backend
@@ -404,7 +414,7 @@ const Employees: React.FC = () => {
       </Card>
 
       {/* Employee List */}
-      <Tabs defaultValue="grid" className="space-y-3 md:space-y-4">
+      <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-3 md:space-y-4">
         <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-2">
           <TabsTrigger value="grid" className="text-sm">
             Grid View

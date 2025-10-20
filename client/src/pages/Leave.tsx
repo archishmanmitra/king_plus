@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -39,6 +40,8 @@ import {
 
 const Leave: React.FC = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const canSeeTeamTab = user?.role !== "employee";
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
@@ -237,6 +240,18 @@ const Leave: React.FC = () => {
     loadData();
   }, [user]);
 
+  // URL-driven tabs
+  const params = new URLSearchParams(location.search);
+  const urlTab = params.get('tab');
+  const defaultTab = "requests";
+  const activeTab = urlTab || defaultTab;
+
+  const onTabChange = (tab: string) => {
+    const next = new URLSearchParams(location.search);
+    next.set('tab', tab);
+    navigate({ pathname: location.pathname, search: next.toString() }, { replace: true });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -337,7 +352,7 @@ const Leave: React.FC = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="requests" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-4">
         <TabsList
           className={`grid w-full ${
             canSeeTeamTab ? "grid-cols-3" : "grid-cols-2"

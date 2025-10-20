@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -32,6 +33,8 @@ import { approveAttendance, getMyAttendance, getPendingApprovals, rejectAttendan
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Attendance: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -331,6 +334,18 @@ const Attendance: React.FC = () => {
   const weekHours = useMemo(() => sumHoursInRange(weekStart, weekEnd), [myAttendances, weekStart, weekEnd]);
   const monthHours = useMemo(() => sumHoursInRange(monthStart, monthEnd), [myAttendances, monthStart, monthEnd]);
 
+  // Read tab from URL
+  const searchParams = new URLSearchParams(location.search);
+  const urlTab = searchParams.get('tab');
+  const defaultTab = user?.role === 'employee' ? 'pending' : 'today';
+  const activeTab = urlTab || defaultTab;
+
+  const onTabChange = (tab: string) => {
+    const params = new URLSearchParams(location.search);
+    params.set('tab', tab);
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+  };
+
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
@@ -524,7 +539,7 @@ const Attendance: React.FC = () => {
         </Card> */}
       </div>
 
-      <Tabs defaultValue={user?.role === 'employee' ? 'pending' : 'today'} className="space-y-3 md:space-y-4">
+      <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-3 md:space-y-4">
         <TabsList className={`grid w-full ${user?.role === 'employee' ? 'grid-cols-2' : 'grid-cols-4'} md:w-auto`}>
           {user?.role !== 'employee' && (
             <TabsTrigger value="today" className="text-xs md:text-sm">

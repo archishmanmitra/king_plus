@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -86,6 +87,17 @@ interface TeamsPageProps {}
 
 const Teams: React.FC<TeamsPageProps> = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = new URLSearchParams(location.search);
+  const urlTab = params.get('tab');
+  const [activeTab, setActiveTab] = useState<'chart' | 'list'>((urlTab === 'list' ? 'list' : 'chart'));
+  const changeTab = (tab: 'chart' | 'list') => {
+    setActiveTab(tab);
+    const next = new URLSearchParams(location.search);
+    next.set('tab', tab);
+    navigate({ pathname: location.pathname, search: next.toString() }, { replace: true });
+  };
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(
     new Set(["1"])
   ); // Start with CEO expanded
@@ -1147,18 +1159,18 @@ const Teams: React.FC<TeamsPageProps> = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
           <Button
-            variant={viewMode === "chart" ? "default" : "ghost"}
+            variant={activeTab === "chart" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setViewMode("chart")}
+            onClick={() => { setViewMode("chart"); changeTab('chart'); }}
             className="h-8 px-3"
           >
             <Grid3X3 className="h-4 w-4 mr-2" />
             Chart View
           </Button>
           <Button
-            variant={viewMode === "list" ? "default" : "ghost"}
+            variant={activeTab === "list" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setViewMode("list")}
+            onClick={() => { setViewMode("list"); changeTab('list'); }}
             className="h-8 px-3"
           >
             <List className="h-4 w-4 mr-2" />
@@ -1167,7 +1179,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
         </div>
       </div>
 
-      {viewMode === "list" ? (
+      {activeTab === "list" ? (
         /* Employee List View */
         <div className="space-y-4">
           {loading ? (

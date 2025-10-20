@@ -9,6 +9,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuAction,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
@@ -27,13 +31,22 @@ import {
   X,
   Network,
   ChevronRight,
+  ChevronDown,
   Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const navigationItems = [
+type NavItem = {
+  title: string;
+  url: string;
+  icon: any;
+  roles: string[];
+  children?: Array<{ title: string; url: string; roles?: string[] }>;
+};
+
+const navigationItems: NavItem[] = [
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -46,18 +59,6 @@ const navigationItems = [
     ],
   },
   {
-    title: "Employees",
-    url: "/employees",
-    icon: Users,
-    roles: ["global_admin", "hr_manager"],
-  },
-  {
-    title: "Teams",
-    url: "/teams",
-    icon: Network,
-    roles: ["global_admin", "hr_manager"],
-  },
-  {
     title: "My Profile",
     url: "/profile",
     icon: UserCheck,
@@ -66,6 +67,31 @@ const navigationItems = [
       "hr_manager",
       "manager",
       "employee",
+    ],
+    children: [
+      { title: "Personal", url: "/profile?tab=personal" },
+      { title: "Official", url: "/profile?tab=official" },
+      { title: "Financial", url: "/profile?tab=financial" },
+    ],
+  },
+  {
+    title: "Employees",
+    url: "/employees",
+    icon: Users,
+    roles: ["global_admin", "hr_manager"],
+    children: [
+      { title: "Grid View", url: "/employees?tab=grid" },
+      { title: "Table View", url: "/employees?tab=table" },
+    ],
+  },
+  {
+    title: "Teams",
+    url: "/teams",
+    icon: Network,
+    roles: ["global_admin", "hr_manager"],
+    children: [
+      { title: "Chart View", url: "/teams?tab=chart" },
+      { title: "List View", url: "/teams?tab=list" },
     ],
   },
   {
@@ -78,6 +104,13 @@ const navigationItems = [
       "employee",
       "manager",
     ],
+    children: [
+      { title: "Today's Attendance", url: "/attendance?tab=today" },
+      { title: "Attendance History", url: "/attendance?tab=history" },
+      { title: "Pending Approvals", url: "/attendance?tab=pending" },
+      { title: "Approvals", url: "/attendance?tab=approvals" },
+      { title: "Reports", url: "/attendance?tab=reports" },
+    ],
   },
   {
     title: "Leave Management",
@@ -88,6 +121,11 @@ const navigationItems = [
       "hr_manager",
       "employee",
       "manager",
+    ],
+    children: [
+      { title: "My Requests", url: "/leave?tab=requests" },
+      { title: "Team Requests", url: "/leave?tab=team" },
+      { title: "Holiday Calendar", url: "/leave?tab=holidays" },
     ],
   },
   // {
@@ -139,12 +177,17 @@ export function AppSidebar() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const currentPath = location.pathname;
+  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
+  const isExpanded = (title: string, url: string) =>
+    expanded[title] ?? currentPath.startsWith(url);
+  const toggleExpanded = (title: string) =>
+    setExpanded((prev) => ({ ...prev, [title]: !prev[title] }));
 
   const filteredItems = navigationItems.filter(
     (item) => user && item.roles.includes(user.role)
   );
 
-  const isActive = (path: string) => currentPath === path;
+  const isActive = (path: string) => currentPath.startsWith(path);
   const isCollapsed = state === "collapsed";
 
   const handleCloseMobile = () => {
@@ -175,11 +218,11 @@ export function AppSidebar() {
                 </div> */}
               </div>
               {!isCollapsed && (
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 ">
                   <h1 className="text-foreground font-bold text-lg tracking-tight">
                     KIN-G +
                   </h1>
-                  <p className="text-xs text-muted-foreground font-medium">
+                  <p className="text-xs text-blue-500 font-medium">
                     Office Portal
                   </p>
                 </div>
@@ -211,6 +254,7 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-2">
               {filteredItems.map((item, index) => {
                 const active = isActive(item.url);
+                const groupExpanded = isExpanded(item.title, item.url);
 
                 return (
                   <SidebarMenuItem key={item.title}>
@@ -222,7 +266,7 @@ export function AppSidebar() {
                           group relative flex items-center space-x-3 p-3 rounded-xl 
                           transition-all duration-200 ease-out
                           ${active
-                            ? "bg-primary/15 text-primary font-semibold shadow-sm border border-primary/20"
+                            ? "text-primary font-semibold"
                             : "hover:bg-foreground/8 text-foreground/70 hover:text-foreground"
                           }
                           ${!isCollapsed ? "justify-start" : "justify-center"}
@@ -230,7 +274,7 @@ export function AppSidebar() {
                       >
                         {/* Active indicator */}
                         {active && (
-                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary rounded-r-full shadow-[0_0_6px_hsl(var(--sidebar-ring)/0.6)]" />
                         )}
                         
                         {/* Icon */}
@@ -247,6 +291,43 @@ export function AppSidebar() {
                         )}
                       </NavLink>
                     </SidebarMenuButton>
+
+                    {item.children && item.children.length > 0 && !isCollapsed && (
+                      <SidebarMenuAction
+                        aria-label={groupExpanded ? "Collapse" : "Expand"}
+                        onClick={() => toggleExpanded(item.title)}
+                        className="right-2"
+                      >
+                        {groupExpanded ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </SidebarMenuAction>
+                    )}
+
+                    {/* Submenu for tabs */}
+                    {item.children && item.children.length > 0 && groupExpanded && (
+                      <SidebarMenuSub>
+                        {item.children
+                          .filter((child) => !child.roles || (user && child.roles.includes(user.role)))
+                          .map((child) => {
+                            const isChildActive = `${location.pathname}${location.search}` === child.url;
+                            return (
+                              <SidebarMenuSubItem key={child.title}>
+                                <SidebarMenuSubButton asChild isActive={isChildActive}>
+                                  <NavLink
+                                    to={child.url}
+                                    onClick={handleCloseMobile}
+                                  >
+                                    <span>{child.title}</span>
+                                  </NavLink>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
+                      </SidebarMenuSub>
+                    )}
                   </SidebarMenuItem>
                 )
               })}
