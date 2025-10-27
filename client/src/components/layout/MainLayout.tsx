@@ -10,15 +10,15 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full scrollbar-hidden">
         {/* Sidebar */}
         <AppSidebar />
 
         {/* Main content */}
-        <div className="flex-1 flex flex-col bg-background min-h-screen">
+        <div className="flex-1 flex flex-col bg-background min-h-screen scrollbar-hidden">
           <Header />
 
-          <main className="flex-1 px-4 pt-4 pb-2 md:px-8 md:pt-8 md:pb-4 overflow-auto">
+          <main className="flex-1 px-4 pt-4 pb-2 md:px-8 md:pt-8 md:pb-4 overflow-auto scrollbar-hidden">
             {/* Banner between header and dashboard content */}
             {/* <div
               className="

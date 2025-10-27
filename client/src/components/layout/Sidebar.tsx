@@ -204,7 +204,7 @@ export function AppSidebar() {
       `} 
       collapsible="icon"
     >
-      <SidebarContent className="h-full md:m-4 md:rounded-3xl md:bg-black/5 md:backdrop-blur-xl md:backdrop-saturate-150 md:border md:border-white/10 md:shadow-2xl md:shadow-black/20 scrollbar-thin">
+      <SidebarContent className="h-full md:m-4 md:rounded-3xl md:bg-black/5 md:backdrop-blur-xl md:backdrop-saturate-150 md:border md:border-white/10 md:shadow-2xl md:shadow-black/20 scrollbar-hidden">
         {/* Premium Logo/Brand Section */}
         <div className="p-4">
           <div className="flex items-center justify-between">
