@@ -17,7 +17,7 @@ const app = express()
 const PORT = process.env.PORT || 5001
 
 // Security & CORS
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:8080,http://localhost:5173' , 'https://king-plus-1.onrender.com')
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:8080', 'http://localhost:5173' , 'https://king-plus-1.onrender.com')
   .split(',')
   .map(o => o.trim())
   .filter(Boolean)
