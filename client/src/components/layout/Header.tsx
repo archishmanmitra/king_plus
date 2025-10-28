@@ -14,7 +14,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
-import { Bell, LogOut, Settings, User, Search, X } from 'lucide-react';
+import { LogOut, Settings, User, Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Header: React.FC = () => {
@@ -117,27 +117,8 @@ const Header: React.FC = () => {
             </div>
           </div> */}
 
-          {/* Right side - Notifications and User Menu */}
+          {/* Right side - User Menu */}
           <div className="flex items-center space-x-4">
-            {/* Notifications */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="
-                relative h-10 w-10 md:h-12 md:w-12 rounded-full
-                bg-background/30 backdrop-blur-sm
-                hover:bg-background/50 transition-all duration-200
-                hover:scale-105 text-foreground
-                border border-border/30 hover:border-border/50
-                shadow-sm hover:shadow-md
-              "
-            >
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-[10px] font-semibold text-destructive-foreground flex items-center justify-center shadow-sm">
-                3
-              </span>
-            </Button>
-
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

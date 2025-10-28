@@ -117,9 +117,6 @@ export const createLeaveRequest = async (req: Request, res: Response) => {
       ? `${employeeWithManager.manager.official.firstName} ${employeeWithManager.manager.official.lastName}`.trim()
       : 'your manager'
 
-    // TODO: Send notification to manager
-    // notifyManager(employee.manager, leaveRequest)
-
     return res.status(201).json({ 
       leaveRequest,
       message: `Leave request submitted successfully. Pending approval from ${managerName}.` 
@@ -490,9 +487,6 @@ export const updateLeaveRequestStatus = async (req: Request, res: Response) => {
         approver: approverName
       }
     })
-
-    // TODO: Send notification to employee about approval/rejection
-    // notifyEmployee(leaveRequest.employee, updatedLeaveRequest, comments)
 
     return res.json({ 
       leaveRequest: updatedLeaveRequest,

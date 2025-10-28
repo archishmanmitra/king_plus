@@ -70,7 +70,6 @@ interface LeaveApplicationFormData {
   alternatePhone: string;
   urgencyLevel: "low" | "medium" | "high" | "critical";
   projectsAffected: string;
-  clientNotification: boolean;
   anticipatedImpact: string;
 }
 
@@ -116,7 +115,6 @@ const LeaveApplicationModal: React.FC<LeaveApplicationModalProps> = ({
     alternatePhone: "",
     urgencyLevel: "low",
     projectsAffected: "",
-    clientNotification: false,
     anticipatedImpact: "",
   });
 
@@ -585,22 +583,6 @@ const LeaveApplicationModal: React.FC<LeaveApplicationModalProps> = ({
               </div>
 
               <div className="space-y-4 pt-6">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="clientNotification"
-                    checked={formData.clientNotification}
-                    onCheckedChange={(checked) =>
-                      setFormData({
-                        ...formData,
-                        clientNotification: checked as boolean,
-                      })
-                    }
-                  />
-                  <Label htmlFor="clientNotification" className="text-white">
-                    Client notification required
-                  </Label>
-                </div>
-
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="workFromHome"

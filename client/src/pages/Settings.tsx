@@ -17,7 +17,6 @@ import {
   Building2, 
   Mail, 
   Shield, 
-  Bell, 
   Clock, 
   DollarSign,
   Database,
@@ -38,14 +37,6 @@ const Settings: React.FC = () => {
       email: 'info@techcorp.com',
       website: 'www.techcorp.com',
       taxId: '12-3456789'
-    },
-    notifications: {
-      emailNotifications: true,
-      smsNotifications: false,
-      pushNotifications: true,
-      leaveApprovals: true,
-      payrollReminders: true,
-      attendanceAlerts: true
     },
     attendance: {
       clockInTolerance: 15,
@@ -132,7 +123,6 @@ const Settings: React.FC = () => {
       <Tabs defaultValue="company" className="space-y-4">
         <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="company">Company</TabsTrigger>
-          {/* <TabsTrigger value="notifications">Notifications</TabsTrigger> */}
           {/* <TabsTrigger value="attendance">Attendance</TabsTrigger> */}
           {/* <TabsTrigger value="payroll">Payroll</TabsTrigger> */}
           {/* <TabsTrigger value="leave">Leave</TabsTrigger> */}
@@ -228,114 +218,6 @@ const Settings: React.FC = () => {
               <Button onClick={() => saveSettings('Company')}>
                 <Save className="h-4 w-4 mr-2" />
                 Save Company Settings
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Bell className="h-5 w-5 mr-2" />
-                Notification Settings
-              </CardTitle>
-              <CardDescription>
-                Configure how and when notifications are sent
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Email Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Receive notifications via email</p>
-                  </div>
-                  <Switch
-                    checked={settings.notifications.emailNotifications}
-                    onCheckedChange={(checked) => setSettings({
-                      ...settings,
-                      notifications: { ...settings.notifications, emailNotifications: checked }
-                    })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>SMS Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Receive notifications via SMS</p>
-                  </div>
-                  <Switch
-                    checked={settings.notifications.smsNotifications}
-                    onCheckedChange={(checked) => setSettings({
-                      ...settings,
-                      notifications: { ...settings.notifications, smsNotifications: checked }
-                    })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Push Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Receive browser push notifications</p>
-                  </div>
-                  <Switch
-                    checked={settings.notifications.pushNotifications}
-                    onCheckedChange={(checked) => setSettings({
-                      ...settings,
-                      notifications: { ...settings.notifications, pushNotifications: checked }
-                    })}
-                  />
-                </div>
-
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Leave Approval Notifications</Label>
-                    <p className="text-sm text-muted-foreground">Notify when leave requests need approval</p>
-                  </div>
-                  <Switch
-                    checked={settings.notifications.leaveApprovals}
-                    onCheckedChange={(checked) => setSettings({
-                      ...settings,
-                      notifications: { ...settings.notifications, leaveApprovals: checked }
-                    })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Payroll Reminders</Label>
-                    <p className="text-sm text-muted-foreground">Remind about payroll processing</p>
-                  </div>
-                  <Switch
-                    checked={settings.notifications.payrollReminders}
-                    onCheckedChange={(checked) => setSettings({
-                      ...settings,
-                      notifications: { ...settings.notifications, payrollReminders: checked }
-                    })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Attendance Alerts</Label>
-                    <p className="text-sm text-muted-foreground">Alert for late arrivals and absences</p>
-                  </div>
-                  <Switch
-                    checked={settings.notifications.attendanceAlerts}
-                    onCheckedChange={(checked) => setSettings({
-                      ...settings,
-                      notifications: { ...settings.notifications, attendanceAlerts: checked }
-                    })}
-                  />
-                </div>
-              </div>
-
-              <Button onClick={() => saveSettings('Notifications')}>
-                <Save className="h-4 w-4 mr-2" />
-                Save Notification Settings
               </Button>
             </CardContent>
           </Card>
