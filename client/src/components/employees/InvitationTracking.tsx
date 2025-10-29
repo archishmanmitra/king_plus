@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { StatusPill } from "@/components/ui/status-pill";
 import {
   Copy,
   CheckCircle,
@@ -111,40 +112,12 @@ const InvitationTracking: React.FC = () => {
   };
 
   const getStatusBadge = (status: string, isExpired: boolean) => {
-    if (isExpired && status === 'pending') {
-      return (
-        <Badge variant="destructive" className="flex items-center gap-1">
-          <XCircle className="h-3 w-3" />
-          Expired
-        </Badge>
-      );
-    }
-
-    switch (status) {
-      case "used":
-        return (
-          <Badge className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
-            <CheckCircle className="h-3 w-3" />
-            Used
-          </Badge>
-        );
-      case "pending":
-        return (
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            Pending
-          </Badge>
-        );
-      case "expired":
-        return (
-          <Badge variant="destructive" className="flex items-center gap-1">
-            <XCircle className="h-3 w-3" />
-            Expired
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
+    return (
+      <StatusPill 
+        status={status} 
+        isExpired={isExpired}
+      />
+    );
   };
 
   const copyToClipboard = async (text: string, token: string) => {

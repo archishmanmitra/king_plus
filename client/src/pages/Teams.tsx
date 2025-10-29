@@ -92,6 +92,16 @@ const Teams: React.FC<TeamsPageProps> = () => {
   const params = new URLSearchParams(location.search);
   const urlTab = params.get('tab');
   const [activeTab, setActiveTab] = useState<'chart' | 'list'>((urlTab === 'list' ? 'list' : 'chart'));
+
+  // Keep active tab in sync with URL changes (e.g., when navigating from sidebar)
+  useEffect(() => {
+    const nextTab = urlTab === 'list' ? 'list' : 'chart';
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
+
   const changeTab = (tab: 'chart' | 'list') => {
     setActiveTab(tab);
     const next = new URLSearchParams(location.search);

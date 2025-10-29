@@ -240,13 +240,23 @@ const Leave: React.FC = () => {
     loadData();
   }, [user]);
 
-  // URL-driven tabs
+  // Tab state management
   const params = new URLSearchParams(location.search);
   const urlTab = params.get('tab');
   const defaultTab = "requests";
-  const activeTab = urlTab || defaultTab;
+  const [activeTab, setActiveTab] = useState(urlTab || defaultTab);
+
+  // Keep active tab in sync with URL changes (e.g., when navigating from sidebar)
+  useEffect(() => {
+    const nextTab = urlTab || defaultTab;
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
 
   const onTabChange = (tab: string) => {
+    setActiveTab(tab);
     const next = new URLSearchParams(location.search);
     next.set('tab', tab);
     navigate({ pathname: location.pathname, search: next.toString() }, { replace: true });

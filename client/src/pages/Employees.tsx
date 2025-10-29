@@ -98,6 +98,15 @@ const Employees: React.FC = () => {
   };
   const { toast } = useToast();
 
+  // Keep active tab in sync with URL changes (e.g., when navigating from sidebar)
+  useEffect(() => {
+    const nextTab = urlTab || "grid";
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
+
   // Fetch employees from backend
   useEffect(() => {
     const fetchEmployees = async () => {

@@ -82,6 +82,7 @@ const navigationItems: NavItem[] = [
     children: [
       { title: "Grid View", url: "/employees?tab=grid" },
       { title: "Table View", url: "/employees?tab=table" },
+      { title: "Invitations", url: "/employees?tab=invitations" },
     ],
   },
   {
@@ -188,6 +189,18 @@ export function AppSidebar() {
   );
 
   const isActive = (path: string) => currentPath.startsWith(path);
+  const isChildActive = (childUrl: string) => {
+    const [path, query] = childUrl.split('?');
+    const currentQuery = location.search;
+    
+    // If the child URL has query parameters, check both path and query
+    if (query) {
+      return currentPath === path && currentQuery === `?${query}`;
+    }
+    
+    // If no query parameters, just check the path
+    return currentPath === childUrl;
+  };
   const isCollapsed = state === "collapsed";
 
   const handleCloseMobile = () => {
@@ -312,10 +325,10 @@ export function AppSidebar() {
                         {item.children
                           .filter((child) => !child.roles || (user && child.roles.includes(user.role)))
                           .map((child) => {
-                            const isChildActive = `${location.pathname}${location.search}` === child.url;
+                            const childActive = isChildActive(child.url);
                             return (
                               <SidebarMenuSubItem key={child.title}>
-                                <SidebarMenuSubButton asChild isActive={isChildActive}>
+                                <SidebarMenuSubButton asChild isActive={childActive}>
                                   <NavLink
                                     to={child.url}
                                     onClick={handleCloseMobile}

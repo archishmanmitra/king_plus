@@ -334,13 +334,23 @@ const Attendance: React.FC = () => {
   const weekHours = useMemo(() => sumHoursInRange(weekStart, weekEnd), [myAttendances, weekStart, weekEnd]);
   const monthHours = useMemo(() => sumHoursInRange(monthStart, monthEnd), [myAttendances, monthStart, monthEnd]);
 
-  // Read tab from URL
+  // Tab state management
   const searchParams = new URLSearchParams(location.search);
   const urlTab = searchParams.get('tab');
   const defaultTab = user?.role === 'employee' ? 'pending' : 'today';
-  const activeTab = urlTab || defaultTab;
+  const [activeTab, setActiveTab] = useState(urlTab || defaultTab);
+
+  // Keep active tab in sync with URL changes (e.g., when navigating from sidebar)
+  useEffect(() => {
+    const nextTab = urlTab || defaultTab;
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
 
   const onTabChange = (tab: string) => {
+    setActiveTab(tab);
     const params = new URLSearchParams(location.search);
     params.set('tab', tab);
     navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
