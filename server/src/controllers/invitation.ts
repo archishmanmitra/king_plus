@@ -29,7 +29,7 @@ export const getInvitation = async (req: Request, res: Response) => {
     }
 
     return res.json({
-      name: invitation.name,
+      name: (invitation as any).name || null,
       email: invitation.email,
       role: invitation.role,
     })
@@ -58,12 +58,12 @@ export const acceptInvitation = async (req: Request, res: Response) => {
     // Upsert user by email - Only user details (name, email, role, password)
     const user = await prisma.user.upsert({
       where: { email: invitation.email },
-      update: { password: hashed, role: invitation.role, name: invitation.name ?? undefined },
+      update: { password: hashed, role: invitation.role, name: (invitation as any).name ?? undefined },
       create: {
         email: invitation.email,
         password: hashed,
         role: invitation.role,
-        name: invitation.name ?? 'New User',
+        name: (invitation as any).name ?? 'New User',
       },
     })
 
@@ -169,16 +169,92 @@ export const createInvitation = async (req: Request, res: Response) => {
       data: {
         token,
         email,
-        name,
+        name: name || null,
         role,
         createdById: createdByUserId,
         expiresAt,
-      },
+      } as any,
     })
 
     return res.status(201).json({ invitation })
   } catch (err: any) {
     console.error('Create invitation error:', err)
     return res.status(500).json({ error: 'Failed to create invitation', details: err?.message })
+  }
+}
+
+export const getAllInvitations = async (req: Request, res: Response) => {
+  try {
+    const invitations = await prisma.userInvitation.findMany({
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        employee: {
+          select: {
+            id: true,
+            employeeId: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    // Check if invitations are expired
+    const now = new Date()
+    const invitationsWithStatus = invitations.map(invitation => {
+      let status = invitation.status
+      
+      // If status is pending but expired, mark as expired
+      if (invitation.status === 'pending' && invitation.expiresAt < now) {
+        status = 'expired'
+      }
+
+      return {
+        ...invitation,
+        status,
+        isExpired: invitation.expiresAt < now,
+        invitationUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite?token=${invitation.token}`,
+      }
+    })
+
+    return res.json({ invitations: invitationsWithStatus })
+  } catch (err: any) {
+    console.error('Get all invitations error:', err)
+    return res.status(500).json({ error: 'Failed to fetch invitations', details: err?.message })
+  }
+}
+
+export const deleteInvitation = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    if (!id) {
+      return res.status(400).json({ error: 'Invitation ID is required' })
+    }
+
+    // Check if invitation exists
+    const invitation = await prisma.userInvitation.findUnique({
+      where: { id }
+    })
+
+    if (!invitation) {
+      return res.status(404).json({ error: 'Invitation not found' })
+    }
+
+    // Delete the invitation
+    await prisma.userInvitation.delete({
+      where: { id }
+    })
+
+    return res.json({ message: 'Invitation deleted successfully' })
+  } catch (err: any) {
+    console.error('Delete invitation error:', err)
+    return res.status(500).json({ error: 'Failed to delete invitation', details: err?.message })
   }
 }

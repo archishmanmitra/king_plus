@@ -272,4 +272,25 @@ export async function updateLeaveRequestStatus(requestId: string, status: string
   return res.json()
 }
 
+// Invitation APIs
+export async function getAllInvitations() {
+  const res = await fetch(`${API_URL}/invitations`, { 
+    method: 'GET', 
+    credentials: 'include', 
+    headers: { ...authHeaders() } 
+  })
+  if (!res.ok) throw new Error('Failed to fetch invitations')
+  return res.json()
+}
+
+export async function deleteInvitation(invitationId: string) {
+  const res = await fetch(`${API_URL}/invitations/${invitationId}`, {
+    method: 'DELETE',
+    credentials: 'include',
+    headers: { ...authHeaders() }
+  })
+  if (!res.ok) throw new Error('Failed to delete invitation')
+  return res.json()
+}
+
 

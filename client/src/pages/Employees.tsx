@@ -30,6 +30,7 @@ import {
 import { getEmployees, listUsers } from "@/api/employees";
 import { useLocation, useNavigate } from "react-router-dom";
 import AddEmployeeModal from "@/components/modals/AddEmployeeModal";
+import InvitationTracking from "@/components/employees/InvitationTracking";
 
 // Type for user data from the API
 interface UserWithEmployee {
@@ -415,12 +416,15 @@ const Employees: React.FC = () => {
 
       {/* Employee List */}
       <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-3 md:space-y-4">
-        <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3 md:w-auto md:grid-cols-3">
           <TabsTrigger value="grid" className="text-sm">
             Grid View
           </TabsTrigger>
           <TabsTrigger value="table" className="text-sm">
             Table View
+          </TabsTrigger>
+          <TabsTrigger value="invitations" className="text-sm">
+            Invitations
           </TabsTrigger>
         </TabsList>
 
@@ -613,6 +617,10 @@ const Employees: React.FC = () => {
               </Table>
             </div>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="invitations">
+          <InvitationTracking />
         </TabsContent>
       </Tabs>
 
