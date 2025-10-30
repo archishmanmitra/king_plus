@@ -129,47 +129,47 @@ const navigationItems: NavItem[] = [
       { title: "Holiday Calendar", url: "/leave?tab=holidays" },
     ],
   },
-  // {
-  //   title: "Payroll",
-  //   url: "/payroll",
-  //   icon: DollarSign,
-  //   roles: ["global_admin", "hr_manager"],
-  // },
-  // {
-  //   title: "Expenses",
-  //   url: "/expenses",
-  //   icon: FileText,
-  //   roles: ["global_admin", "hr_manager", "manager", "employee"],
-  // },
-  // {
-  //   title: "Performance",
-  //   url: "/performance",
-  //   icon: Target,
-  //   roles: [
-  //     "global_admin",
-  //     "hr_manager",
-  //     "employee",
-  //     "manager",
-  //   ],
-  // },
-  // {
-  //   title: "Projects",
-  //   url: "/projects",
-  //   icon: FolderOpen,
-  //   roles: ["global_admin", "hr_manager", "manager", "employee"],
-  // },
-  // {
-  //   title: "Reports",
-  //   url: "/reports",
-  //   icon: TrendingUp,
-  //   roles: ["global_admin", "hr_manager", "manager"],
-  // },
-  // {
-  //   title: "Settings",
-  //   url: "/settings",
-  //   icon: Settings,
-  //   roles: ["global_admin", "hr_manager"],
-  // },
+  {
+    title: "Payroll",
+    url: "/payroll",
+    icon: DollarSign,
+    roles: ["global_admin", "hr_manager"],
+  },
+  {
+    title: "Expenses",
+    url: "/expenses",
+    icon: FileText,
+    roles: ["global_admin", "hr_manager", "manager", "employee"],
+  },
+  {
+    title: "Performance",
+    url: "/performance",
+    icon: Target,
+    roles: [
+      "global_admin",
+      "hr_manager",
+      "employee",
+      "manager",
+    ],
+  },
+  {
+    title: "Projects",
+    url: "/projects",
+    icon: FolderOpen,
+    roles: ["global_admin", "hr_manager", "manager", "employee"],
+  },
+  {
+    title: "Reports",
+    url: "/reports",
+    icon: TrendingUp,
+    roles: ["global_admin", "hr_manager", "manager"],
+  },
+  {
+    title: "Settings",
+    url: "/settings",
+    icon: Settings,
+    roles: ["global_admin", "hr_manager"],
+  },
 ];
 
 export function AppSidebar() {
@@ -217,7 +217,7 @@ export function AppSidebar() {
       `} 
       collapsible="icon"
     >
-      <SidebarContent className="h-full md:m-4 md:rounded-3xl md:bg-black/5 md:backdrop-blur-xl md:backdrop-saturate-150 md:border md:border-white/10 md:shadow-2xl md:shadow-black/20 scrollbar-hidden">
+      <SidebarContent className="h-full md:m-4 md:rounded-3xl md:bg-black/5 md:backdrop-blur-xl md:backdrop-saturate-150 md:border md:border-white/10 md:shadow-2xl md:shadow-black/20 scrollbar-hidden flex flex-col overflow-hidden">
         {/* Premium Logo/Brand Section */}
         <div className="p-4">
           <div className="flex items-center justify-between">
@@ -226,9 +226,9 @@ export function AppSidebar() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary to-primary-dark shadow-md shadow-primary/20 flex items-center justify-center">
                   <img src="/kinglogo.svg" height={24} width={24} className="rounded-lg filter brightness-0 invert" />
                 </div>
-                {/* <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center">
                   <Sparkles className="w-2 h-2 text-white" />
-                </div> */}
+                </div> 
               </div>
               {!isCollapsed && (
                 <div className="space-y-0.5 ">
@@ -256,97 +256,95 @@ export function AppSidebar() {
           </div>
         </div>
 
-        {/* Navigation Section */}
-        <SidebarGroup className="px-4">
-          {!isCollapsed && (
-            <SidebarGroupLabel className="text-muted-foreground font-semibold text-xs uppercase tracking-wider mb-3 px-3">
-              Navigation
-            </SidebarGroupLabel>
-          )}
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
-              {filteredItems.map((item, index) => {
-                const active = isActive(item.url);
-                const groupExpanded = isExpanded(item.title, item.url);
+        {/* Navigation Section (scrollable) */}
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hidden">
+          <SidebarGroup className="px-4">
+            {!isCollapsed && (
+              <SidebarGroupLabel className="text-muted-foreground font-semibold text-xs uppercase tracking-wider mb-3 px-3">
+                Navigation
+              </SidebarGroupLabel>
+            )}
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-2">
+                {filteredItems.map((item, index) => {
+                  const active = isActive(item.url);
+                  const groupExpanded = isExpanded(item.title, item.url);
 
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        onClick={handleCloseMobile}
-                        className={`
-                          group relative flex items-center space-x-3 p-3 rounded-xl 
-                          transition-all duration-200 ease-out
-                          ${active
-                            ? "text-primary font-semibold"
-                            : "hover:bg-foreground/8 text-foreground/70 hover:text-foreground"
-                          }
-                          ${!isCollapsed ? "justify-start" : "justify-center"}
-                        `}
-                      >
-                        {/* Active indicator */}
-                        {active && (
-                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary rounded-r-full shadow-[0_0_6px_hsl(var(--sidebar-ring)/0.6)]" />
-                        )}
-                        
-                        {/* Icon */}
-                        <item.icon className={`
-                          h-5 w-5 flex-shrink-0 transition-colors
-                          ${active ? "text-primary" : "text-foreground/60 group-hover:text-foreground"}
-                        `} />
-                        
-                        {/* Text */}
-                        {!isCollapsed && (
-                          <span className="font-medium text-sm transition-colors">
-                            {item.title}
-                          </span>
-                        )}
-                      </NavLink>
-                    </SidebarMenuButton>
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <NavLink
+                          to={item.url}
+                          onClick={handleCloseMobile}
+                          className={`
+                            group relative flex items-center space-x-3 p-3 rounded-xl 
+                            transition-all duration-200 ease-out
+                            ${active
+                              ? "text-primary font-semibold"
+                              : "hover:bg-foreground/8 text-foreground/70 hover:text-foreground"}
+                            ${!isCollapsed ? "justify-start" : "justify-center"}
+                          `}
+                        >
+                          {/* Active indicator */}
+                          {active && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-primary rounded-r-full shadow-[0_0_6px_hsl(var(--sidebar-ring)/0.6)]" />
+                          )}
 
-                    {item.children && item.children.length > 0 && !isCollapsed && (
-                      <SidebarMenuAction
-                        aria-label={groupExpanded ? "Collapse" : "Expand"}
-                        onClick={() => toggleExpanded(item.title)}
-                        className="right-2"
-                      >
-                        {groupExpanded ? (
-                          <ChevronDown className="h-4 w-4" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4" />
-                        )}
-                      </SidebarMenuAction>
-                    )}
+                          {/* Icon */}
+                          <item.icon
+                            className={`
+                              h-5 w-5 flex-shrink-0 transition-colors
+                              ${active ? "text-primary" : "text-foreground/60 group-hover:text-foreground"}
+                            `}
+                          />
 
-                    {/* Submenu for tabs */}
-                    {item.children && item.children.length > 0 && groupExpanded && (
-                      <SidebarMenuSub>
-                        {item.children
-                          .filter((child) => !child.roles || (user && child.roles.includes(user.role)))
-                          .map((child) => {
-                            const childActive = isChildActive(child.url);
-                            return (
-                              <SidebarMenuSubItem key={child.title}>
-                                <SidebarMenuSubButton asChild isActive={childActive}>
-                                  <NavLink
-                                    to={child.url}
-                                    onClick={handleCloseMobile}
-                                  >
-                                    <span>{child.title}</span>
-                                  </NavLink>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                            );
-                          })}
-                      </SidebarMenuSub>
-                    )}
-                  </SidebarMenuItem>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                          {/* Text */}
+                          {!isCollapsed && (
+                            <span className="font-medium text-sm transition-colors">{item.title}</span>
+                          )}
+                        </NavLink>
+                      </SidebarMenuButton>
+
+                      {item.children && item.children.length > 0 && !isCollapsed && (
+                        <SidebarMenuAction
+                          aria-label={groupExpanded ? "Collapse" : "Expand"}
+                          onClick={() => toggleExpanded(item.title)}
+                          className="right-2"
+                        >
+                          {groupExpanded ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                        </SidebarMenuAction>
+                      )}
+
+                      {/* Submenu for tabs */}
+                      {item.children && item.children.length > 0 && groupExpanded && (
+                        <SidebarMenuSub>
+                          {item.children
+                            .filter((child) => !child.roles || (user && child.roles.includes(user.role)))
+                            .map((child) => {
+                              const childActive = isChildActive(child.url);
+                              return (
+                                <SidebarMenuSubItem key={child.title}>
+                                  <SidebarMenuSubButton asChild isActive={childActive}>
+                                    <NavLink to={child.url} onClick={handleCloseMobile}>
+                                      <span>{child.title}</span>
+                                    </NavLink>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              );
+                            })}
+                        </SidebarMenuSub>
+                      )}
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </div>
 
         {/* User Profile Section */}
         {!isCollapsed && user && (
