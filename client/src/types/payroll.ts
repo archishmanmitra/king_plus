@@ -13,7 +13,7 @@ export interface Payslip {
   id: string;
   employeeId: string;
   employeeName: string;
-  payrollRunId: string;
+  payrollRunId?: string;
   month: string;
   year: number;
   basicSalary: number;
@@ -22,6 +22,15 @@ export interface Payslip {
   grossPay: number;
   netPay: number;
   taxDeducted: number;
+  workingDays?: number;
+  presentDays?: number;
+  absentDays?: number;
+  leaveDays?: number;
+  absenceDeduction?: number;
+  cycleStart?: string;
+  cycleEnd?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface SalaryComponent {

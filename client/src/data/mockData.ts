@@ -2420,75 +2420,53 @@ export const mockLeaveRequests: LeaveRequest[] = [
   }
 ];
 
-// Indian Company Holidays 2025
+// Kin-G Technologies Official Holiday List 2025
+// Registered Office: Kolkata, West Bengal
+// Notice No: KNGT/HR/N08, Date: 19.08.2025
 export const indianHolidays2025 = [
   // January 2025
   { date: '2025-01-01', name: 'New Year\'s Day', type: 'national', description: 'Beginning of the Gregorian calendar year' },
-  { date: '2025-01-14', name: 'Makar Sankranti', type: 'religious', description: 'Hindu festival marking the transition of the sun into Capricorn', isOptional: true },
-  { date: '2025-01-15', name: 'Pongal', type: 'regional', description: 'Tamil harvest festival (Southern India)', isOptional: true },
-  { date: '2025-01-26', name: 'Republic Day', type: 'national', description: 'Commemorates the adoption of the Constitution of India' },
-  
-  // February 2025
-  { date: '2025-02-12', name: 'Vasant Panchami', type: 'religious', description: 'Hindu festival dedicated to Goddess Saraswati', isOptional: true },
-  { date: '2025-02-19', name: 'Shivaji Jayanti', type: 'regional', description: 'Birth anniversary of Maratha emperor Chhatrapati Shivaji (Maharashtra)', isOptional: true },
-  { date: '2025-02-26', name: 'Maha Shivratri', type: 'religious', description: 'Hindu festival dedicated to Lord Shiva' },
+  { date: '2025-01-23', name: 'Netaji\'s Birthday', type: 'national', description: 'Birth anniversary of Netaji Subhas Chandra Bose' },
   
   // March 2025
-  { date: '2025-03-13', name: 'Holi (Holika Dahan)', type: 'religious', description: 'Hindu festival of colors - first day' },
-  { date: '2025-03-14', name: 'Holi', type: 'religious', description: 'Hindu festival of colors - main celebration' },
-  { date: '2025-03-31', name: 'Eid ul-Fitr (Tentative)', type: 'religious', description: 'Islamic festival marking the end of Ramadan' },
+  { date: '2025-03-14', name: 'Doljatra', type: 'religious', description: 'Hindu festival of colors (Holi in West Bengal)' },
+  { date: '2025-03-31', name: 'Eid-Ul-Fitr', type: 'religious', description: 'Islamic festival marking the end of Ramadan' },
   
   // April 2025
-  { date: '2025-04-10', name: 'Ram Navami', type: 'religious', description: 'Birth anniversary of Lord Rama' },
-  { date: '2025-04-13', name: 'Baisakhi', type: 'religious', description: 'Sikh New Year and harvest festival (Punjab)', isOptional: true },
-  { date: '2025-04-14', name: 'Ambedkar Jayanti', type: 'national', description: 'Birth anniversary of Dr. B.R. Ambedkar' },
+  { date: '2025-04-10', name: 'Mahavir Jayanti', type: 'religious', description: 'Birth anniversary of Lord Mahavira (Jain festival)' },
+  { date: '2025-04-14', name: 'Birthday of Dr. B. R. Ambedkar', type: 'national', description: 'Birth anniversary of Dr. Bhimrao Ramji Ambedkar' },
+  { date: '2025-04-15', name: 'Bengali New Year\'s Day (Nababarsha)', type: 'regional', description: 'Bengali New Year celebration (Pohela Boishakh)' },
   { date: '2025-04-18', name: 'Good Friday', type: 'religious', description: 'Christian observance commemorating the crucifixion of Jesus Christ' },
   
   // May 2025
-  { date: '2025-05-01', name: 'Labour Day', type: 'national', description: 'International Workers\' Day' },
+  { date: '2025-05-01', name: 'May Day', type: 'national', description: 'International Workers\' Day / Labour Day' },
+  { date: '2025-05-09', name: 'Birthday of Rabindranath Tagore', type: 'regional', description: 'Birth anniversary of Nobel laureate Rabindranath Tagore' },
   { date: '2025-05-12', name: 'Buddha Purnima', type: 'religious', description: 'Birth anniversary of Gautama Buddha' },
   
   // June 2025
-  { date: '2025-06-06', name: 'Eid ul-Adha (Tentative)', type: 'religious', description: 'Islamic festival of sacrifice' },
-  { date: '2025-06-15', name: 'Rath Yatra', type: 'religious', description: 'Hindu chariot festival (Odisha)', isOptional: true },
-  
-  // July 2025
-  { date: '2025-07-06', name: 'Muharram', type: 'religious', description: 'Islamic New Year', isOptional: true },
+  { date: '2025-06-07', name: 'Id-Ud-Zoha (Bakrid)', type: 'religious', description: 'Islamic festival of sacrifice (Eid al-Adha)' },
   
   // August 2025
   { date: '2025-08-15', name: 'Independence Day', type: 'national', description: 'India\'s independence from British rule' },
-  { date: '2025-08-16', name: 'Janmashtami (Gokulashtami)', type: 'religious', description: 'Birth anniversary of Lord Krishna' },
-  { date: '2025-08-29', name: 'Ganesh Chaturthi', type: 'religious', description: 'Hindu festival celebrating Lord Ganesha' },
+  { date: '2025-08-15', name: 'Janmastami', type: 'religious', description: 'Birth anniversary of Lord Krishna' },
   
   // September 2025
-  { date: '2025-09-05', name: 'Milad un-Nabi', type: 'religious', description: 'Birth anniversary of Prophet Muhammad', isOptional: true },
-  { date: '2025-09-15', name: 'Anant Chaturdashi', type: 'religious', description: 'End of Ganesh Chaturthi festivities', isOptional: true },
+  { date: '2025-09-29', name: 'Durga Puja - Maha Saptami', type: 'religious', description: 'Durga Puja - Seventh day (West Bengal\'s biggest festival)' },
+  { date: '2025-09-30', name: 'Durga Puja - Maha Ashtami', type: 'religious', description: 'Durga Puja - Eighth day' },
   
   // October 2025
-  { date: '2025-10-02', name: 'Gandhi Jayanti', type: 'national', description: 'Birth anniversary of Mahatma Gandhi' },
-  { date: '2025-10-20', name: 'Karva Chauth', type: 'religious', description: 'Hindu festival observed by married women', isOptional: true },
-  { date: '2025-10-21', name: 'Dussehra (Vijayadashami)', type: 'religious', description: 'Hindu festival celebrating the victory of good over evil' },
-  { date: '2025-10-31', name: 'Sardar Vallabhbhai Patel Jayanti', type: 'national', description: 'Birth anniversary of Sardar Patel (Rashtriya Ekta Diwas)' },
+  { date: '2025-10-01', name: 'Durga Puja - Maha Nabami', type: 'religious', description: 'Durga Puja - Ninth day' },
+  { date: '2025-10-02', name: 'Durga Puja - Dasami & Birthday of Gandhiji', type: 'national', description: 'Durga Puja finale (Vijayadashami) & Mahatma Gandhi\'s birthday' },
+  { date: '2025-10-06', name: 'Lakshmi Puja', type: 'religious', description: 'Hindu festival dedicated to Goddess Lakshmi' },
+  { date: '2025-10-20', name: 'Kali Puja', type: 'religious', description: 'Hindu festival dedicated to Goddess Kali (Diwali in West Bengal)' },
+  { date: '2025-10-23', name: 'Bhaidooj', type: 'religious', description: 'Hindu festival celebrating brother-sister bond (Bhai Dooj)' },
+  { date: '2025-10-27', name: 'Chhat Puja', type: 'religious', description: 'Hindu festival dedicated to Sun God (Chhath Puja)' },
   
   // November 2025
-  { date: '2025-11-01', name: 'Diwali (Dhanteras)', type: 'religious', description: 'Hindu festival of lights - first day', isOptional: true },
-  { date: '2025-11-02', name: 'Choti Diwali', type: 'religious', description: 'Hindu festival of lights - second day', isOptional: true },
-  { date: '2025-11-03', name: 'Diwali (Lakshmi Puja)', type: 'religious', description: 'Hindu festival of lights - main day' },
-  { date: '2025-11-04', name: 'Govardhan Puja', type: 'religious', description: 'Hindu festival following Diwali', isOptional: true },
-  { date: '2025-11-05', name: 'Bhai Dooj', type: 'religious', description: 'Hindu festival celebrating brother-sister bond', isOptional: true },
-  { date: '2025-11-15', name: 'Guru Nanak Jayanti', type: 'religious', description: 'Birth anniversary of Guru Nanak (Sikh festival)' },
+  { date: '2025-11-05', name: 'Birthday of Guru Nanak', type: 'religious', description: 'Birth anniversary of Guru Nanak (Sikh festival / Guru Nanak Jayanti)' },
   
   // December 2025
-  { date: '2025-12-25', name: 'Christmas Day', type: 'religious', description: 'Christian festival celebrating the birth of Jesus Christ' },
-  { date: '2025-12-31', name: 'New Year\'s Eve', type: 'company', description: 'Company holiday for year-end celebrations' },
-  
-  // Additional Company Holidays
-  { date: '2025-01-02', name: 'New Year Holiday', type: 'company', description: 'Extended New Year celebration' },
-  { date: '2025-04-15', name: 'Good Friday Extended', type: 'company', description: 'Extended Easter weekend', isOptional: true },
-  { date: '2025-08-14', name: 'Independence Day Eve', type: 'company', description: 'Pre-Independence Day celebration', isOptional: true },
-  { date: '2025-10-03', name: 'Gandhi Jayanti Extended', type: 'company', description: 'Extended Gandhi Jayanti weekend', isOptional: true },
-  { date: '2025-12-24', name: 'Christmas Eve', type: 'company', description: 'Pre-Christmas celebration', isOptional: true },
-  { date: '2025-12-26', name: 'Christmas Extended', type: 'company', description: 'Extended Christmas celebration', isOptional: true }
+  { date: '2025-12-25', name: 'Christmas Day', type: 'religious', description: 'Christian festival celebrating the birth of Jesus Christ' }
 ];
 
 export const mockPayrollRuns: PayrollRun[] = [

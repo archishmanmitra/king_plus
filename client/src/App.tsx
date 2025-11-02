@@ -12,6 +12,7 @@ import Employees from "@/pages/Employees";
 import Attendance from "@/pages/Attendance";
 import Leave from "@/pages/Leave";
 import Payroll from "@/pages/Payroll";
+import PayrollSheet from "@/pages/PayrollSheet";
 import Expenses from "@/pages/Expenses";
 import Performance from "@/pages/Performance";
 import Projects from "@/pages/Projects";
@@ -23,6 +24,8 @@ import Invite from "@/pages/Invite";
 import Setup from "@/pages/Setup";
 import TestFlow from "@/pages/TestFlow";
 import Teams from "@/pages/Teams";
+import AuditReport from "@/pages/AuditReport";
+import AwardsAndCelebration from "@/pages/AwardsAndCelebration";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,11 +57,14 @@ const AppRoutes = () => {
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/leave" element={<Leave />} />
         <Route path="/payroll" element={<Payroll />} />
+        <Route path="/payroll-sheet" element={<PayrollSheet />} />
         <Route path="/expenses" element={<Expenses />} />
         <Route path="/performance" element={<Performance />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/project/:projectId" element={<ProjectDetail />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/audit-report" element={<AuditReport />} />
+        <Route path="/awards" element={<AwardsAndCelebration />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/teams" element={<Teams />} />
         <Route path="/test" element={<TestFlow />} />

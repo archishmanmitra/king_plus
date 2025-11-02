@@ -33,6 +33,7 @@ import {
   ChevronRight,
   ChevronDown,
   Sparkles,
+  Award,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -136,6 +137,12 @@ const navigationItems: NavItem[] = [
     roles: ["global_admin", "hr_manager"],
   },
   {
+    title: "My Payslip",
+    url: "/payroll-sheet",
+    icon: FileText,
+    roles: ["global_admin", "hr_manager", "employee", "manager"],
+  },
+  {
     title: "Expenses",
     url: "/expenses",
     icon: FileText,
@@ -163,6 +170,18 @@ const navigationItems: NavItem[] = [
     url: "/reports",
     icon: TrendingUp,
     roles: ["global_admin", "hr_manager", "manager"],
+  },
+  {
+    title: "Audit Report",
+    url: "/audit-report",
+    icon: FileText,
+    roles: ["global_admin", "hr_manager", "manager", "employee"],
+  },
+  {
+    title: "Awards & Celebration",
+    url: "/awards",
+    icon: Award,
+    roles: ["global_admin", "hr_manager", "manager", "employee"],
   },
   {
     title: "Settings",

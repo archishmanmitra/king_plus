@@ -425,22 +425,32 @@ model PayrollRun {
 }
 
 model Payslip {
-  id           String @id @default(cuid())
-  employeeId   String
-  employeeName String
-  payrollRunId String
-  month        String
-  year         Int
-  basicSalary  Float
-  allowances   Json // Array of SalaryComponent
-  deductions   Json // Array of SalaryComponent
-  grossPay     Float
-  netPay       Float
-  taxDeducted  Float
+  id               String    @id @default(cuid())
+  employeeId       String
+  employeeName     String
+  payrollRunId     String?
+  month            String
+  year             Int
+  basicSalary      Float
+  allowances       Json      // Array of SalaryComponent
+  deductions       Json      // Array of SalaryComponent
+  grossPay         Float
+  netPay           Float
+  taxDeducted      Float
+  workingDays      Int?      // Total working days in cycle
+  presentDays      Int?      // Days present
+  absentDays       Int?      // Days absent
+  leaveDays        Int?      // Days on approved leave
+  absenceDeduction Float?    // Total absence deduction amount
+  cycleStart       DateTime? // Payroll cycle start date
+  cycleEnd         DateTime? // Payroll cycle end date
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  employee   Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  payrollRun PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employee   Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  payrollRun PayrollRun? @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
 
+  @@unique([employeeId, month, year])
   @@map("payslips")
 }
 
@@ -693,4 +703,57 @@ model Experience {
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@map("experiences")
+}
+
+enum AuditReportStatus {
+  draft
+  generated
+  published
+}
+
+model AuditReport {
+  id          String            @id @default(cuid())
+  title       String
+  description String?
+  reportType  String // 'attendance' | 'payroll' | 'leave' | 'performance' | 'general'
+  status      AuditReportStatus @default(draft)
+  generatedBy String // Admin user ID
+  fileUrl     String? // URL to the generated report file
+  startDate   DateTime?
+  endDate     DateTime?
+  metadata    Json? // Additional report parameters
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("audit_reports")
+}
+
+enum AwardType {
+  certificate
+  appreciation
+  achievement
+  milestone
+  recognition
+}
+
+model Award {
+  id               String    @id @default(cuid())
+  title            String
+  description      String
+  awardType        AwardType
+  recipientId      String // Employee ID
+  recipientName    String // Employee name for display
+  issuedBy         String // Admin user ID
+  issuedByName     String // Admin name for display
+  certificateUrl   String? // URL to certificate image/PDF
+  badgeIcon        String? // Icon for the award badge
+  isPublic         Boolean   @default(true) // Whether visible to all employees
+  celebrationDate  DateTime  @default(now())
+  metadata         Json? // Additional award details
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@map("awards")
+  @@index([recipientId])
+  @@index([celebrationDate])
 }

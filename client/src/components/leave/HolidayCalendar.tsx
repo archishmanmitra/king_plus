@@ -24,9 +24,27 @@ export const HolidayCalendar: React.FC<HolidayCalendarProps> = ({
   selectedDate,
   onDateSelect
 }) => {
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date(2025, 0, 1)); // January 2025
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date()); // Start with current month
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clickedDate, setClickedDate] = useState<Date | null>(null);
+
+  // Helper function to format date in YYYY-MM-DD format in local timezone
+  const formatDateLocal = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Helper function to format date string (YYYY-MM-DD) to display format
+  const formatDateString = (dateStr: string): string => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString('en-US', { 
+      day: 'numeric', 
+      month: 'short' 
+    });
+  };
 
   // Create a map of holidays by date for easy lookup
   const holidayMap = new Map<string, Holiday[]>();
@@ -38,7 +56,7 @@ export const HolidayCalendar: React.FC<HolidayCalendarProps> = ({
 
   // Function to get holidays for a specific date
   const getHolidaysForDate = (date: Date): Holiday[] => {
-    const dateString = date.toISOString().split('T')[0];
+    const dateString = formatDateLocal(date);
     return holidayMap.get(dateString) || [];
   };
 
@@ -97,12 +115,12 @@ export const HolidayCalendar: React.FC<HolidayCalendarProps> = ({
 
   // Get holiday statistics for current month
   const getMonthStats = (month: Date) => {
-    const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
-    const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+    const year = month.getFullYear();
+    const monthNum = month.getMonth() + 1;
     
     const monthHolidays = holidays.filter(holiday => {
-      const holidayDate = new Date(holiday.date);
-      return holidayDate >= monthStart && holidayDate <= monthEnd;
+      const [holidayYear, holidayMonth] = holiday.date.split('-').map(Number);
+      return holidayYear === year && holidayMonth === monthNum;
     });
 
     return {
@@ -255,19 +273,20 @@ export const HolidayCalendar: React.FC<HolidayCalendarProps> = ({
               <div className="space-y-2">
                 {holidays
                   .filter(holiday => {
-                    const holidayDate = new Date(holiday.date);
-                    return holidayDate.getMonth() === currentMonth.getMonth() && 
-                           holidayDate.getFullYear() === currentMonth.getFullYear();
+                    const [holidayYear, holidayMonth] = holiday.date.split('-').map(Number);
+                    return holidayYear === currentMonth.getFullYear() && 
+                           holidayMonth === (currentMonth.getMonth() + 1);
                   })
-                  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                  .sort((a, b) => {
+                    const [aYear, aMonth, aDay] = a.date.split('-').map(Number);
+                    const [bYear, bMonth, bDay] = b.date.split('-').map(Number);
+                    return aYear - bYear || aMonth - bMonth || aDay - bDay;
+                  })
                   .map((holiday, index) => (
                     <div key={index} className="flex items-center justify-between p-2 bg-background rounded border">
                       <div className="flex items-center space-x-3">
                         <div className="text-sm font-medium">
-                          {new Date(holiday.date).toLocaleDateString('en-US', { 
-                            day: 'numeric', 
-                            month: 'short' 
-                          })}
+                          {formatDateString(holiday.date)}
                         </div>
                         <div>
                           <div className="font-medium">{holiday.name}</div>

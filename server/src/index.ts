@@ -10,6 +10,9 @@ import invitationsRouter from './routers/invitations'
 import authRouter from './routers/auth'
 import leaveRouter from './routers/leave'
 import roleAssignmentRouter from './routers/roleAssignment'
+import payrollRouter from './routers/payroll'
+import auditReportRouter from './routers/auditReport'
+import awardsRouter from './routers/awards'
 
 dotenv.config()
 
@@ -17,7 +20,7 @@ const app = express()
 const PORT = process.env.PORT || 5001
 
 // Security & CORS
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:8080,http://localhost:5173' || 'https://king-plus.onrender.com')
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:8080')
   .split(',')
   .map(o => o.trim())
   .filter(Boolean)
@@ -53,6 +56,9 @@ app.use('/api/invitations', invitationsRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/leave', leaveRouter)
 app.use('/api/roles', roleAssignmentRouter)
+app.use('/api/payroll', payrollRouter)
+app.use('/api/audit-reports', auditReportRouter)
+app.use('/api/awards', awardsRouter)
 
 
 app.listen(PORT,()=>{
