@@ -46,7 +46,7 @@ const Expenses: React.FC = () => {
   const [reportingManager, setReportingManager] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const [location, setLocation] = useState('');
+  const [expenseLocation, setExpenseLocation] = useState('');
   const [currency, setCurrency] = useState('USD');
   const [billNumber, setBillNumber] = useState('');
   const [percentageOfOfficialUse, setPercentageOfOfficialUse] = useState('');
@@ -61,7 +61,7 @@ const Expenses: React.FC = () => {
     e.preventDefault();
     
     // Validate required fields
-    if (!amount || !category || !description || !reportingManager || !fromDate || !toDate || !location || !billNumber || !percentageOfOfficialUse || !vendor) {
+    if (!amount || !category || !description || !reportingManager || !fromDate || !toDate || !expenseLocation || !billNumber || !percentageOfOfficialUse || !vendor) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields.",
@@ -84,7 +84,7 @@ const Expenses: React.FC = () => {
       reportingManager,
       fromDate,
       toDate,
-      location,
+      location: expenseLocation,
       currency,
       billNumber,
       percentageOfOfficialUse: parseInt(percentageOfOfficialUse),
@@ -114,7 +114,7 @@ const Expenses: React.FC = () => {
     setReportingManager('');
     setFromDate('');
     setToDate('');
-    setLocation('');
+    setExpenseLocation('');
     setCurrency('USD');
     setBillNumber('');
     setPercentageOfOfficialUse('');
@@ -478,8 +478,8 @@ const Expenses: React.FC = () => {
                   <Input
                     id="location"
                     placeholder="Enter location"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
+                    value={expenseLocation}
+                    onChange={(e) => setExpenseLocation(e.target.value)}
                     required
                   />
                 </div>
