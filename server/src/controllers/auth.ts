@@ -136,9 +136,7 @@ export const setup = async (req: Request, res: Response) => {
     // Create a basic employee record for the admin
     const employee = await prisma.employee.create({
       data: {
-        employeeId: `ADMIN${Date.now()}`,
-        joinDate: new Date(),
-        status: 'active'
+        employeeId: `ADMIN${Date.now()}`
       }
     })
 

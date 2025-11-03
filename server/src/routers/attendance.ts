@@ -14,7 +14,7 @@ router.post('/:id/reject', reject)
 router.get('/employee/:employeeId', getMyAttendance)
 router.get('/approvals/:approverId', getApprovalsForManager)
 router.get('/approved', authenticateToken, getApprovedAttendances)
-router.get('/today', getTodayAttendance)
+router.get('/today', authenticateToken, getTodayAttendance)
 router.get('/today-by-role', authenticateToken, getTodayAttendanceByRole)
 
 export default router

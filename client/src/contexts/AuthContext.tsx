@@ -61,6 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           // Verify token with server
           const response = await fetch(`${API_URL}/auth/verify`, {
+            credentials: 'include',
             headers: {
               'Authorization': `Bearer ${token}`,
             },
@@ -76,8 +77,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } catch (error) {
           console.error('Token verification failed:', error);
-          localStorage.removeItem('hrms_token');
-          localStorage.removeItem('hrms_user');
+          // Don't clear storage immediately on error - might be network issue
+          // localStorage.removeItem('hrms_token');
+          // localStorage.removeItem('hrms_user');
         }
       }
       

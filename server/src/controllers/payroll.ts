@@ -102,7 +102,7 @@ export const getAttendanceSheet = async (req: Request, res: Response) => {
     
     // Create a map of attendance records by date
     const attendanceMap = new Map(
-      attendances.map(att => [
+      attendances.map((att: any) => [
         startOfDay(new Date(att.workDate)).getTime(),
         att
       ])
@@ -130,18 +130,19 @@ export const getAttendanceSheet = async (req: Request, res: Response) => {
       const isOnLeave = leaveDates.has(dayTime)
       
       let status: 'present' | 'absent' | 'leave' = 'absent'
+      const attendanceRecord = attendance as any
       if (isOnLeave) {
         status = 'leave'
-      } else if (attendance && attendance.clockIn) {
+      } else if (attendanceRecord && attendanceRecord.clockIn) {
         status = 'present'
       }
       
       return {
         date: day,
         status,
-        clockIn: attendance?.clockIn || null,
-        clockOut: attendance?.clockOut || null,
-        totalHours: attendance?.totalHours || 0,
+        clockIn: attendanceRecord?.clockIn || null,
+        clockOut: attendanceRecord?.clockOut || null,
+        totalHours: attendanceRecord?.totalHours || 0,
         isOnLeave
       }
     })
@@ -260,7 +261,7 @@ export const generatePayslip = async (req: Request, res: Response) => {
     
     // Create attendance map
     const attendanceMap = new Map(
-      attendances.map(att => [
+      attendances.map((att: any) => [
         startOfDay(new Date(att.workDate)).getTime(),
         att
       ])

@@ -196,9 +196,14 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
     try {
       setIsSubmitting(true);
       // Create invitation only (no employee record here). The legacy full employee creation remains available elsewhere.
+      const token = localStorage.getItem('hrms_token');
       const response = await fetch(`${API_URL}/invitations`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           email: employeeData.userDetails.email,
           name: employeeData.userDetails.username,

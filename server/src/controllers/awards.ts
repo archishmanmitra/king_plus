@@ -145,7 +145,7 @@ export const createAward = async (req: Request, res: Response) => {
 
     const issuedByName = adminEmployee?.official 
       ? `${adminEmployee.official.firstName} ${adminEmployee.official.lastName}`.trim()
-      : requestingUser.name || 'Unknown Admin'
+      : requestingUser.email || 'Unknown Admin'
 
     const award = await prisma.award.create({
       data: {

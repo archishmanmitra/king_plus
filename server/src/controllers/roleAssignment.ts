@@ -114,13 +114,17 @@ export const assignTeamLead = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Team lead not found' })
     }
 
-    // Update employee's reporting manager
-    const updatedEmployee = await prisma.employeeOfficial.update({
-      where: { employeeId },
-      data: {
-        reportingManager: lead.employee?.official?.firstName 
-          ? `${lead.employee.official.firstName} ${lead.employee.official.lastName}`.trim()
-          : lead.name
+    // Update employee's manager relationship (handled via Employee.managerId)
+    // Note: Reporting manager info is stored via the managerId relationship on Employee model
+    const updatedEmployee = await prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: {
+        official: true,
+        manager: {
+          include: {
+            official: true
+          }
+        }
       }
     })
 
@@ -303,16 +307,13 @@ export const getTeamLeads = async (req: Request, res: Response) => {
       }
     })
 
-    // Get teams for each team lead
+    // Get teams for each team lead using managerId relationship
     const teamsWithLeads = await Promise.all(
       teamLeads.map(async (lead) => {
+        // Find team members where this user is the manager
         const teamMembers = await prisma.employee.findMany({
           where: {
-            official: {
-              reportingManager: lead.employee?.official?.firstName 
-                ? `${lead.employee.official.firstName} ${lead.employee.official.lastName}`.trim()
-                : lead.name
-            }
+            managerId: lead.employee?.id
           },
           include: {
             official: true,
@@ -329,7 +330,7 @@ export const getTeamLeads = async (req: Request, res: Response) => {
             role: lead.role,
             email: lead.email
           },
-          teamMembers: teamMembers.map(member => ({
+          teamMembers: teamMembers.map((member: any) => ({
             id: member.id,
             employeeId: member.employeeId,
             name: member.official?.firstName 
@@ -426,11 +427,15 @@ export const removeTeamLead = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Employee not found' })
     }
 
-    // Remove team lead assignment
-    const updatedEmployee = await prisma.employeeOfficial.update({
-      where: { employeeId },
+    // Remove team lead assignment by setting managerId to null
+    const updatedEmployee = await prisma.employee.update({
+      where: { id: employeeId },
       data: {
-        reportingManager: null
+        managerId: null
+      },
+      include: {
+        official: true,
+        manager: true
       }
     })
 

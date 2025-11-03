@@ -79,15 +79,15 @@ export async function getMonthlyPayroll(): Promise<number> {
 }
 
 // Get my leave balance
-export async function getMyLeaveBalance(employeeId: string): Promise<number> {
+export async function getMyLeaveBalance(): Promise<number> {
   try {
-    const res = await fetch(`${API_URL}/leave/balance/${employeeId}`, { 
+    const res = await fetch(`${API_URL}/leave/balance/me`, { 
       credentials: 'include', 
       headers: { ...authHeaders() } 
     });
     if (!res.ok) throw new Error('Failed to fetch leave balance');
     const data = await res.json();
-    return data.balance?.totalDays || 0;
+    return data.leaveBalance?.total || 0;
   } catch (error) {
     console.error('Error fetching leave balance:', error);
     return 0;
@@ -133,7 +133,7 @@ export async function getDashboardStats(employeeId?: string): Promise<DashboardS
       getPresentToday(),
       getPendingLeaves(),
       getMonthlyPayroll(),
-      employeeId ? getMyLeaveBalance(employeeId) : Promise.resolve(0),
+      getMyLeaveBalance(),
       employeeId ? getHoursThisWeek(employeeId) : Promise.resolve(0)
     ]);
 
