@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -55,11 +57,35 @@ interface AuditReport {
 const AuditReport: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [reports, setReports] = useState<AuditReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [showCreateForm, setShowCreateForm] = useState(false);
+
+  // Tab state management
+  const searchParams = new URLSearchParams(location.search);
+  const urlTab = searchParams.get('tab');
+  const defaultTab = 'all';
+  const [activeTab, setActiveTab] = useState(urlTab || defaultTab);
+
+  // Keep active tab in sync with URL changes
+  useEffect(() => {
+    const nextTab = urlTab || defaultTab;
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
+
+  const onTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(location.search);
+    params.set('tab', tab);
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+  };
 
   // Form state
   const [formData, setFormData] = useState({
@@ -220,12 +246,16 @@ const AuditReport: React.FC = () => {
     }
   };
 
-  const filteredReports = reports.filter((report) => {
-    const matchesSearch = report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         report.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || report.reportType === filterType;
-    return matchesSearch && matchesFilter;
-  });
+  // Filter reports based on active tab and other filters
+  const filteredReports = useMemo(() => {
+    return reports.filter((report) => {
+      const matchesSearch = report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           report.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter = filterType === 'all' || report.reportType === filterType;
+      const matchesTab = activeTab === 'all' || report.status === activeTab;
+      return matchesSearch && matchesFilter && matchesTab;
+    });
+  }, [reports, searchTerm, filterType, activeTab]);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, any> = {
@@ -268,24 +298,25 @@ const AuditReport: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <FileText className="w-8 h-8 text-primary" />
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2 tracking-tight">
+            <FileText className="w-6 h-6 md:w-8 md:h-8 text-primary" />
             Audit Reports
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm md:text-base text-muted-foreground mt-1 md:mt-2">
             {isAdmin
               ? 'Create and manage audit reports for your organization'
               : 'View and download available audit reports'}
           </p>
         </div>
         {isAdmin && (
-          <Button onClick={() => setShowCreateForm(!showCreateForm)} className="gap-2">
+          <Button onClick={() => setShowCreateForm(!showCreateForm)} className="gap-2 w-full sm:w-auto text-sm font-semibold">
             <Plus className="w-4 h-4" />
-            Create Report
+            <span className="hidden sm:inline">Create Report</span>
+            <span className="sm:hidden">Create</span>
           </Button>
         )}
       </div>
@@ -357,53 +388,66 @@ const AuditReport: React.FC = () => {
                   rows={3}
                 />
               </div>
-              <div className="flex gap-2 justify-end">
+              <div className="flex flex-col space-y-2 sm:flex-row sm:justify-end sm:space-y-0 sm:gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setShowCreateForm(false)}
+                  className="w-full sm:w-auto"
                 >
                   Cancel
                 </Button>
-                <Button type="submit">Create Report</Button>
+                <Button type="submit" className="w-full sm:w-auto">
+                  <span className="hidden sm:inline">Create Report</span>
+                  <span className="sm:hidden">Create</span>
+                </Button>
               </div>
             </form>
           </CardContent>
         </Card>
       )}
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search reports..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="w-full md:w-48">
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger>
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="general">General</SelectItem>
-                  <SelectItem value="attendance">Attendance</SelectItem>
-                  <SelectItem value="payroll">Payroll</SelectItem>
-                  <SelectItem value="leave">Leave</SelectItem>
-                  <SelectItem value="performance">Performance</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="all" className="text-xs sm:text-sm">All Reports</TabsTrigger>
+          <TabsTrigger value="draft" className="text-xs sm:text-sm">Draft</TabsTrigger>
+          <TabsTrigger value="generated" className="text-xs sm:text-sm">Generated</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={activeTab} className="space-y-4">
+          {/* Filters */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Search reports..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div className="w-full md:w-48">
+                  <Select value={filterType} onValueChange={setFilterType}>
+                    <SelectTrigger>
+                      <Filter className="w-4 h-4 mr-2" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="general">General</SelectItem>
+                      <SelectItem value="attendance">Attendance</SelectItem>
+                      <SelectItem value="payroll">Payroll</SelectItem>
+                      <SelectItem value="leave">Leave</SelectItem>
+                      <SelectItem value="performance">Performance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
       {/* Reports Table */}
       <Card>
@@ -426,12 +470,12 @@ const AuditReport: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Period</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="min-w-[200px]">Title</TableHead>
+                    <TableHead className="min-w-[100px]">Type</TableHead>
+                    <TableHead className="min-w-[150px] hidden lg:table-cell">Period</TableHead>
+                    <TableHead className="min-w-[100px]">Status</TableHead>
+                    <TableHead className="min-w-[120px] hidden md:table-cell">Created</TableHead>
+                    <TableHead className="text-right min-w-[120px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -450,7 +494,7 @@ const AuditReport: React.FC = () => {
                       <TableCell>
                         <Badge variant="outline">{getReportTypeLabel(report.reportType)}</Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden lg:table-cell">
                         <div className="text-sm">
                           {report.startDate && report.endDate ? (
                             <div className="flex items-center gap-1">
@@ -466,11 +510,11 @@ const AuditReport: React.FC = () => {
                         </div>
                       </TableCell>
                       <TableCell>{getStatusBadge(report.status)}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-sm text-muted-foreground hidden md:table-cell">
                         {format(new Date(report.createdAt), 'MMM dd, yyyy')}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex gap-2 justify-end flex-wrap">
                           {isAdmin && report.status === 'draft' && (
                             <Button
                               size="sm"
@@ -479,7 +523,8 @@ const AuditReport: React.FC = () => {
                               className="gap-2"
                             >
                               <FileDown className="w-4 h-4" />
-                              Generate
+                              <span className="hidden sm:inline">Generate</span>
+                              <span className="sm:hidden">Gen</span>
                             </Button>
                           )}
                           {report.status === 'generated' || report.status === 'published' ? (
@@ -489,7 +534,8 @@ const AuditReport: React.FC = () => {
                               className="gap-2"
                             >
                               <Download className="w-4 h-4" />
-                              Download
+                              <span className="hidden sm:inline">Download</span>
+                              <span className="sm:hidden">DL</span>
                             </Button>
                           ) : null}
                         </div>
@@ -502,6 +548,8 @@ const AuditReport: React.FC = () => {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

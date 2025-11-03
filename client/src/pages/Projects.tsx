@@ -1,27 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockProjects, mockTasks, mockEmployees } from '@/data/mockData';
 import { FolderOpen, Plus, Users, Clock, Calendar, DollarSign, Eye } from 'lucide-react';
 import NewProjectModal from '@/components/modals/NewProjectModal';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Projects: React.FC = () => {
-  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+  const { user } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+
+  // Tab state management
+  const searchParams = new URLSearchParams(location.search);
+  const urlTab = searchParams.get('tab');
+  const defaultTab = 'all';
+  const [activeTab, setActiveTab] = useState(urlTab || defaultTab);
+
+  // Keep active tab in sync with URL changes
+  useEffect(() => {
+    const nextTab = urlTab || defaultTab;
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
+
+  const onTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(location.search);
+    params.set('tab', tab);
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+  };
 
   const handleNewProject = (projectData: any) => {
     // Here you would typically send the data to your backend
     console.log('New project data:', projectData);
     // For now, we'll just close the modal
     setIsNewProjectModalOpen(false);
-  };
-
-  const handleProjectClick = (projectId: string) => {
-    navigate(`/project/${projectId}`);
   };
 
   const getProjectMembers = (memberIds: string[]) => {
@@ -48,21 +70,53 @@ const Projects: React.FC = () => {
     }).format(amount);
   };
 
+  // Filter projects based on active tab
+  const filteredProjects = useMemo(() => {
+    switch (activeTab) {
+      case 'my-projects':
+        // Filter projects where user is a team member (simplified check)
+        return mockProjects.filter(project => 
+          project.teamMembers.includes(user?.employeeId || '')
+        );
+      case 'active':
+        return mockProjects.filter(project => project.status === 'active');
+      case 'completed':
+        return mockProjects.filter(project => project.status === 'completed');
+      case 'all':
+      default:
+        return mockProjects;
+    }
+  }, [activeTab, user?.employeeId]);
+
+  const handleProjectClick = (projectId: string) => {
+    navigate(`/project/${projectId}`);
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Project Management</h1>
-          <p className="text-muted-foreground">Manage projects and track progress</p>
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Project Management</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-1 md:mt-2">Manage projects and track progress</p>
         </div>
-        <Button onClick={() => setIsNewProjectModalOpen(true)}>
+        <Button onClick={() => setIsNewProjectModalOpen(true)} className="w-full sm:w-auto text-sm font-semibold">
           <Plus className="h-4 w-4 mr-2" />
-          New Project
+          <span className="hidden sm:inline">New Project</span>
+          <span className="sm:hidden">New</span>
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockProjects.map((project) => {
+      <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="all" className="text-xs sm:text-sm">All Projects</TabsTrigger>
+          <TabsTrigger value="my-projects" className="text-xs sm:text-sm">My Projects</TabsTrigger>
+          <TabsTrigger value="active" className="text-xs sm:text-sm">Active</TabsTrigger>
+          <TabsTrigger value="completed" className="text-xs sm:text-sm">Completed</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={activeTab} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProjects.map((project) => {
           const members = getProjectMembers(project.teamMembers);
           return (
             <Card 
@@ -97,7 +151,7 @@ const Projects: React.FC = () => {
               
               <CardContent className="space-y-4">
                 {/* Project Stats */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
                   <div className="flex items-center space-x-2">
                     <DollarSign className="h-4 w-4 text-green-600" />
                     <span className="font-medium">{formatCurrency(project.budget)}</span>
@@ -181,7 +235,9 @@ const Projects: React.FC = () => {
             </Card>
           );
         })}
-      </div>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <NewProjectModal
         isOpen={isNewProjectModalOpen}

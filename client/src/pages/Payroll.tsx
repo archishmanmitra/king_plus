@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +10,31 @@ import { mockPayrollRuns, mockEmployees } from '@/data/mockData';
 import { DollarSign, Play, Download, FileText, Calculator, Clock } from 'lucide-react';
 
 const Payroll: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+
+  // Tab state management
+  const searchParams = new URLSearchParams(location.search);
+  const urlTab = searchParams.get('tab');
+  const defaultTab = 'wizard';
+  const [activeTab, setActiveTab] = useState(urlTab || defaultTab);
+
+  // Keep active tab in sync with URL changes
+  useEffect(() => {
+    const nextTab = urlTab || defaultTab;
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
+
+  const onTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(location.search);
+    params.set('tab', tab);
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+  };
 
   const payrollSteps = [
     { id: 1, title: 'Attendance Review', completed: true },
@@ -29,26 +54,28 @@ const Payroll: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Payroll Management</h1>
-          <p className="text-muted-foreground">Process and manage employee payroll</p>
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Payroll Management</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-1 md:mt-2">Process and manage employee payroll</p>
         </div>
-        <div className="flex space-x-2">
-          <Button variant="outline">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+          <Button variant="outline" className="w-full sm:w-auto text-sm font-semibold">
             <Download className="h-4 w-4 mr-2" />
-            Export Reports
+            <span className="hidden sm:inline">Export Reports</span>
+            <span className="sm:hidden">Export</span>
           </Button>
-          <Button>
+          <Button className="w-full sm:w-auto text-sm font-semibold">
             <Play className="h-4 w-4 mr-2" />
-            Run Payroll
+            <span className="hidden sm:inline">Run Payroll</span>
+            <span className="sm:hidden">Run</span>
           </Button>
         </div>
       </div>
 
       {/* Payroll Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -110,11 +137,11 @@ const Payroll: React.FC = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="wizard" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="wizard">Payroll Wizard</TabsTrigger>
-          <TabsTrigger value="history">Payroll History</TabsTrigger>
-          <TabsTrigger value="preview">Preview & Approve</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-4">
+        <TabsList className="w-full grid grid-cols-3">
+          <TabsTrigger value="wizard" className="text-xs sm:text-sm">Payroll Wizard</TabsTrigger>
+          <TabsTrigger value="history" className="text-xs sm:text-sm">Payroll History</TabsTrigger>
+          <TabsTrigger value="preview" className="text-xs sm:text-sm">Preview & Approve</TabsTrigger>
         </TabsList>
 
         <TabsContent value="wizard">
@@ -171,10 +198,11 @@ const Payroll: React.FC = () => {
                 ))}
               </div>
 
-              <div className="flex space-x-4">
+              <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-4">
                 <Button 
                   onClick={() => setCurrentStep(Math.min(currentStep + 1, payrollSteps.length))}
                   disabled={currentStep === payrollSteps.length}
+                  className="w-full sm:w-auto"
                 >
                   Next Step
                 </Button>
@@ -182,6 +210,7 @@ const Payroll: React.FC = () => {
                   variant="outline"
                   onClick={() => setCurrentStep(Math.max(currentStep - 1, 1))}
                   disabled={currentStep === 1}
+                  className="w-full sm:w-auto"
                 >
                   Previous Step
                 </Button>
@@ -199,18 +228,19 @@ const Payroll: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Period</TableHead>
-                    <TableHead>Employees</TableHead>
-                    <TableHead>Total Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Processed By</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[100px]">Period</TableHead>
+                      <TableHead className="min-w-[80px]">Employees</TableHead>
+                      <TableHead className="min-w-[120px]">Total Amount</TableHead>
+                      <TableHead className="min-w-[100px]">Status</TableHead>
+                      <TableHead className="min-w-[120px] hidden lg:table-cell">Processed By</TableHead>
+                      <TableHead className="min-w-[100px] hidden md:table-cell">Date</TableHead>
+                      <TableHead className="text-right min-w-[100px]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
                   {mockPayrollRuns.map((run) => (
                     <TableRow key={run.id}>
@@ -229,15 +259,17 @@ const Payroll: React.FC = () => {
                           {run.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>{run.processedBy}</TableCell>
-                      <TableCell>{new Date(run.createdDate).toLocaleDateString()}</TableCell>
+                      <TableCell className="hidden lg:table-cell">{run.processedBy}</TableCell>
+                      <TableCell className="hidden md:table-cell">{new Date(run.createdDate).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex space-x-2 justify-end">
                           <Button size="sm" variant="outline">
                             <FileText className="h-4 w-4" />
+                            <span className="sr-only">View</span>
                           </Button>
                           <Button size="sm" variant="outline">
                             <Download className="h-4 w-4" />
+                            <span className="sr-only">Download</span>
                           </Button>
                         </div>
                       </TableCell>
@@ -245,6 +277,7 @@ const Payroll: React.FC = () => {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -274,14 +307,16 @@ const Payroll: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex space-x-4">
-                  <Button className="bg-success hover:bg-success/90">
-                    Approve & Process Payroll
+                <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-4">
+                  <Button className="bg-success hover:bg-success/90 w-full sm:w-auto">
+                    <span className="hidden sm:inline">Approve & Process Payroll</span>
+                    <span className="sm:hidden">Approve & Process</span>
                   </Button>
-                  <Button variant="outline">
-                    Generate Preview Report
+                  <Button variant="outline" className="w-full sm:w-auto">
+                    <span className="hidden sm:inline">Generate Preview Report</span>
+                    <span className="sm:hidden">Generate Report</span>
                   </Button>
-                  <Button variant="destructive">
+                  <Button variant="destructive" className="w-full sm:w-auto">
                     Cancel Payroll Run
                   </Button>
                 </div>

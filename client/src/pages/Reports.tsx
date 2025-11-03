@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,8 +21,32 @@ import {
 } from 'lucide-react';
 
 const Reports: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState('this-month');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
+
+  // Tab state management
+  const searchParams = new URLSearchParams(location.search);
+  const urlTab = searchParams.get('tab');
+  const defaultTab = 'attendance';
+  const [activeTab, setActiveTab] = useState(urlTab || defaultTab);
+
+  // Keep active tab in sync with URL changes
+  useEffect(() => {
+    const nextTab = urlTab || defaultTab;
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
+
+  const onTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(location.search);
+    params.set('tab', tab);
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+  };
 
   const generateReport = (type: string) => {
     console.log(`Generating ${type} report`);
@@ -55,15 +80,15 @@ const Reports: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Reports & Analytics</h1>
-          <p className="text-muted-foreground">Comprehensive insights and data analysis</p>
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Reports & Analytics</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-1 md:mt-2">Comprehensive insights and data analysis</p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 w-full md:w-auto">
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -74,19 +99,21 @@ const Reports: React.FC = () => {
               <SelectItem value="custom">Custom Range</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline">
+          <Button variant="outline" className="w-full sm:w-auto text-sm font-semibold">
             <Filter className="h-4 w-4 mr-2" />
-            Filter
+            <span className="hidden sm:inline">Filter</span>
+            <span className="sm:hidden">Filter</span>
           </Button>
-          <Button>
+          <Button className="w-full sm:w-auto text-sm font-semibold">
             <Download className="h-4 w-4 mr-2" />
-            Export All
+            <span className="hidden sm:inline">Export All</span>
+            <span className="sm:hidden">Export</span>
           </Button>
         </div>
       </div>
 
       {/* Executive Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -140,12 +167,12 @@ const Reports: React.FC = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="attendance" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="attendance">Attendance</TabsTrigger>
-          <TabsTrigger value="leave">Leave</TabsTrigger>
-          <TabsTrigger value="payroll">Payroll</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+          <TabsTrigger value="attendance" className="text-xs sm:text-sm">Attendance</TabsTrigger>
+          <TabsTrigger value="leave" className="text-xs sm:text-sm">Leave</TabsTrigger>
+          <TabsTrigger value="payroll" className="text-xs sm:text-sm">Payroll</TabsTrigger>
+          <TabsTrigger value="performance" className="text-xs sm:text-sm">Performance</TabsTrigger>
         </TabsList>
 
         <TabsContent value="attendance">
@@ -181,14 +208,16 @@ const Reports: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 flex space-x-2">
-                  <Button size="sm" onClick={() => generateReport('attendance')}>
+                <div className="mt-4 flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                  <Button size="sm" onClick={() => generateReport('attendance')} className="w-full sm:w-auto">
                     <FileText className="h-4 w-4 mr-1" />
-                    Generate Report
+                    <span className="hidden sm:inline">Generate Report</span>
+                    <span className="sm:hidden">Generate</span>
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => exportReport('csv')}>
+                  <Button size="sm" variant="outline" onClick={() => exportReport('csv')} className="w-full sm:w-auto">
                     <Download className="h-4 w-4 mr-1" />
-                    Export CSV
+                    <span className="hidden sm:inline">Export CSV</span>
+                    <span className="sm:hidden">Export</span>
                   </Button>
                 </div>
               </CardContent>
@@ -264,14 +293,16 @@ const Reports: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 flex space-x-2">
-                  <Button size="sm" onClick={() => generateReport('leave')}>
+                <div className="mt-4 flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                  <Button size="sm" onClick={() => generateReport('leave')} className="w-full sm:w-auto">
                     <FileText className="h-4 w-4 mr-1" />
-                    Generate Report
+                    <span className="hidden sm:inline">Generate Report</span>
+                    <span className="sm:hidden">Generate</span>
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => exportReport('pdf')}>
+                  <Button size="sm" variant="outline" onClick={() => exportReport('pdf')} className="w-full sm:w-auto">
                     <Download className="h-4 w-4 mr-1" />
-                    Export PDF
+                    <span className="hidden sm:inline">Export PDF</span>
+                    <span className="sm:hidden">Export</span>
                   </Button>
                 </div>
               </CardContent>
@@ -343,14 +374,16 @@ const Reports: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 flex space-x-2">
-                  <Button size="sm" onClick={() => generateReport('payroll')}>
+                <div className="mt-4 flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                  <Button size="sm" onClick={() => generateReport('payroll')} className="w-full sm:w-auto">
                     <FileText className="h-4 w-4 mr-1" />
-                    Generate Report
+                    <span className="hidden sm:inline">Generate Report</span>
+                    <span className="sm:hidden">Generate</span>
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => exportReport('excel')}>
+                  <Button size="sm" variant="outline" onClick={() => exportReport('excel')} className="w-full sm:w-auto">
                     <Download className="h-4 w-4 mr-1" />
-                    Export Excel
+                    <span className="hidden sm:inline">Export Excel</span>
+                    <span className="sm:hidden">Export</span>
                   </Button>
                 </div>
               </CardContent>
@@ -393,7 +426,7 @@ const Reports: React.FC = () => {
               <CardDescription>Employee performance metrics and trends</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="text-center p-4 bg-primary/10 rounded-lg">
                   <div className="text-2xl font-bold text-primary">4.2</div>
                   <div className="text-sm text-muted-foreground">Average Rating</div>

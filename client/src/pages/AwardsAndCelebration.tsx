@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -69,12 +71,36 @@ interface Employee {
 const AwardsAndCelebration: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [awards, setAwards] = useState<AwardData[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+
+  // Tab state management
+  const searchParams = new URLSearchParams(location.search);
+  const urlTab = searchParams.get('tab');
+  const defaultTab = 'all';
+  const [activeTab, setActiveTab] = useState(urlTab || defaultTab);
+
+  // Keep active tab in sync with URL changes
+  useEffect(() => {
+    const nextTab = urlTab || defaultTab;
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
+
+  const onTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(location.search);
+    params.set('tab', tab);
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+  };
 
   // Form state
   const [formData, setFormData] = useState({
@@ -223,14 +249,28 @@ const AwardsAndCelebration: React.FC = () => {
     }
   };
 
-  const filteredAwards = awards.filter((award) => {
-    const matchesSearch =
-      award.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      award.recipientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      award.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || award.awardType === filterType;
-    return matchesSearch && matchesFilter;
-  });
+  // Filter awards based on active tab and other filters
+  const filteredAwards = useMemo(() => {
+    return awards.filter((award) => {
+      const matchesSearch =
+        award.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        award.recipientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        award.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter = filterType === 'all' || award.awardType === filterType;
+      
+      // Tab filtering
+      let matchesTab = true;
+      if (activeTab === 'my-awards') {
+        matchesTab = award.recipientId === user?.employeeId;
+      } else if (activeTab === 'certificates') {
+        matchesTab = award.awardType === 'certificate';
+      } else if (activeTab === 'achievements') {
+        matchesTab = award.awardType === 'achievement';
+      }
+      
+      return matchesSearch && matchesFilter && matchesTab;
+    });
+  }, [awards, searchTerm, filterType, activeTab, user?.employeeId]);
 
   const getAwardIcon = (type: string, customIcon?: string) => {
     if (customIcon) return customIcon;
@@ -276,62 +316,73 @@ const AwardsAndCelebration: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <Trophy className="w-8 h-8 text-amber-500" />
+      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2 tracking-tight">
+            <Trophy className="w-6 h-6 md:w-8 md:h-8 text-amber-500" />
             Awards & Celebration
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm md:text-base text-muted-foreground mt-1 md:mt-2">
             {isAdmin
               ? 'Recognize and celebrate your team members achievements'
               : 'View awards and celebrations across the organization'}
           </p>
         </div>
         {isAdmin && (
-          <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
+          <Button onClick={() => setShowCreateDialog(true)} className="gap-2 w-full sm:w-auto text-sm font-semibold">
             <Plus className="w-4 h-4" />
-            Create Award
+            <span className="hidden sm:inline">Create Award</span>
+            <span className="sm:hidden">Create</span>
           </Button>
         )}
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search awards or recipients..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="w-full md:w-48">
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger>
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="certificate">Certificate</SelectItem>
-                  <SelectItem value="appreciation">Appreciation</SelectItem>
-                  <SelectItem value="achievement">Achievement</SelectItem>
-                  <SelectItem value="milestone">Milestone</SelectItem>
-                  <SelectItem value="recognition">Recognition</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="all" className="text-xs sm:text-sm">All Awards</TabsTrigger>
+          <TabsTrigger value="my-awards" className="text-xs sm:text-sm">My Awards</TabsTrigger>
+          <TabsTrigger value="certificates" className="text-xs sm:text-sm">Certificates</TabsTrigger>
+          <TabsTrigger value="achievements" className="text-xs sm:text-sm">Achievements</TabsTrigger>
+        </TabsList>
 
-      {/* Awards Grid */}
+        <TabsContent value={activeTab} className="space-y-4">
+          {/* Filters */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Search awards or recipients..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div className="w-full md:w-48">
+                  <Select value={filterType} onValueChange={setFilterType}>
+                    <SelectTrigger>
+                      <Filter className="w-4 h-4 mr-2" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="certificate">Certificate</SelectItem>
+                      <SelectItem value="appreciation">Appreciation</SelectItem>
+                      <SelectItem value="achievement">Achievement</SelectItem>
+                      <SelectItem value="milestone">Milestone</SelectItem>
+                      <SelectItem value="recognition">Recognition</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Awards Grid */}
       {filteredAwards.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
@@ -401,7 +452,9 @@ const AwardsAndCelebration: React.FC = () => {
             </Card>
           ))}
         </div>
-      )}
+        )}
+        </TabsContent>
+      </Tabs>
 
       {/* Create Award Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -496,17 +549,19 @@ const AwardsAndCelebration: React.FC = () => {
               </p>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:justify-end">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setShowCreateDialog(false)}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
-              <Button type="submit" className="gap-2">
+              <Button type="submit" className="gap-2 w-full sm:w-auto">
                 <Sparkles className="w-4 h-4" />
-                Create Award
+                <span className="hidden sm:inline">Create Award</span>
+                <span className="sm:hidden">Create</span>
               </Button>
             </DialogFooter>
           </form>
