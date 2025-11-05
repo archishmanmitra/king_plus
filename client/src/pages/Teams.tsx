@@ -135,7 +135,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
   const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
   const [viewMode, setViewMode] = useState<"chart" | "list">("chart");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterDepartment, setFilterDepartment] = useState("");
+  const [filterDepartment, setFilterDepartment] = useState("all");
   const [userNodeQuery, setUserNodeQuery] = useState("");
   const [selectedUserNodeIds, setSelectedUserNodeIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -480,13 +480,17 @@ const Teams: React.FC<TeamsPageProps> = () => {
       level: number = 0
     ): HierarchyNode => {
       // Find direct reports using managerId - employees whose managerId is this employee's id
+      // Filter out any invalid employees to prevent null references
       const children = employees.filter(
-        (emp) => emp.managerId === employee.id
+        (emp) => emp && emp.managerId === employee.id
       );
 
       return {
         employee,
-        children: children.map((child) => buildHierarchy(child, level + 1)),
+        children: children
+          .filter(child => child && child.id) // Ensure child is valid
+          .map((child) => buildHierarchy(child, level + 1))
+          .filter(node => node !== null), // Filter out any null nodes
         level,
         x: 0,
         y: 0,
@@ -499,8 +503,14 @@ const Teams: React.FC<TeamsPageProps> = () => {
     return {
       employee: topLevelAdmins[0], // Use first admin as root for single tree
       children: topLevelAdmins.length > 1 
-        ? topLevelAdmins.slice(1).map(admin => buildHierarchy(admin, 1))
-        : employees.filter(emp => emp.managerId === topLevelAdmins[0].id).map(child => buildHierarchy(child, 1)),
+        ? topLevelAdmins.slice(1)
+            .filter(admin => admin && admin.id) // Ensure admin is valid
+            .map(admin => buildHierarchy(admin, 1))
+            .filter(node => node !== null && node.employee !== null) // Filter out null nodes
+        : employees
+            .filter(emp => emp && emp.managerId === topLevelAdmins[0].id) // Ensure employee is valid
+            .map(child => buildHierarchy(child, 1))
+            .filter(node => node !== null && node.employee !== null), // Filter out null nodes
       level: 0,
       x: 0,
       y: 0,
@@ -527,34 +537,80 @@ const Teams: React.FC<TeamsPageProps> = () => {
   }, []);
 
   // Calculate positions for tree layout with responsive sizing
+  // Improved algorithm that prevents overlapping and ensures proper spacing
   const calculatePositions = (
-    node: HierarchyNode,
+    node: HierarchyNode | null,
     startX: number = 0,
     startY: number = 0
-  ): HierarchyNode => {
+  ): HierarchyNode | null => {
+    if (!node || !node.employee) return null;
+    
     const nodeWidth = isMobile ? 200 : 300;
-    const nodeHeight = isMobile ? 140 : 180; // Increased height to accommodate contact info
-    const levelHeight = isMobile ? 200 : 250; // Increased level height for better spacing
-    const siblingSpacing = isMobile ? 250 : 350; // Increased spacing between siblings
+    const nodeHeight = isMobile ? 140 : 180;
+    const levelHeight = isMobile ? 220 : 280; // Increased vertical spacing
+    const siblingSpacing = isMobile ? 280 : 380; // Increased horizontal spacing between siblings
+    const minSubtreeWidth = nodeWidth + siblingSpacing; // Minimum width for a subtree
 
+    // First pass: Calculate the width each subtree needs
+    const calculateSubtreeWidth = (n: HierarchyNode | null): number => {
+      if (!n || !n.employee) return nodeWidth;
+      if (n.children.length === 0 || !expandedNodes.has(n.employee.id)) {
+        return nodeWidth;
+      }
+
+      // Calculate total width needed for all children's subtrees
+      let totalChildrenWidth = 0;
+      n.children.filter(child => child && child.employee).forEach((child) => {
+        totalChildrenWidth += calculateSubtreeWidth(child);
+      });
+
+      // Add spacing between children
+      const validChildrenCount = n.children.filter(child => child && child.employee).length;
+      const childrenSpacing = (validChildrenCount - 1) * siblingSpacing;
+      const totalWidth = Math.max(totalChildrenWidth + childrenSpacing, minSubtreeWidth);
+
+      return totalWidth;
+    };
+
+    // Second pass: Position nodes based on calculated widths
     const processNode = (
-      n: HierarchyNode,
+      n: HierarchyNode | null,
       x: number,
       y: number
-    ): HierarchyNode => {
+    ): HierarchyNode | null => {
+      if (!n || !n.employee) return null;
+      
       n.x = x;
       n.y = y;
       n.width = nodeWidth;
       n.height = nodeHeight;
 
-      if (n.children.length > 0 && expandedNodes.has(n.employee.id)) {
+      const validChildren = n.children.filter(child => child && child.employee);
+      if (validChildren.length > 0 && expandedNodes.has(n.employee.id)) {
         const childY = y + levelHeight;
-        const totalChildWidth = (n.children.length - 1) * siblingSpacing;
-        const startChildX = x - totalChildWidth / 2;
+        
+        // Calculate widths for all children's subtrees
+        const childWidths = validChildren.map((child) => calculateSubtreeWidth(child));
+        const totalChildrenWidth = childWidths.reduce((sum, width) => sum + width, 0);
+        const childrenSpacing = (validChildren.length - 1) * siblingSpacing;
+        const totalWidth = totalChildrenWidth + childrenSpacing;
 
-        n.children.forEach((child, index) => {
-          const childX = startChildX + index * siblingSpacing;
+        // Start positioning from the left side of the parent
+        // Center the children's subtree under the parent
+        const parentCenterX = x + nodeWidth / 2;
+        const subtreeStartX = parentCenterX - totalWidth / 2;
+
+        let currentX = subtreeStartX;
+        validChildren.forEach((child, index) => {
+          if (!child || !child.employee) return;
+          const childSubtreeWidth = childWidths[index];
+          // Center the child node within its subtree
+          const childX = currentX + childSubtreeWidth / 2 - nodeWidth / 2;
+          
           processNode(child, childX, childY);
+          
+          // Move to next child position
+          currentX += childSubtreeWidth + siblingSpacing;
         });
       }
 
@@ -565,9 +621,12 @@ const Teams: React.FC<TeamsPageProps> = () => {
   };
 
   const positionedHierarchy = useMemo(() => {
-    if (!hierarchy) return null;
-    const centerX = isMobile ? 200 : 500; // Increased center position for better layout
-    return calculatePositions(hierarchy, centerX, 80); // Increased top margin
+    if (!hierarchy || !hierarchy.employee) return null;
+    // Calculate a better starting position based on tree structure
+    // Start from a central position that allows expansion in both directions
+    const centerX = isMobile ? 400 : 1200; // Increased center position for better layout
+    const positioned = calculatePositions(hierarchy, centerX, 80); // Increased top margin
+    return positioned && positioned.employee ? positioned : null;
   }, [hierarchy, expandedNodes, isMobile]);
 
   const toggleNode = (employeeId: string) => {
@@ -610,15 +669,20 @@ const Teams: React.FC<TeamsPageProps> = () => {
 
   // Calculate bounds of the hierarchy
   const calculateHierarchyBounds = (
-    node: HierarchyNode
+    node: HierarchyNode | null
   ): { minX: number; maxX: number; minY: number; maxY: number } => {
+    if (!node || !node.employee) {
+      return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+    }
+    
     let minX = node.x;
     let maxX = node.x + node.width;
     let minY = node.y;
     let maxY = node.y + node.height;
 
-    if (node.children.length > 0 && expandedNodes.has(node.employee.id)) {
-      node.children.forEach((child) => {
+    const validChildren = node.children.filter(child => child && child.employee);
+    if (validChildren.length > 0 && expandedNodes.has(node.employee.id)) {
+      validChildren.forEach((child) => {
         const childBounds = calculateHierarchyBounds(child);
         minX = Math.min(minX, childBounds.minX);
         maxX = Math.max(maxX, childBounds.maxX);
@@ -740,11 +804,119 @@ const Teams: React.FC<TeamsPageProps> = () => {
             department: dr.official?.unit || "",
             avatar: dr.avatar || ""
           })),
-          personalInfo: employees[0]?.personalInfo as any,
-          officialInfo: employees[0]?.officialInfo as any,
-          financialInfo: employees[0]?.financialInfo as any,
-          personalInfoLegacy: employees[0]?.personalInfoLegacy as any,
-          workInfo: employees[0]?.workInfo as any,
+          personalInfo: {
+            firstName: personal.firstName || "",
+            lastName: personal.lastName || "",
+            gender: "other",
+            dateOfBirth: "",
+            maritalStatus: "single",
+            nationality: "",
+            primaryCitizenship: "",
+            phoneNumber: personal.phoneNumber || "",
+            email: user.email || personal.personalEmail || "",
+            addresses: {
+              present: {
+                contactName: "",
+                address1: "",
+                city: "",
+                state: "",
+                country: "",
+                pinCode: "",
+                mobileNumber: "",
+              },
+              primary: {
+                contactName: "",
+                address1: "",
+                city: "",
+                state: "",
+                country: "",
+                pinCode: "",
+                mobileNumber: "",
+              },
+              emergency: {
+                contactName: "",
+                relation: "",
+                phoneNumber: "",
+                address: {
+                  contactName: "",
+                  address1: "",
+                  city: "",
+                  state: "",
+                  country: "",
+                  pinCode: "",
+                  mobileNumber: "",
+                } as any,
+              } as any,
+            },
+            passport: {
+              passportNumber: "",
+              expiryDate: "",
+              issuingOffice: "",
+              issuingCountry: "",
+              contactNumber: "",
+              address: "",
+            },
+            identityNumbers: {
+              aadharNumber: "",
+              panNumber: "",
+              nsr: { itpin: "", tin: "" },
+            },
+            dependents: [],
+            education: [],
+            experience: [],
+          },
+          officialInfo: {
+            firstName: official.firstName || "",
+            lastName: official.lastName || "",
+            knownAs: official.knownAs || "",
+            dateOfJoining: "",
+            jobConfirmation: !!official.jobConfirmation,
+            role: user.role || "employee",
+            designation: official.designation || "",
+            stream: official.stream || "",
+            subStream: official.subStream || "",
+            baseLocation: official.baseLocation || "",
+            currentLocation: official.currentLocation || "",
+            unit: official.unit || "",
+            unitHead: official.unitHead || "",
+            confirmationDetails: undefined,
+            documents: [],
+          },
+          financialInfo: {
+            bankAccount: {
+              bankName: "",
+              accountNumber: "",
+              ifscCode: "",
+              modifiedDate: "",
+              country: "",
+            },
+            retiral: {
+              pfTotal: 0,
+              employeePF: 0,
+              employerPF: 0,
+              employeeESI: 0,
+              employerESI: 0,
+              professionalTax: 0,
+              incomeTax: 0,
+              netTakeHome: 0,
+              costToCompany: 0,
+              basicSalary: 0,
+              houseRentAllowance: 0,
+              specialAllowance: 0,
+            },
+          },
+          personalInfoLegacy: {
+            dateOfBirth: "",
+            address: "",
+            emergencyContact: "",
+            bloodGroup: "",
+          },
+          workInfo: {
+            workLocation: "",
+            employmentType: "full-time",
+            salary: 0,
+            benefits: [],
+          },
           timeline: [],
         };
         flattened.push(emp);
@@ -795,19 +967,33 @@ const Teams: React.FC<TeamsPageProps> = () => {
       position.toLowerCase().includes("ceo") ||
       position.toLowerCase().includes("chief executive")
     ) {
-      return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      return "bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 text-yellow-900 border-yellow-600 shadow-md font-semibold";
     } else if (
       position.toLowerCase().includes("hr") ||
       position.toLowerCase().includes("human resources")
     ) {
-      return "bg-blue-100 text-blue-800 border-blue-200";
+      return "bg-blue-200 text-white border-blue-500 border-2 shadow-md font-semibold";
     } else if (
       position.toLowerCase().includes("manager") ||
       position.toLowerCase().includes("director")
     ) {
-      return "bg-green-100 text-green-800 border-green-200";
+      return "bg-blue-200 text-white border-blue-500 border-2 shadow-md font-semibold";
     }
-    return "bg-gray-100 text-gray-800 border-gray-200";
+    return "bg-blue-200 text-white border-blue-500 border-2 shadow-md font-semibold";
+  };
+
+  const isCEO = (position: string) => {
+    return (
+      position.toLowerCase().includes("ceo") ||
+      position.toLowerCase().includes("chief executive")
+    );
+  };
+
+  const isHR = (position: string) => {
+    return (
+      position.toLowerCase().includes("hr") ||
+      position.toLowerCase().includes("human resources")
+    );
   };
 
   // Filter employees for list view
@@ -817,7 +1003,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
                          emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          emp.position.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDepartment =
-      !filterDepartment || emp.department === filterDepartment;
+      filterDepartment === "all" || emp.department === filterDepartment;
     return matchesSearch && matchesDepartment;
   });
 
@@ -826,13 +1012,30 @@ const Teams: React.FC<TeamsPageProps> = () => {
     new Set(allEmployees.map((emp) => emp.department).filter(Boolean))
   );
 
-  const renderNode = (node: HierarchyNode) => {
+  const renderNode = (node: HierarchyNode | null) => {
+    if (!node || !node.employee) return null;
+    
     const isExpanded = expandedNodes.has(node.employee.id);
     const hasChildren = node.children.length > 0;
     const isCurrentUserOnlyNode = node.children.length === 0 && node.employee.id === user?.id;
+    const isCEOPosition = isCEO(node.employee.position);
 
     return (
       <div key={node.employee.id} className="relative">
+        {/* Golden Ring for CEO */}
+        {isCEOPosition && (
+          <div
+            className="absolute rounded-lg border-4 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.7)]"
+            style={{
+              left: node.x - 8,
+              top: node.y - 8,
+              width: node.width + 16,
+              height: node.height + 16,
+              zIndex: 9,
+              pointerEvents: "none",
+            }}
+          />
+        )}
         {/* Node Card with Flowchart Styling */}
         <div
           className={`absolute bg-white rounded-lg shadow-lg border-2 hover:shadow-xl transition-all duration-200 cursor-pointer ${
@@ -840,6 +1043,8 @@ const Teams: React.FC<TeamsPageProps> = () => {
               ? "border-blue-500 shadow-blue-200"
               : isCurrentUserOnlyNode
               ? "border-amber-300 bg-amber-50"
+              : isCEOPosition
+              ? "border-yellow-500"
               : "border-gray-200"
           }`}
           style={{
@@ -852,6 +1057,8 @@ const Teams: React.FC<TeamsPageProps> = () => {
             boxShadow:
               selectedEmployee?.id === node.employee.id
                 ? "0 8px 25px rgba(59, 130, 246, 0.3), 0 4px 12px rgba(0, 0, 0, 0.1)"
+                : isCEOPosition
+                ? "0 8px 25px rgba(234, 179, 8, 0.4), 0 4px 12px rgba(0, 0, 0, 0.1)"
                 : "0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05)",
           }}
           onClick={() => setSelectedEmployee(node.employee)}
@@ -946,7 +1153,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
                 <p
                   className={`${
                     isMobile ? "text-xs" : "text-xs"
-                  } text-gray-600 mt-1 truncate`}
+                  } ${isHR(node.employee.position) ? "text-white" : "text-gray-600"} mt-1 truncate`}
                 >
                   {node.employee.department}
                 </p>
@@ -1102,7 +1309,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
 
         {/* Render Children */}
         {isExpanded && hasChildren && (
-          <div>{node.children.map((child) => renderNode(child))}</div>
+          <div>{node.children.filter(child => child && child.employee).map((child) => renderNode(child))}</div>
         )}
       </div>
     );
@@ -1236,7 +1443,7 @@ const Teams: React.FC<TeamsPageProps> = () => {
                       <SelectValue placeholder="Filter by department" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Departments</SelectItem>
+                      <SelectItem value="all">All Departments</SelectItem>
                       {departments.map((dept) => (
                         <SelectItem key={dept} value={dept}>
                           {dept}
@@ -1440,12 +1647,12 @@ const Teams: React.FC<TeamsPageProps> = () => {
                   style={{
                     transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                       transformOrigin: "top left",
-                      width: isMobile ? "1000px" : "1400px", // Increased canvas size
-                      height: isMobile ? "700px" : "1000px", // Increased canvas height
+                      width: isMobile ? "2000px" : "3000px", // Significantly increased canvas width for left/right expansion
+                      height: isMobile ? "1200px" : "2000px", // Increased canvas height for deeper trees
                       cursor: isDragging ? "grabbing" : "grab",
                   }}
                 >
-                  {renderNode(positionedHierarchy)}
+                  {positionedHierarchy && positionedHierarchy.employee && renderNode(positionedHierarchy)}
                 </div>
                 
                 {/* Instructions overlay for mobile */}
@@ -1577,20 +1784,20 @@ const Teams: React.FC<TeamsPageProps> = () => {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center space-x-2">
                   <Users className="h-5 w-5" />
-                  <span>Not Selected Employees ({unassignedEmployees.length})</span>
+                  <span className="text-sm xl:text-base">Not Selected Employees ({unassignedEmployees.length})</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 gap-3">
                   {unassignedEmployees.map((emp) => (
                     <Card 
                       key={emp.id} 
                       className="cursor-pointer hover:shadow-md transition-shadow"
                       onClick={() => setSelectedEmployee(emp)}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-center space-x-3">
-                          <Avatar className="h-10 w-10">
+                      <CardContent className="p-3 xl:p-4">
+                        <div className="flex items-start space-x-3">
+                          <Avatar className="h-10 w-10 flex-shrink-0">
                             <AvatarImage src={emp.avatar} />
                             <AvatarFallback>
                               {emp.name.split(' ').map(n => n[0]).join('')}
@@ -1598,15 +1805,15 @@ const Teams: React.FC<TeamsPageProps> = () => {
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-sm truncate">{emp.name}</p>
-                            <p className="text-xs text-gray-500 truncate">{emp.position}</p>
-                            <p className="text-xs text-gray-400 truncate">{emp.email}</p>
+                            <p className="text-xs text-gray-500 truncate mt-0.5">{emp.position}</p>
+                            <p className="text-xs text-gray-400 truncate mt-0.5">{emp.email}</p>
                           </div>
                         </div>
                         {isAdmin && (
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full mt-3"
+                            className="w-full mt-3 text-xs"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleReassignEmployee(emp);

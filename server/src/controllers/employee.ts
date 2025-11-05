@@ -538,38 +538,41 @@ export const getTeamTree = async (req: Request, res: Response) => {
   }
 }
 
+// Helper function to recursively build org chart tree
+const buildOrgChartTree = (employeeId: string, allEmployees: any[]): any => {
+  const employee = allEmployees.find(emp => emp.id === employeeId)
+  if (!employee) return null
+
+  // Find all direct reports for this employee
+  const directReports = allEmployees.filter(emp => emp.managerId === employeeId)
+
+  // Recursively build tree for each direct report
+  const children = directReports.map(child => buildOrgChartTree(child.id, allEmployees))
+
+  return {
+    ...employee,
+    directReports: children.filter(child => child !== null)
+  }
+}
+
 // Get org chart starting from top-level employees (managerId == null)
 export const getOrgChart = async (_req: Request, res: Response) => {
   try {
-    const org = await prisma.employee.findMany({
-      where: { managerId: null },
+    // First, fetch ALL employees with their related data in one query
+    const allEmployees = await prisma.employee.findMany({
       include: {
         official: true,
         user: true,
         personal: true,
-        directReports: {
-          include: {
-            official: true,
-            user: true,
-            personal: true,
-            directReports: {
-              include: {
-                official: true,
-                user: true,
-                personal: true,
-                directReports: { 
-                  include: { 
-                    official: true,
-                    user: true,
-                    personal: true
-                  } 
-                }
-              }
-            }
-          }
-        }
       }
     })
+
+    // Find top-level employees (no manager)
+    const topLevelEmployees = allEmployees.filter(emp => emp.managerId === null)
+
+    // Build the tree recursively for each top-level employee
+    const org = topLevelEmployees.map(topLevel => buildOrgChartTree(topLevel.id, allEmployees))
+
     return res.json({ org })
   } catch (err: any) {
     console.error('Get org chart error:', err)
