@@ -130,76 +130,76 @@ const navigationItems: NavItem[] = [
       { title: "Holiday Calendar", url: "/leave?tab=holidays" },
     ],
   },
-  {
-    title: "Payroll",
-    url: "/payroll",
-    icon: DollarSign,
-    roles: ["global_admin", "hr_manager"],
-    children: [
-      { title: "Payroll Wizard", url: "/payroll?tab=wizard" },
-      { title: "Payroll History", url: "/payroll?tab=history" },
-      { title: "Preview & Approve", url: "/payroll?tab=preview" },
-    ],
-  },
-  {
-    title: "My Payslip",
-    url: "/payroll-sheet",
-    icon: FileText,
-    roles: ["global_admin", "hr_manager", "employee", "manager"],
-    children: [
-      { title: "Attendance Sheet", url: "/payroll-sheet?tab=attendance" },
-      { title: "Payslip", url: "/payroll-sheet?tab=payslip" },
-    ],
-  },
-  {
-    title: "Expenses",
-    url: "/expenses",
-    icon: FileText,
-    roles: ["global_admin", "hr_manager", "manager", "employee"],
-    children: [
-      { title: "My Claims", url: "/expenses?tab=claims" },
-      { title: "Approve Claims", url: "/expenses?tab=approve" },
-    ],
-  },
-  {
-    title: "Performance",
-    url: "/performance",
-    icon: Target,
-    roles: [
-      "global_admin",
-      "hr_manager",
-      "employee",
-      "manager",
-    ],
-    children: [
-      { title: "Goals & OKRs", url: "/performance?tab=goals" },
-      { title: "Performance Reviews", url: "/performance?tab=reviews" },
-    ],
-  },
-  {
-    title: "Projects",
-    url: "/projects",
-    icon: FolderOpen,
-    roles: ["global_admin", "hr_manager", "manager", "employee"],
-    children: [
-      { title: "All Projects", url: "/projects?tab=all" },
-      { title: "My Projects", url: "/projects?tab=my-projects" },
-      { title: "Active", url: "/projects?tab=active" },
-      { title: "Completed", url: "/projects?tab=completed" },
-    ],
-  },
-  {
-    title: "Reports",
-    url: "/reports",
-    icon: TrendingUp,
-    roles: ["global_admin", "hr_manager", "manager"],
-    children: [
-      { title: "Attendance", url: "/reports?tab=attendance" },
-      { title: "Leave", url: "/reports?tab=leave" },
-      { title: "Payroll", url: "/reports?tab=payroll" },
-      { title: "Performance", url: "/reports?tab=performance" },
-    ],
-  },
+  // {
+  //   title: "Payroll",
+  //   url: "/payroll",
+  //   icon: DollarSign,
+  //   roles: ["global_admin", "hr_manager"],
+  //   children: [
+  //     { title: "Payroll Wizard", url: "/payroll?tab=wizard" },
+  //     { title: "Payroll History", url: "/payroll?tab=history" },
+  //     { title: "Preview & Approve", url: "/payroll?tab=preview" },
+  //   ],
+  // },
+  // {
+  //   title: "My Payslip",
+  //   url: "/payroll-sheet",
+  //   icon: FileText,
+  //   roles: ["global_admin", "hr_manager", "employee", "manager"],
+  //   children: [
+  //     { title: "Attendance Sheet", url: "/payroll-sheet?tab=attendance" },
+  //     { title: "Payslip", url: "/payroll-sheet?tab=payslip" },
+  //   ],
+  // },
+  // {
+  //   title: "Expenses",
+  //   url: "/expenses",
+  //   icon: FileText,
+  //   roles: ["global_admin", "hr_manager", "manager", "employee"],
+  //   children: [
+  //     { title: "My Claims", url: "/expenses?tab=claims" },
+  //     { title: "Approve Claims", url: "/expenses?tab=approve" },
+  //   ],
+  // },
+  // {
+  //   title: "Performance",
+  //   url: "/performance",
+  //   icon: Target,
+  //   roles: [
+  //     "global_admin",
+  //     "hr_manager",
+  //     "employee",
+  //     "manager",
+  //   ],
+  //   children: [
+  //     { title: "Goals & OKRs", url: "/performance?tab=goals" },
+  //     { title: "Performance Reviews", url: "/performance?tab=reviews" },
+  //   ],
+  // },
+  // {
+  //   title: "Projects",
+  //   url: "/projects",
+  //   icon: FolderOpen,
+  //   roles: ["global_admin", "hr_manager", "manager", "employee"],
+  //   children: [
+  //     { title: "All Projects", url: "/projects?tab=all" },
+  //     { title: "My Projects", url: "/projects?tab=my-projects" },
+  //     { title: "Active", url: "/projects?tab=active" },
+  //     { title: "Completed", url: "/projects?tab=completed" },
+  //   ],
+  // },
+  // {
+  //   title: "Reports",
+  //   url: "/reports",
+  //   icon: TrendingUp,
+  //   roles: ["global_admin", "hr_manager", "manager"],
+  //   children: [
+  //     { title: "Attendance", url: "/reports?tab=attendance" },
+  //     { title: "Leave", url: "/reports?tab=leave" },
+  //     { title: "Payroll", url: "/reports?tab=payroll" },
+  //     { title: "Performance", url: "/reports?tab=performance" },
+  //   ],
+  // },
   {
     title: "Audit Report",
     url: "/audit-report",
@@ -223,12 +223,12 @@ const navigationItems: NavItem[] = [
       { title: "Achievements", url: "/awards?tab=achievements" },
     ],
   },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
-    roles: ["global_admin", "hr_manager"],
-  },
+  // {
+  //   title: "Settings",
+  //   url: "/settings",
+  //   icon: Settings,
+  //   roles: ["global_admin", "hr_manager"],
+  // },
 ];
 
 export function AppSidebar() {
